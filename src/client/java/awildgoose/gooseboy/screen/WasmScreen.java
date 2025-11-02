@@ -40,6 +40,9 @@ public class WasmScreen extends Screen {
 	public StorageCrate storageCrate;
 	public String instanceName;
 
+	private long lastRenderNano = 0L;
+	private static final long FRAME_INTERVAL_NS = 1_000_000_000L / 60L; // 60 FPS cap
+
 	public WasmScreen(Instance instance, String instanceName) {
 		super(Component.literal(instanceName));
 		this.instance = instance;
@@ -98,7 +101,23 @@ public class WasmScreen extends Screen {
 	public void render(GuiGraphics guiGraphics, int i, int j, float f) {
 		super.render(guiGraphics, i, j, f);
 
-		texture.upload();
+		long now = System.nanoTime();
+		boolean shouldUpdate = (now - lastRenderNano) >= FRAME_INTERVAL_NS;
+
+		if (shouldUpdate) {
+			this.updateFunction.apply(now);
+
+			byte[] fbBytes = instance.memory().readBytes(this.fbPtr, this.fbSize);
+			tmpBuf.clear();
+			tmpBuf.put(fbBytes).flip();
+
+			var pixels = this.texture.getPixels();
+			if (pixels != null)
+				MemoryUtil.memCopy(MemoryUtil.memAddress(tmpBuf), pixels.getPointer(), this.fbSize);
+
+			texture.upload();
+			lastRenderNano = now;
+		}
 
 		RenderSystem.setShaderTexture(0, texture.getTextureView());
 		int x = ((this.width - IMAGE_WIDTH) / 2) + 5;
@@ -121,20 +140,6 @@ public class WasmScreen extends Screen {
 		this.storageCrate.save();
 		// close wasm?
 		super.onClose();
-	}
-
-	@Override
-	public void tick() {
-		long time = System.nanoTime();
-		this.updateFunction.apply(time);
-
-		byte[] fbBytes = instance.memory().readBytes(this.fbPtr, this.fbSize);
-		tmpBuf.clear();
-		tmpBuf.put(fbBytes).flip();
-
-		var pixels = this.texture.getPixels();
-		if (pixels != null)
-			MemoryUtil.memCopy(MemoryUtil.memAddress(tmpBuf), pixels.getPointer(), this.fbSize);
 	}
 
 	@Override
