@@ -31,4 +31,9 @@ public class ClientCommonBridgeImpl implements ClientCommonBridge {
 	public int getMouseYInFramebuffer() {
 		return WasmScreen.INSTANCE.getMouseYInFramebuffer();
 	}
+
+	@Override
+	public void playRawAudio(byte[] pcm) {
+		RawAudioManager.play(pcm);
+	}
 }

@@ -9,15 +9,18 @@ public class Registrar {
 		Framebuffer fb = new Framebuffer();
 		Mem mem = new Mem();
 		Input input = new Input();
+		Audio audio = new Audio();
 
 		HostFunction[] consoleHostFunctions = console.toHostFunctions();
 		HostFunction[] framebufferHostFunctions = fb.toHostFunctions();
 		HostFunction[] memHostFunctions = mem.toHostFunctions();
 		HostFunction[] inputHostFunctions = input.toHostFunctions();
+		HostFunction[] audioHostFunctions = audio.toHostFunctions();
 
 		return builder.addFunction(consoleHostFunctions)
 				.addFunction(framebufferHostFunctions)
 				.addFunction(memHostFunctions)
-				.addFunction(inputHostFunctions);
+				.addFunction(inputHostFunctions)
+				.addFunction(audioHostFunctions);
 	}
 }

@@ -14,11 +14,12 @@ public class GooseboyClient implements ClientModInitializer {
 	@Override
 	public void onInitializeClient() {
 		Gooseboy.ccb = new ClientCommonBridgeImpl();
-		ClientTickEvents.END_WORLD_TICK.register((w) -> {
+		ClientTickEvents.END_WORLD_TICK.register(w -> {
 			if (keyOpenWasm.isDown()) {
 				Minecraft mc = Minecraft.getInstance();
 				mc.setScreen(new WasmScreen(Wasm.getInstance()));
 			}
 		});
+		ClientTickEvents.END_CLIENT_TICK.register(c -> RawAudioManager.tick());
 	}
 }
