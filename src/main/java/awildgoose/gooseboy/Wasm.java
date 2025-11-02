@@ -5,7 +5,6 @@ import com.dylibso.chicory.compiler.MachineFactoryCompiler;
 import com.dylibso.chicory.runtime.ImportValues;
 import com.dylibso.chicory.runtime.Instance;
 import com.dylibso.chicory.wasm.Parser;
-import net.fabricmc.loader.api.FabricLoader;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -15,18 +14,7 @@ import java.util.Optional;
 
 public class Wasm {
 	public static Optional<byte[]> loadWasm(String relativePath) {
-		Path gameDir = FabricLoader.getInstance().getGameDir();
-		Path gooseboyDir = gameDir.resolve("gooseboy");
-
-		if (!Files.exists(gooseboyDir)) {
-			try {
-				Files.createDirectories(gooseboyDir);
-			} catch (IOException e) {
-				return Optional.empty();
-			}
-		}
-
-		Path wasmPath = gooseboyDir.resolve(relativePath);
+		Path wasmPath = Gooseboy.getGooseboyDirectory().resolve(relativePath);
 
 		if (!Files.exists(wasmPath)) {
 			// Try loading from the JAR
@@ -49,6 +37,7 @@ public class Wasm {
 	}
 
 	public static Instance getInstance() {
+		// TODO this function can throw UnlinkableException
 		var wasm = loadWasm("test.wasm");
 		if (wasm.isEmpty()) return null;
 

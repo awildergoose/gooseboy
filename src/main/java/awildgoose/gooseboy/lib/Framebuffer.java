@@ -21,7 +21,7 @@ public final class Framebuffer {
 	}
 
 	@WasmExport
-	public void clear(int color) {
+	public void clear_framebuffer(int color) {
 		Gooseboy.ccb.clear(color);
 	}
 

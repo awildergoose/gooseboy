@@ -17,7 +17,7 @@ public class GooseboyClient implements ClientModInitializer {
 		ClientTickEvents.END_WORLD_TICK.register(w -> {
 			if (keyOpenWasm.isDown()) {
 				Minecraft mc = Minecraft.getInstance();
-				mc.setScreen(new WasmScreen(Wasm.getInstance()));
+				mc.setScreen(new WasmScreen(Wasm.getInstance(), "test"));
 			}
 		});
 		ClientTickEvents.END_CLIENT_TICK.register(c -> RawAudioManager.tick());

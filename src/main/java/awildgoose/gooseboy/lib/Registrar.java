@@ -10,17 +10,20 @@ public class Registrar {
 		Mem mem = new Mem();
 		Input input = new Input();
 		Audio audio = new Audio();
+		Storage storage = new Storage();
 
 		HostFunction[] consoleHostFunctions = console.toHostFunctions();
 		HostFunction[] framebufferHostFunctions = fb.toHostFunctions();
 		HostFunction[] memHostFunctions = mem.toHostFunctions();
 		HostFunction[] inputHostFunctions = input.toHostFunctions();
 		HostFunction[] audioHostFunctions = audio.toHostFunctions();
+		HostFunction[] storageHostFunctions = storage.toHostFunctions();
 
 		return builder.addFunction(consoleHostFunctions)
 				.addFunction(framebufferHostFunctions)
 				.addFunction(memHostFunctions)
 				.addFunction(inputHostFunctions)
-				.addFunction(audioHostFunctions);
+				.addFunction(audioHostFunctions)
+				.addFunction(storageHostFunctions);
 	}
 }

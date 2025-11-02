@@ -16,6 +16,7 @@ public class RawAudioManager {
 	private static final int SAMPLE_RATE = 44100;
 
 	public static void play(byte[] pcm) {
+		// TODO check if all this is safe
 		ByteBuffer bufferDirect = ByteBuffer.allocateDirect(pcm.length)
 				.order(ByteOrder.nativeOrder());
 		bufferDirect.put(pcm);

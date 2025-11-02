@@ -1,6 +1,7 @@
 package awildgoose.gooseboy;
 
 import awildgoose.gooseboy.screen.WasmScreen;
+import awildgoose.gooseboy.storage.StorageCrate;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.Minecraft;
 import org.lwjgl.glfw.GLFW;
@@ -35,5 +36,10 @@ public class ClientCommonBridgeImpl implements ClientCommonBridge {
 	@Override
 	public void playRawAudio(byte[] pcm) {
 		RawAudioManager.play(pcm);
+	}
+
+	@Override
+	public StorageCrate getStorageCrate() {
+		return WasmScreen.INSTANCE.storageCrate;
 	}
 }

@@ -1,6 +1,7 @@
 package awildgoose.gooseboy.screen;
 
 import awildgoose.gooseboy.Gooseboy;
+import awildgoose.gooseboy.storage.StorageCrate;
 import com.dylibso.chicory.runtime.ExportFunction;
 import com.dylibso.chicory.runtime.Instance;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -36,10 +37,13 @@ public class WasmScreen extends Screen {
 	private int fbSize;
 	private ByteBuffer tmpBuf;
 	private ExportFunction updateFunction;
+	public StorageCrate storageCrate;
+	public String instanceName;
 
-	public WasmScreen(Instance instance) {
-		super(Component.literal("WASM"));
+	public WasmScreen(Instance instance, String instanceName) {
+		super(Component.literal(instanceName));
 		this.instance = instance;
+		this.instanceName = instanceName;
 		INSTANCE = this;
 	}
 
@@ -70,12 +74,14 @@ public class WasmScreen extends Screen {
 
 	@Override
 	protected void init() {
+		// TODO make sure the functions we're calling or exporting do exist!
 		this.texture = new DynamicTexture("Gooseboy WASM framebuffer", FRAMEBUFFER_WIDTH, FRAMEBUFFER_HEIGHT, false);
 		Minecraft.getInstance().getTextureManager().register(FRAMEBUFFER_TEXTURE, this.texture);
 		this.fbPtr = (int) this.instance.export("get_framebuffer_ptr").apply()[0];
 		this.fbSize = FRAMEBUFFER_WIDTH * FRAMEBUFFER_HEIGHT * 4;
 		this.tmpBuf = MemoryUtil.memAlloc(this.fbSize);
 		this.updateFunction = this.instance.export("update");
+		this.storageCrate = new StorageCrate(this.instanceName);
 	}
 
 	@Override
@@ -112,6 +118,7 @@ public class WasmScreen extends Screen {
 			this.tmpBuf = null;
 		}
 		this.texture.close();
+		this.storageCrate.save();
 		// close wasm?
 		super.onClose();
 	}
