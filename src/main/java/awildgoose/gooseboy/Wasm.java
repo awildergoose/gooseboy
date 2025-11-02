@@ -1,0 +1,65 @@
+package awildgoose.gooseboy;
+
+import awildgoose.gooseboy.lib.Registrar;
+import com.dylibso.chicory.compiler.MachineFactoryCompiler;
+import com.dylibso.chicory.runtime.ImportValues;
+import com.dylibso.chicory.runtime.Instance;
+import com.dylibso.chicory.wasm.Parser;
+import net.fabricmc.loader.api.FabricLoader;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Optional;
+
+public class Wasm {
+	public static Optional<byte[]> loadWasm(String relativePath) {
+		Path gameDir = FabricLoader.getInstance().getGameDir();
+		Path gooseboyDir = gameDir.resolve("gooseboy");
+
+		if (!Files.exists(gooseboyDir)) {
+			try {
+				Files.createDirectories(gooseboyDir);
+			} catch (IOException e) {
+				return Optional.empty();
+			}
+		}
+
+		Path wasmPath = gooseboyDir.resolve(relativePath);
+
+		if (!Files.exists(wasmPath)) {
+			// Try loading from the JAR
+			try (InputStream in = Gooseboy.class.getResourceAsStream("/assets/gooseboy/" + relativePath)) {
+				if (in == null) {
+					return Optional.empty();
+				}
+
+				return Optional.ofNullable(in.readAllBytes());
+			} catch (IOException e) {
+				return Optional.empty();
+			}
+		}
+
+		try {
+			return Optional.of(Files.readAllBytes(wasmPath));
+		} catch (IOException e) {
+			return Optional.empty();
+		}
+	}
+
+	public static Instance getInstance() {
+		var wasm = loadWasm("test.wasm");
+		if (wasm.isEmpty()) return null;
+
+		var module = Parser.parse(wasm.get());
+		var builder = Instance.builder(module)
+				.withImportValues(Registrar.register(ImportValues.builder()).build()).withMachineFactory(
+						MachineFactoryCompiler::compile);
+
+		var instance = builder.build();
+		instance.export("main").apply();
+		return instance;
+	}
+
+}

@@ -1,0 +1,38 @@
+{
+	"schemaVersion": 1,
+	"id": "gooseboy",
+	"version": "${version}",
+	"name": "Gooseboy",
+	"description": "It's time to game!",
+	"authors": [
+		"awildgoose"
+	],
+	"contact": {
+		"homepage": "https://fabricmc.net/",
+		"sources": "https://github.com/awildergoose/gooseboy"
+	},
+	"license": "CC0-1.0",
+	"icon": "assets/gooseboy/icon.png",
+	"environment": "client",
+	"entrypoints": {
+		"main": [
+			"awildgoose.gooseboy.Gooseboy"
+		],
+		"client": [
+			"awildgoose.gooseboy.GooseboyClient"
+		]
+	},
+	"mixins": [
+		"gooseboy.mixins.json",
+		{
+			"config": "gooseboy.client.mixins.json",
+			"environment": "client"
+		}
+	],
+	"depends": {
+		"fabricloader": ">=0.17.3",
+		"minecraft": "~1.21.10",
+		"java": ">=21",
+		"fabric-api": "*"
+	}
+}

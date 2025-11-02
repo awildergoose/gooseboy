@@ -1,0 +1,101 @@
+plugins {
+	id 'fabric-loom' version "${loom_version}"
+	id 'maven-publish'
+	id 'com.github.johnrengelman.shadow' version '8.1.1'
+}
+
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+
+version = project.mod_version
+group = project.maven_group
+
+base {
+	archivesName = project.archives_base_name
+}
+
+repositories {
+	mavenCentral()
+}
+
+loom {
+	splitEnvironmentSourceSets()
+
+	mods {
+		"gooseboy" {
+			sourceSet sourceSets.main
+			sourceSet sourceSets.client
+		}
+	}
+}
+
+configurations {
+	shade
+	implementation.extendsFrom(shade)
+}
+
+dependencies {
+	minecraft "com.mojang:minecraft:${project.minecraft_version}"
+	mappings loom.officialMojangMappings()
+	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+
+	shade "com.dylibso.chicory:runtime:${project.chicory_version}"
+	shade "com.dylibso.chicory:annotations:${project.chicory_version}"
+	shade "com.dylibso.chicory:compiler:${project.chicory_version}"
+	annotationProcessor "com.dylibso.chicory:annotations-processor:${project.chicory_version}"
+}
+
+tasks.named('shadowJar', ShadowJar).configure {
+	archiveClassifier.set('all')
+	configurations = [project.configurations.shade]
+	relocate 'com.dylibso.chicory', "${project.group}.embedded.chicory"
+	mergeServiceFiles()
+
+	from("src/main/resources") {
+		include "fabric.mod.json"
+	}
+}
+
+tasks.named('remapJar').configure { remap ->
+	dependsOn tasks.named('shadowJar')
+	remap.input.set(tasks.named('shadowJar').flatMap { it.archiveFile })
+	remap.from(tasks.named('shadowJar'))
+	remap.archiveClassifier.set('')
+}
+
+build {
+	dependsOn remapJar, shadowJar
+}
+
+processResources {
+	inputs.property "version", project.version
+	filesMatching("fabric.mod.json") {
+		expand "version": inputs.properties.version
+	}
+}
+
+tasks.withType(JavaCompile).configureEach {
+	it.options.release = 21
+}
+
+java {
+	withSourcesJar()
+	sourceCompatibility = JavaVersion.VERSION_21
+	targetCompatibility = JavaVersion.VERSION_21
+}
+
+jar {
+	inputs.property "archivesName", project.base.archivesName
+	from("LICENSE") {
+		rename { "${it}_${inputs.properties.archivesName}"}
+	}
+}
+
+publishing {
+	publications {
+		create("mavenJava", MavenPublication) {
+			artifactId = project.archives_base_name
+			from components.java
+		}
+	}
+}

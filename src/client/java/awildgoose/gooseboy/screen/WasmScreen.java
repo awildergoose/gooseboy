@@ -1,0 +1,125 @@
+package awildgoose.gooseboy.screen;
+
+import awildgoose.gooseboy.Gooseboy;
+import com.dylibso.chicory.runtime.ExportFunction;
+import com.dylibso.chicory.runtime.Instance;
+import com.mojang.blaze3d.systems.RenderSystem;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.texture.DynamicTexture;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import org.lwjgl.system.MemoryUtil;
+
+import java.nio.ByteBuffer;
+
+import static awildgoose.gooseboy.Gooseboy.FRAMEBUFFER_HEIGHT;
+import static awildgoose.gooseboy.Gooseboy.FRAMEBUFFER_WIDTH;
+
+public class WasmScreen extends Screen {
+	private static final ResourceLocation SCREEN_UI_LOCATION = ResourceLocation.fromNamespaceAndPath(
+			Gooseboy.MOD_ID, "textures/gui/wasm.png");
+	private static final ResourceLocation FRAMEBUFFER_TEXTURE = ResourceLocation.fromNamespaceAndPath(
+			Gooseboy.MOD_ID, "wasm_framebuffer"
+	);
+
+	private static final int IMAGE_WIDTH = 330;
+	private static final int IMAGE_HEIGHT = 256;
+
+	public static WasmScreen INSTANCE;
+
+	private final Instance instance;
+	private DynamicTexture texture;
+	private int fbPtr;
+	private int fbSize;
+	private ByteBuffer tmpBuf;
+	private ExportFunction updateFunction;
+
+	public WasmScreen(Instance instance) {
+		super(Component.literal("WASM"));
+		this.instance = instance;
+		INSTANCE = this;
+	}
+
+	public void clear(int color) {
+		var pixels = this.texture.getPixels();
+		if (pixels != null)
+			pixels.fillRect(0, 0, FRAMEBUFFER_WIDTH, FRAMEBUFFER_HEIGHT, color);
+	}
+
+	@Override
+	protected void init() {
+		this.texture = new DynamicTexture("Gooseboy WASM framebuffer", FRAMEBUFFER_WIDTH, FRAMEBUFFER_HEIGHT, false);
+		Minecraft.getInstance().getTextureManager().register(FRAMEBUFFER_TEXTURE, this.texture);
+		this.fbPtr = (int) this.instance.export("get_framebuffer_ptr").apply()[0];
+		this.fbSize = FRAMEBUFFER_WIDTH * FRAMEBUFFER_HEIGHT * 4;
+		this.tmpBuf = MemoryUtil.memAlloc(this.fbSize);
+		this.updateFunction = this.instance.export("update");
+	}
+
+	@Override
+	public boolean isPauseScreen() {
+		return false;
+	}
+
+	@Override
+	public boolean isInGameUi() {
+		return true;
+	}
+
+	@Override
+	public void render(GuiGraphics guiGraphics, int i, int j, float f) {
+		super.render(guiGraphics, i, j, f);
+
+		texture.upload();
+
+		RenderSystem.setShaderTexture(0, texture.getTextureView());
+		int x = ((this.width - IMAGE_WIDTH) / 2) + 5;
+		int y = ((this.height - IMAGE_HEIGHT) / 2) + 5;
+		guiGraphics.blit(RenderPipelines.GUI_TEXTURED, FRAMEBUFFER_TEXTURE, x, y, 0, 0,
+						 FRAMEBUFFER_WIDTH,
+						 FRAMEBUFFER_HEIGHT,
+						 FRAMEBUFFER_WIDTH,
+						 FRAMEBUFFER_HEIGHT);
+	}
+
+	@Override
+	public void onClose() {
+		INSTANCE = null;
+		if (this.tmpBuf != null) {
+			MemoryUtil.memFree(this.tmpBuf);
+			this.tmpBuf = null;
+		}
+		this.texture.close();
+		// close wasm?
+		super.onClose();
+	}
+
+	@Override
+	public void tick() {
+		long time = System.nanoTime();
+		this.updateFunction.apply(time);
+
+		byte[] fbBytes = instance.memory().readBytes(this.fbPtr, this.fbSize);
+		tmpBuf.clear();
+		tmpBuf.put(fbBytes).flip();
+
+		var pixels = this.texture.getPixels();
+		if (pixels != null)
+			MemoryUtil.memCopy(MemoryUtil.memAddress(tmpBuf), pixels.getPointer(), this.fbSize);
+	}
+
+	@Override
+	public void renderBackground(GuiGraphics guiGraphics, int i, int j, float f) {
+		super.renderBackground(guiGraphics, i, j, f);
+		int k = (this.width - IMAGE_WIDTH) / 2;
+		int l = (this.height - IMAGE_HEIGHT) / 2;
+		guiGraphics.blit(
+				RenderPipelines.GUI_TEXTURED, SCREEN_UI_LOCATION,
+				k, l,
+				0, 0, IMAGE_WIDTH, IMAGE_HEIGHT,
+						 IMAGE_WIDTH, IMAGE_HEIGHT);
+	}
+}
