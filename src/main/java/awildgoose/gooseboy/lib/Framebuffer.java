@@ -6,7 +6,7 @@ import com.dylibso.chicory.annotations.HostModule;
 import com.dylibso.chicory.annotations.WasmExport;
 import com.dylibso.chicory.runtime.HostFunction;
 
-@HostModule("fb")
+@HostModule("framebuffer")
 public final class Framebuffer {
 	public Framebuffer() {}
 

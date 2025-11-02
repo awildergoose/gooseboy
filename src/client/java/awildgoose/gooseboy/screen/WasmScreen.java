@@ -44,9 +44,12 @@ public class WasmScreen extends Screen {
 	}
 
 	public void clear(int color) {
-		var pixels = this.texture.getPixels();
-		if (pixels != null)
-			pixels.fillRect(0, 0, FRAMEBUFFER_WIDTH, FRAMEBUFFER_HEIGHT, color);
+		var mem = this.instance.memory();
+		int p = this.fbPtr;
+
+		for (int i = 0; i < fbSize; i += 4) {
+			mem.writeI32(p + i, color);
+		}
 	}
 
 	@Override
