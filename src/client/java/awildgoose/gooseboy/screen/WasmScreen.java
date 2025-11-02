@@ -52,6 +52,22 @@ public class WasmScreen extends Screen {
 		}
 	}
 
+	public int getMouseXInFramebuffer() {
+		double mouseX = Minecraft.getInstance().mouseHandler.xpos() * (double)this.width / (double)Minecraft.getInstance().getWindow().getScreenWidth();
+		int fbX = (int)(mouseX - (((this.width - IMAGE_WIDTH) / 2) + 5));
+		if (fbX < 0) fbX = 0;
+		if (fbX >= FRAMEBUFFER_WIDTH) fbX = FRAMEBUFFER_WIDTH - 1;
+		return fbX;
+	}
+
+	public int getMouseYInFramebuffer() {
+		double mouseY = Minecraft.getInstance().mouseHandler.ypos() * (double)this.height / (double)Minecraft.getInstance().getWindow().getScreenHeight();
+		int fbY = (int)(mouseY - (((this.height - IMAGE_HEIGHT) / 2) + 5));
+		if (fbY < 0) fbY = 0;
+		if (fbY >= FRAMEBUFFER_HEIGHT) fbY = FRAMEBUFFER_HEIGHT - 1;
+		return fbY;
+	}
+
 	@Override
 	protected void init() {
 		this.texture = new DynamicTexture("Gooseboy WASM framebuffer", FRAMEBUFFER_WIDTH, FRAMEBUFFER_HEIGHT, false);

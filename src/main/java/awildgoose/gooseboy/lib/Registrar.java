@@ -8,10 +8,16 @@ public class Registrar {
 		Console console = new Console();
 		Framebuffer fb = new Framebuffer();
 		Mem mem = new Mem();
+		Input input = new Input();
+
 		HostFunction[] consoleHostFunctions = console.toHostFunctions();
 		HostFunction[] framebufferHostFunctions = fb.toHostFunctions();
 		HostFunction[] memHostFunctions = mem.toHostFunctions();
+		HostFunction[] inputHostFunctions = input.toHostFunctions();
 
-		return builder.addFunction(consoleHostFunctions).addFunction(framebufferHostFunctions).addFunction(memHostFunctions);
+		return builder.addFunction(consoleHostFunctions)
+				.addFunction(framebufferHostFunctions)
+				.addFunction(memHostFunctions)
+				.addFunction(inputHostFunctions);
 	}
 }
