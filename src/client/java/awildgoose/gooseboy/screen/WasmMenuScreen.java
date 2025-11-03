@@ -17,7 +17,6 @@ public class WasmMenuScreen extends Screen {
 	public WasmMenuScreen() {
 		super(Component.literal("WASM"));
 		this.list = new WasmSelectionList(Minecraft.getInstance(), 0, 0, 200, 200);
-
 		this.layout.addToContents(this.list);
 	}
 
