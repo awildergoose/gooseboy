@@ -51,9 +51,10 @@ tasks.named('shadowJar', ShadowJar).configure {
 	relocate 'com.dylibso.chicory', "${project.group}.embedded.chicory"
 	mergeServiceFiles()
 
-	from("src/main/resources") {
-		include "fabric.mod.json"
-	}
+	exclude 'org/objectweb/asm/**'
+	
+	from(sourceSets.client.output)
+	from(sourceSets.client.resources)
 }
 
 tasks.named('remapJar').configure { remap ->
