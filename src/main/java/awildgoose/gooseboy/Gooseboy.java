@@ -25,12 +25,12 @@ public class Gooseboy implements ModInitializer {
 		Path gameDir = FabricLoader.getInstance().getGameDir();
 		Path gooseboyDir = gameDir.resolve("gooseboy");
 
-		if (!Files.exists(gooseboyDir)) {
-			try {
-				Files.createDirectories(gooseboyDir);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+		try {
+			Files.createDirectories(gooseboyDir);
+			Files.createDirectories(gooseboyDir.resolve("scripts"));
+			Files.createDirectories(gooseboyDir.resolve("storage"));
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 
 		return gooseboyDir;
@@ -51,6 +51,7 @@ public class Gooseboy implements ModInitializer {
 
 	@Override
 	public void onInitialize() {
-
+		// create dirs
+		Gooseboy.getGooseboyDirectory();
 	}
 }

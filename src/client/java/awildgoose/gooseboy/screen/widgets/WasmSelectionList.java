@@ -1,6 +1,9 @@
 package awildgoose.gooseboy.screen.widgets;
 
 import awildgoose.gooseboy.Gooseboy;
+import awildgoose.gooseboy.Wasm;
+import awildgoose.gooseboy.crate.WasmCrate;
+import awildgoose.gooseboy.screen.WasmScreen;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.ImageButton;
@@ -8,6 +11,7 @@ import net.minecraft.client.gui.components.ObjectSelectionList;
 import net.minecraft.client.gui.components.StringWidget;
 import net.minecraft.client.gui.components.WidgetSprites;
 import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -16,13 +20,7 @@ import org.jetbrains.annotations.NotNull;
 public class WasmSelectionList extends ObjectSelectionList<WasmSelectionList.Entry> {
 	public WasmSelectionList(Minecraft minecraft, int i, int j, int k, int l) {
 		super(minecraft, i, j, k, l);
-
-		for (int t = 0; t < 10; t++) {
-			this.addEntry(new Entry(minecraft, this, "guh"));
-			this.addEntry(new Entry(minecraft, this, "buh"));
-			this.addEntry(new Entry(minecraft, this, "luh"));
-			this.addEntry(new Entry(minecraft, this, "nuh"));
-		}
+		Wasm.listWasmScripts().forEach(f -> this.addEntry(new Entry(minecraft, this, f)));
 	}
 
 	@Override
@@ -53,6 +51,8 @@ public class WasmSelectionList extends ObjectSelectionList<WasmSelectionList.Ent
 					ResourceLocation.withDefaultNamespace("widget/checkbox_selected_highlighted")
 			), (b) -> {
 				// run
+				var crate = new WasmCrate(Wasm.createInstance(text), text);
+				minecraft.setScreen(new WasmScreen(crate));
 			});
 
 			this.settingsButton = new ImageButton(0, 0, 15, 15, new WidgetSprites(
@@ -61,6 +61,20 @@ public class WasmSelectionList extends ObjectSelectionList<WasmSelectionList.Ent
 			), (b) -> {
 				// settings
 			});
+		}
+
+		@Override
+		public boolean mouseClicked(MouseButtonEvent mouseButtonEvent, boolean bl) {
+			if (this.settingsButton.mouseClicked(mouseButtonEvent, bl)) return true;
+			if (this.runButton.mouseClicked(mouseButtonEvent, bl)) return true;
+			return super.mouseClicked(mouseButtonEvent, bl);
+		}
+
+		@Override
+		public boolean mouseReleased(MouseButtonEvent mouseButtonEvent) {
+			if (this.settingsButton.mouseReleased(mouseButtonEvent)) return true;
+			if (this.runButton.mouseReleased(mouseButtonEvent)) return true;
+			return super.mouseReleased(mouseButtonEvent);
 		}
 
 		@Override

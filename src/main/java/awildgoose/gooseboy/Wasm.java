@@ -10,15 +10,21 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class Wasm {
 	public static Optional<byte[]> loadWasm(String relativePath) {
-		Path wasmPath = Gooseboy.getGooseboyDirectory().resolve(relativePath);
+		Path wasmPath = Gooseboy.getGooseboyDirectory().resolve("scripts").resolve(relativePath);
 
 		if (!Files.exists(wasmPath)) {
 			// Try loading from the JAR
-			try (InputStream in = Gooseboy.class.getResourceAsStream("/assets/gooseboy/" + relativePath)) {
+			try (InputStream in = Gooseboy.class.getResourceAsStream(
+					"/assets/gooseboy/scripts/" + relativePath
+			)) {
 				if (in == null) {
 					return Optional.empty();
 				}
@@ -36,10 +42,24 @@ public class Wasm {
 		}
 	}
 
-	public static Instance createInstance(String name) {
+	public static List<String> listWasmScripts() {
+		Path wasmPath = Gooseboy.getGooseboyDirectory().resolve("scripts");
+
+		try (Stream<Path> stream = Files.list(wasmPath)) {
+			return stream
+					.filter(Files::isRegularFile)
+					.filter(f -> f.getFileName().toString().toLowerCase().endsWith(".wasm"))
+					.map(f -> f.getFileName().toString())
+					.collect(Collectors.toList());
+		} catch (IOException e) {
+			return new ArrayList<>();
+		}
+	}
+
+	public static Instance createInstance(String filename) {
 		// TODO this function can throw UnlinkableException
 		// TODO this function can throw if main function doesn't exist
-		var wasm = loadWasm("%s.wasm".formatted(name));
+		var wasm = loadWasm(filename);
 		if (wasm.isEmpty()) return null;
 
 		var module = Parser.parse(wasm.get());
