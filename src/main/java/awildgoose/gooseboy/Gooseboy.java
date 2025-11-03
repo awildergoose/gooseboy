@@ -45,6 +45,9 @@ public class Gooseboy implements ModInitializer {
 	public static void addCrate(WasmCrate crate) {
 		runningCrates.put(crate.instance, crate);
 	}
+	public static void removeCrate(WasmCrate crate) {
+		runningCrates.remove(crate.instance);
+	}
 
 	@Override
 	public void onInitialize() {

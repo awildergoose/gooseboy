@@ -1,6 +1,7 @@
 package awildgoose.gooseboy.lib;
 
 import awildgoose.gooseboy.Gooseboy;
+import awildgoose.gooseboy.crate.WasmCrate;
 import com.dylibso.chicory.annotations.HostModule;
 import com.dylibso.chicory.annotations.WasmExport;
 import com.dylibso.chicory.runtime.HostFunction;
@@ -12,21 +13,29 @@ public class Storage {
 
 	@WasmExport
 	public int storage_read(Instance instance, int offset, int ptr, int len) {
+		if (!Gooseboy.getCrate(instance).permissions.contains(WasmCrate.Permission.STORAGE_READ))
+			return 0;
 		return Gooseboy.getCrate(instance).storage.read(instance.memory(), offset, ptr, len);
 	}
 
 	@WasmExport
 	public int storage_write(Instance instance, int offset, int ptr, int len) {
+		if (!Gooseboy.getCrate(instance).permissions.contains(WasmCrate.Permission.STORAGE_WRITE))
+			return 0;
 		return Gooseboy.getCrate(instance).storage.write(instance.memory(), offset, ptr, len);
 	}
 
 	@WasmExport
 	public int storage_size(Instance instance) {
+		if (!Gooseboy.getCrate(instance).permissions.contains(WasmCrate.Permission.STORAGE_READ))
+			return 0;
 		return Gooseboy.getCrate(instance).storage.size();
 	}
 
 	@WasmExport
 	public void storage_clear(Instance instance) {
+		if (!Gooseboy.getCrate(instance).permissions.contains(WasmCrate.Permission.STORAGE_WRITE))
+			return;
 		Gooseboy.getCrate(instance).storage.clear();
 	}
 

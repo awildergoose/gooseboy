@@ -4,6 +4,8 @@ import awildgoose.gooseboy.Gooseboy;
 import com.dylibso.chicory.runtime.ExportFunction;
 import com.dylibso.chicory.runtime.Instance;
 
+import java.util.EnumSet;
+
 import static awildgoose.gooseboy.Gooseboy.FRAMEBUFFER_HEIGHT;
 import static awildgoose.gooseboy.Gooseboy.FRAMEBUFFER_WIDTH;
 
@@ -13,11 +15,13 @@ public class WasmCrate {
 	public int fbSize;
 	private ExportFunction updateFunction;
 	public CrateStorage storage;
-	public String name;
+	public final String name;
+	public EnumSet<Permission> permissions;
 
 	public WasmCrate(Instance instance, String name) {
 		this.instance = instance;
 		this.name = name;
+		this.permissions = EnumSet.noneOf(Permission.class);
 		this.init();
 	}
 
@@ -50,5 +54,16 @@ public class WasmCrate {
 
 	public void close() {
 		this.storage.save();
+		Gooseboy.removeCrate(this);
+	}
+
+	public enum Permission {
+		CONSOLE,
+		AUDIO,
+		INPUT_KEYBOARD,
+		INPUT_MOUSE,
+		INPUT_MOUSE_POS,
+		STORAGE_READ,
+		STORAGE_WRITE,
 	}
 }

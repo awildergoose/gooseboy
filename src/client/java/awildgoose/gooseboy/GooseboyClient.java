@@ -15,17 +15,14 @@ public class GooseboyClient implements ClientModInitializer {
 	@Override
 	public void onInitializeClient() {
 		// TODO wasm module selection screen
-		// TODO per-module permissions
-		// example permissions:
-		// CONSOLE, AUDIO,
-		// INPUT_KEYBOARD, INPUT_MOUSE, INPUT_MOUSE_POS, STORAGE_READ, STORAGE_WRITE
 
 		Gooseboy.ccb = new ClientCommonBridgeImpl();
 		ClientTickEvents.END_WORLD_TICK.register(w -> {
 			if (keyOpenWasm.isDown()) {
 				Minecraft mc = Minecraft.getInstance();
 
-				var crate = new WasmCrate(Wasm.createInstance("test"), "test");
+				var name = "test";
+				var crate = new WasmCrate(Wasm.createInstance(name), name);
 				mc.setScreen(new WasmScreen(crate));
 			}
 		});
