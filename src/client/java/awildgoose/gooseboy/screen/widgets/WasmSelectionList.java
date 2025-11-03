@@ -46,9 +46,9 @@ public class WasmSelectionList extends ObjectSelectionList<WasmSelectionList.Ent
 			this.text = new StringWidget(component, minecraft.font);
 			this.text.setMaxWidth(i);
 
-			this.runButton = new ImageButton(0, 0, 14, 14, new WidgetSprites(
-					ResourceLocation.withDefaultNamespace("widget/checkbox_selected"),
-					ResourceLocation.withDefaultNamespace("widget/checkbox_selected_highlighted")
+			this.runButton = new ImageButton(0, 0, 15, 15, new WidgetSprites(
+					ResourceLocation.fromNamespaceAndPath(Gooseboy.MOD_ID, "widget/run_button"),
+					ResourceLocation.fromNamespaceAndPath(Gooseboy.MOD_ID, "widget/run_button_highlighted")
 			), (b) -> {
 				// run
 				var crate = new WasmCrate(Wasm.createInstance(text), text);
@@ -56,8 +56,8 @@ public class WasmSelectionList extends ObjectSelectionList<WasmSelectionList.Ent
 			});
 
 			this.settingsButton = new ImageButton(0, 0, 15, 15, new WidgetSprites(
-					ResourceLocation.withDefaultNamespace("widget/locked_button"),
-					ResourceLocation.withDefaultNamespace("widget/locked_button_highlighted")
+					ResourceLocation.fromNamespaceAndPath(Gooseboy.MOD_ID, "widget/settings_button"),
+					ResourceLocation.fromNamespaceAndPath(Gooseboy.MOD_ID, "widget/settings_button_highlighted")
 			), (b) -> {
 				// settings
 			});
