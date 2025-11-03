@@ -10,11 +10,18 @@ import com.dylibso.chicory.runtime.Instance;
 @HostModule("audio")
 public final class Audio {
 	@WasmExport
-	public void play_audio(Instance instance, int ptr, int len) {
+	public long play_audio(Instance instance, int ptr, int len) {
+		if (!Gooseboy.getCrate(instance).permissions.contains(WasmCrate.Permission.AUDIO))
+			return -1;
+		byte[] pcm = instance.memory().readBytes(ptr, len);
+		return Gooseboy.ccb.playRawAudio(pcm);
+	}
+
+	@WasmExport
+	public void stop_audio(Instance instance, long id) {
 		if (!Gooseboy.getCrate(instance).permissions.contains(WasmCrate.Permission.AUDIO))
 			return;
-		byte[] pcm = instance.memory().readBytes(ptr, len);
-		Gooseboy.ccb.playRawAudio(pcm);
+		Gooseboy.ccb.stopAudio(id);
 	}
 
 	public HostFunction[] toHostFunctions() {

@@ -5,5 +5,6 @@ public interface ClientCommonBridge {
 	boolean isMouseButtonDown(int button);
 	int getMouseXInFramebuffer();
 	int getMouseYInFramebuffer();
-	void playRawAudio(byte[] pcm);
+	long playRawAudio(byte[] pcm);
+	void stopAudio(long id);
 }

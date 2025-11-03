@@ -41,7 +41,12 @@ public class ClientCommonBridgeImpl implements ClientCommonBridge {
 	}
 
 	@Override
-	public void playRawAudio(byte[] pcm) {
-		RawAudioManager.play(pcm);
+	public long playRawAudio(byte[] pcm) {
+		return RawAudioManager.play(pcm);
+	}
+
+	@Override
+	public void stopAudio(long id) {
+		RawAudioManager.stop(id);
 	}
 }

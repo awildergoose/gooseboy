@@ -10,18 +10,20 @@ import java.util.List;
 public class RawAudioManager {
 	private static class PlayingSound {
 		int source, buffer;
+		long id;
 	}
 
 	private static final List<PlayingSound> active = new ArrayList<>();
 
+	private static long AUDIO_ID;
 	private static final int MAX_AUDIO_SIZE = 10 * 1024 * 1024; // 10 MB
 	private static final int MAX_CONCURRENT_SOUNDS = 32;
 	private static final int SAMPLE_RATE = 44100;
 
-	public static void play(byte[] pcm) {
-		if (pcm == null || pcm.length > MAX_AUDIO_SIZE) return;
-		if (pcm.length % 2 != 0) return;
-		if (active.size() >= MAX_CONCURRENT_SOUNDS) return;
+	public static long play(byte[] pcm) {
+		if (pcm == null || pcm.length > MAX_AUDIO_SIZE) return -1;
+		if (pcm.length % 2 != 0) return -1;
+		if (active.size() >= MAX_CONCURRENT_SOUNDS) return -1;
 
 		ByteBuffer bufferDirect = ByteBuffer.allocateDirect(pcm.length)
 				.order(ByteOrder.nativeOrder());
@@ -38,7 +40,21 @@ public class RawAudioManager {
 		PlayingSound ps = new PlayingSound();
 		ps.source = source;
 		ps.buffer = buffer;
+		ps.id = AUDIO_ID++;
 		active.add(ps);
+		return ps.id;
+	}
+
+	public static void stop(long id) {
+		active.removeIf(ps -> {
+			if (ps.id == id) {
+				AL10.alSourceStop(ps.source);
+				AL10.alDeleteSources(ps.source);
+				AL10.alDeleteBuffers(ps.buffer);
+				return true;
+			}
+			return false;
+		});
 	}
 
 	public static void tick() {
