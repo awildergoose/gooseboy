@@ -1,9 +1,9 @@
 package awildgoose.gooseboy.screen;
 
-import awildgoose.gooseboy.screen.widgets.WasmSelectionList;
+import awildgoose.gooseboy.ConfigManager;
+import awildgoose.gooseboy.screen.widgets.WasmSettingsList;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.gui.components.ObjectSelectionList;
 import net.minecraft.client.gui.components.StringWidget;
 import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
 import net.minecraft.client.gui.layouts.LayoutSettings;
@@ -11,13 +11,17 @@ import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 
-public class WasmMenuScreen extends Screen {
+public class WasmSettingsScreen extends Screen {
 	private final HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this, 20, 20);
-	protected final ObjectSelectionList<?> list;
+	protected final WasmSettingsList list;
+	private final String crateName;
+	private final Screen parent;
 
-	public WasmMenuScreen() {
-		super(Component.literal("Gooseboy"));
-		this.list = new WasmSelectionList(this, Minecraft.getInstance(), 0, 0, 200, 200);
+	public WasmSettingsScreen(Screen parent, String crateName) {
+		super(Component.literal("%s - Settings".formatted(crateName)));
+		this.crateName = crateName;
+		this.parent = parent;
+		this.list = new WasmSettingsList(Minecraft.getInstance(), 0, 0, 200, 200, crateName);
 		this.layout.addToContents(this.list);
 	}
 
@@ -25,8 +29,9 @@ public class WasmMenuScreen extends Screen {
 	protected void init() {
 		LinearLayout header = this.layout.addToHeader(LinearLayout.vertical().spacing(4));
 		header.addChild(new StringWidget(this.title, this.font), LayoutSettings::alignHorizontallyCenter);
-		this.layout.addToFooter(Button.builder(Component.translatable("gui.ok"), (b) -> this.onClose()).build(),
-								(v) -> v.alignHorizontallyCenter().paddingTop(-10));
+		this.layout.addToFooter(
+				Button.builder(Component.translatable("gui.ok"), (b) -> this.onClose()).build(),
+				(v) -> v.alignHorizontallyCenter().paddingTop(-10));
 		this.layout.visitWidgets(this::addRenderableWidget);
 		this.repositionElements();
 	}
@@ -40,5 +45,12 @@ public class WasmMenuScreen extends Screen {
 	protected void repositionElements() {
 		this.list.updateSizeAndPosition(this.width, this.layout.getContentHeight(), this.layout.getHeaderHeight());
 		this.layout.arrangeElements();
+	}
+
+	@Override
+	public void onClose() {
+		if (this.minecraft != null) this.minecraft.setScreen(this.parent);
+		ConfigManager.setCratePermissions(this.crateName, this.list.permissions);
+		super.onClose();
 	}
 }

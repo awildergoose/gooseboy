@@ -4,12 +4,14 @@ import awildgoose.gooseboy.Gooseboy;
 import awildgoose.gooseboy.Wasm;
 import awildgoose.gooseboy.crate.WasmCrate;
 import awildgoose.gooseboy.screen.WasmScreen;
+import awildgoose.gooseboy.screen.WasmSettingsScreen;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.ImageButton;
 import net.minecraft.client.gui.components.ObjectSelectionList;
 import net.minecraft.client.gui.components.StringWidget;
 import net.minecraft.client.gui.components.WidgetSprites;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
@@ -18,9 +20,11 @@ import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
 
 public class WasmSelectionList extends ObjectSelectionList<WasmSelectionList.Entry> {
-	public WasmSelectionList(Minecraft minecraft, int i, int j, int k, int l) {
+
+
+	public WasmSelectionList(Screen parent, Minecraft minecraft, int i, int j, int k, int l) {
 		super(minecraft, i, j, k, l);
-		Wasm.listWasmScripts().forEach(f -> this.addEntry(new Entry(minecraft, this, f)));
+		Wasm.listWasmScripts().forEach(f -> this.addEntry(new Entry(parent, minecraft, this, f)));
 	}
 
 	@Override
@@ -40,7 +44,7 @@ public class WasmSelectionList extends ObjectSelectionList<WasmSelectionList.Ent
 		private final ImageButton runButton;
 		private final ImageButton settingsButton;
 
-		public Entry(Minecraft minecraft, WasmSelectionList list, String text) {
+		public Entry(Screen parent, Minecraft minecraft, WasmSelectionList list, String text) {
 			int i = list.getRowWidth() - this.getTextX() - 2;
 			Component component = Component.literal(text);
 			this.text = new StringWidget(component, minecraft.font);
@@ -60,6 +64,7 @@ public class WasmSelectionList extends ObjectSelectionList<WasmSelectionList.Ent
 					ResourceLocation.fromNamespaceAndPath(Gooseboy.MOD_ID, "widget/settings_button_highlighted")
 			), (b) -> {
 				// settings
+				minecraft.setScreen(new WasmSettingsScreen(parent, text));
 			});
 		}
 
