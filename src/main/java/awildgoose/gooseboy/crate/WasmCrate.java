@@ -4,6 +4,8 @@ import awildgoose.gooseboy.ConfigManager;
 import awildgoose.gooseboy.Gooseboy;
 import com.dylibso.chicory.runtime.ExportFunction;
 import com.dylibso.chicory.runtime.Instance;
+import net.minecraft.util.profiling.Profiler;
+import net.minecraft.util.profiling.ProfilerFiller;
 
 import java.util.List;
 
@@ -49,8 +51,11 @@ public class WasmCrate {
 	}
 
 	public void update() {
+		ProfilerFiller profilerFiller = Profiler.get();
 		long now = System.nanoTime();
+		profilerFiller.push("wasm");
 		this.updateFunction.apply(now);
+		profilerFiller.pop();
 	}
 
 	public void close() {
