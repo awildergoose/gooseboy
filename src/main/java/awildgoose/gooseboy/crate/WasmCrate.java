@@ -4,6 +4,7 @@ import awildgoose.gooseboy.ConfigManager;
 import awildgoose.gooseboy.Gooseboy;
 import com.dylibso.chicory.runtime.ExportFunction;
 import com.dylibso.chicory.runtime.Instance;
+import com.dylibso.chicory.wasm.InvalidException;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
 
@@ -29,10 +30,20 @@ public class WasmCrate {
 	}
 
 	private void init() {
-		// TODO make sure the functions we're calling or exporting do exist!
-		this.fbPtr = (int) this.instance.export("get_framebuffer_ptr").apply()[0];
+		try {
+			this.fbPtr = (int) this.instance.export("get_framebuffer_ptr")
+					.apply()[0];
+		} catch (InvalidException e) {
+			e.printStackTrace();
+		}
+
+		try {
+			this.updateFunction = this.instance.export("update");
+		} catch (InvalidException e) {
+			e.printStackTrace();
+		}
+
 		this.fbSize = FRAMEBUFFER_WIDTH * FRAMEBUFFER_HEIGHT * 4;
-		this.updateFunction = this.instance.export("update");
 		this.storage = new CrateStorage(this.name);
 		Gooseboy.addCrate(this);
 	}
@@ -51,11 +62,13 @@ public class WasmCrate {
 	}
 
 	public void update() {
-		ProfilerFiller profilerFiller = Profiler.get();
-		long now = System.nanoTime();
-		profilerFiller.push("wasm");
-		this.updateFunction.apply(now);
-		profilerFiller.pop();
+		if (this.updateFunction != null) {
+			ProfilerFiller profilerFiller = Profiler.get();
+			long now = System.nanoTime();
+			profilerFiller.push("wasm");
+			this.updateFunction.apply(now);
+			profilerFiller.pop();
+		}
 	}
 
 	public void close() {

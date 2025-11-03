@@ -4,7 +4,10 @@ import awildgoose.gooseboy.lib.Registrar;
 import com.dylibso.chicory.compiler.MachineFactoryCompiler;
 import com.dylibso.chicory.runtime.ImportValues;
 import com.dylibso.chicory.runtime.Instance;
+import com.dylibso.chicory.wasm.InvalidException;
 import com.dylibso.chicory.wasm.Parser;
+import com.dylibso.chicory.wasm.UnlinkableException;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -56,9 +59,7 @@ public class Wasm {
 		}
 	}
 
-	public static Instance createInstance(String filename) {
-		// TODO this function can throw UnlinkableException
-		// TODO this function can throw if main function doesn't exist
+	public static @Nullable Instance createInstance(String filename) {
 		var wasm = loadWasm(filename);
 		if (wasm.isEmpty()) return null;
 
@@ -67,8 +68,19 @@ public class Wasm {
 				.withImportValues(Registrar.register(ImportValues.builder()).build()).withMachineFactory(
 						MachineFactoryCompiler::compile);
 
-		var instance = builder.build();
-		instance.export("main").apply();
+		Instance instance = null;
+
+		try {
+			instance = builder.build();
+			try {
+				instance.export("main").apply();
+			} catch (InvalidException e) {
+				e.printStackTrace();
+			}
+		} catch (UnlinkableException e) {
+			e.printStackTrace();
+		}
+
 		return instance;
 	}
 

@@ -17,6 +17,8 @@ public class RawAudioManager {
 
 	public static void play(byte[] pcm) {
 		// TODO check if all this is safe
+		// just remember we're feeding RAW, UNCHECKED, FROM AN UNCONTROLLED SCRIPT
+		// PCM data, to OpenAL, a C library.
 		ByteBuffer bufferDirect = ByteBuffer.allocateDirect(pcm.length)
 				.order(ByteOrder.nativeOrder());
 		bufferDirect.put(pcm);

@@ -11,6 +11,7 @@ import net.minecraft.client.gui.components.ImageButton;
 import net.minecraft.client.gui.components.ObjectSelectionList;
 import net.minecraft.client.gui.components.StringWidget;
 import net.minecraft.client.gui.components.WidgetSprites;
+import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
@@ -55,7 +56,14 @@ public class WasmSelectionList extends ObjectSelectionList<WasmSelectionList.Ent
 					ResourceLocation.fromNamespaceAndPath(Gooseboy.MOD_ID, "widget/run_button_highlighted")
 			), (b) -> {
 				// run
-				var crate = new WasmCrate(Wasm.createInstance(text), text);
+				var instance = Wasm.createInstance(text);
+				if (instance == null) {
+					SystemToast.add(minecraft.getToastManager(), SystemToast.SystemToastId.CHUNK_LOAD_FAILURE,
+									Component.literal("Failed to load WASM crate"), Component.literal("Check the " +
+																											  "console for more information"));
+					return;
+				}
+				var crate = new WasmCrate(instance, text);
 				minecraft.setScreen(new WasmScreen(crate));
 			});
 
