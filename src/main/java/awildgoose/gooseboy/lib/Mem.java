@@ -16,6 +16,11 @@ public final class Mem {
 		}
 	}
 
+	@WasmExport
+	public void mem_copy(Memory memory, int dst, int src, int len) {
+		memory.copy(dst, src, len);
+	}
+
 	public HostFunction[] toHostFunctions() {
 		return Mem_ModuleFactory.toHostFunctions(this);
 	}
