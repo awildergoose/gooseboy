@@ -16,7 +16,7 @@ public class WasmCrate {
 	private ExportFunction updateFunction;
 	public CrateStorage storage;
 	public final String name;
-	public EnumSet<Permission> permissions;
+	public final EnumSet<Permission> permissions;
 
 	public WasmCrate(Instance instance, String name) {
 		this.instance = instance;

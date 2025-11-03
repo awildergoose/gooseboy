@@ -82,11 +82,6 @@ public class WasmSelectionList extends ObjectSelectionList<WasmSelectionList.Ent
 			return 16 + 1;
 		}
 
-		@Override
-		public int getContentHeight() {
-			return super.getContentHeight();
-		}
-
 		private int getTextX() {
 			return this.getContentX() + 16 + 4;
 		}
