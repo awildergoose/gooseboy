@@ -5,6 +5,7 @@ import com.dylibso.chicory.runtime.Memory;
 
 import java.io.*;
 import java.nio.file.*;
+import java.util.Arrays;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
@@ -47,9 +48,10 @@ public class CrateStorage {
 	}
 
 	// File-Format handling
+	private static final byte[] FF_MAGIC = new byte[]{'g', 's', 'b', 'c', 'r', 'a', 't', 'e'};
 	private static final int FF_VERSION = 1;
 
-	public byte[] getGZIPCompressedData() {
+	public byte[] gzipCompressData() {
 		try (ByteArrayOutputStream output = new ByteArrayOutputStream();
 			 GZIPOutputStream gzip = new GZIPOutputStream(output)) {
 
@@ -88,6 +90,12 @@ public class CrateStorage {
 			}
 
 			try (DataInputStream in = new DataInputStream(Files.newInputStream(filePath))) {
+				var magic = in.readNBytes(FF_MAGIC.length);
+				if (!Arrays.equals(magic, FF_MAGIC)) {
+					Gooseboy.LOGGER.error("Invalid storage crate file, magic identifier is wrong!");
+					return;
+				}
+
 				int readVersion = in.readInt();
 				if (readVersion != FF_VERSION) {
 					Gooseboy.LOGGER.error("Incompatible storage crate version: {}", readVersion);
@@ -135,11 +143,12 @@ public class CrateStorage {
 		try {
 			Files.createDirectories(filePath.getParent());
 
-			var compressedData = this.getGZIPCompressedData();
+			var compressedData = this.gzipCompressData();
 			var compression = CompressionType.GZIP;
 
 			Path temp = filePath.resolveSibling(filePath.getFileName().toString() + ".tmp");
 			try (DataOutputStream out = new DataOutputStream(Files.newOutputStream(temp, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING))) {
+				out.write(FF_MAGIC);
 				out.writeInt(FF_VERSION);
 				out.writeByte(compression.code);
 				out.writeInt(compressedData.length);
