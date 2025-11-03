@@ -4,12 +4,15 @@ import awildgoose.gooseboy.ConfigManager;
 import awildgoose.gooseboy.crate.WasmCrate;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.*;
+import net.minecraft.client.gui.components.Checkbox;
+import net.minecraft.client.gui.components.ObjectSelectionList;
+import net.minecraft.client.gui.components.StringWidget;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class WasmSettingsList extends ObjectSelectionList<WasmSettingsList.Entry> {
@@ -17,12 +20,21 @@ public class WasmSettingsList extends ObjectSelectionList<WasmSettingsList.Entry
 
 	public WasmSettingsList(Minecraft minecraft, int i, int j, int k, int l, String crateName) {
 		super(minecraft, i, j, k, l);
-		this.permissions = ConfigManager.getEffectivePermissions(crateName);
+		this.permissions = new ArrayList<>(ConfigManager.getEffectivePermissions(crateName));
 		this.addEntry(new TextEntry(minecraft, this, "Permissions"));
 		for (WasmCrate.Permission permission : WasmCrate.Permission.values()) {
-			String name = permission.name().replace("_", " ");
-			String title = Character.toUpperCase(name.charAt(0)) + name.substring(1).toLowerCase();
-			this.addEntry(new BooleanEntry(minecraft, this, title, permissions.contains(permission)));
+			String name = permission.name()
+					.replace("_", " ");
+			String title = Character.toUpperCase(name.charAt(0)) + name.substring(1)
+					.toLowerCase();
+			this.addEntry(new BooleanEntry(minecraft, this, title, permissions.contains(permission),
+										   (checkbox, bl) -> {
+											   if (bl) {
+												   this.permissions.add(permission);
+											   } else {
+												   this.permissions.remove(permission);
+											   }
+										   }));
 		}
 	}
 
@@ -37,7 +49,11 @@ public class WasmSettingsList extends ObjectSelectionList<WasmSettingsList.Entry
 	}
 
 	public abstract static class Entry extends ObjectSelectionList.Entry<WasmSettingsList.Entry> {
-		public Entry(Minecraft ignoredMinecraft, WasmSettingsList ignoredList, String ignoredText) {}
+		public WasmSettingsList list;
+
+		public Entry(Minecraft ignoredMinecraft, WasmSettingsList list, String ignoredText) {
+			this.list = list;
+		}
 
 		@Override
 		public int getHeight() {
@@ -50,7 +66,8 @@ public class WasmSettingsList extends ObjectSelectionList<WasmSettingsList.Entry
 		}
 
 		@Override
-		public void renderContent(GuiGraphics guiGraphics, int i, int j, boolean bl, float f) {}
+		public void renderContent(GuiGraphics guiGraphics, int i, int j, boolean bl, float f) {
+		}
 	}
 
 	public static class TextEntry extends Entry {
@@ -86,9 +103,14 @@ public class WasmSettingsList extends ObjectSelectionList<WasmSettingsList.Entry
 	public static class BooleanEntry extends Entry {
 		private final Checkbox checkbox;
 
-		public BooleanEntry(Minecraft minecraft, WasmSettingsList list, String text, boolean checked) {
+		public BooleanEntry(Minecraft minecraft, WasmSettingsList list, String text, boolean checked,
+							Checkbox.OnValueChange callback) {
 			super(minecraft, list, text);
-			checkbox = Checkbox.builder(Component.literal(text), minecraft.font).selected(checked).build();
+			checkbox =
+					Checkbox.builder(Component.literal(text), minecraft.font)
+							.selected(checked)
+							.onValueChange(callback)
+							.build();
 		}
 
 		@Override

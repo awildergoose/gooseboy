@@ -51,6 +51,5 @@ public class WasmSettingsScreen extends Screen {
 	public void onClose() {
 		if (this.minecraft != null) this.minecraft.setScreen(this.parent);
 		ConfigManager.setCratePermissions(this.crateName, this.list.permissions);
-		super.onClose();
 	}
 }
