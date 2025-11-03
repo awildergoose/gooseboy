@@ -1,10 +1,11 @@
 package awildgoose.gooseboy.crate;
 
+import awildgoose.gooseboy.ConfigManager;
 import awildgoose.gooseboy.Gooseboy;
 import com.dylibso.chicory.runtime.ExportFunction;
 import com.dylibso.chicory.runtime.Instance;
 
-import java.util.EnumSet;
+import java.util.List;
 
 import static awildgoose.gooseboy.Gooseboy.FRAMEBUFFER_HEIGHT;
 import static awildgoose.gooseboy.Gooseboy.FRAMEBUFFER_WIDTH;
@@ -16,12 +17,12 @@ public class WasmCrate {
 	private ExportFunction updateFunction;
 	public CrateStorage storage;
 	public final String name;
-	public final EnumSet<Permission> permissions;
+	public final List<Permission> permissions;
 
 	public WasmCrate(Instance instance, String name) {
 		this.instance = instance;
 		this.name = name;
-		this.permissions = EnumSet.noneOf(Permission.class);
+		this.permissions = this.loadPermissions();
 		this.init();
 	}
 
@@ -53,8 +54,17 @@ public class WasmCrate {
 	}
 
 	public void close() {
+		this.savePermissions();
 		this.storage.save();
 		Gooseboy.removeCrate(this);
+	}
+
+	private List<Permission> loadPermissions() {
+		return ConfigManager.getEffectivePermissions(this.name);
+	}
+
+	private void savePermissions() {
+		ConfigManager.setCratePermissions(this.name, this.permissions);
 	}
 
 	public enum Permission {
