@@ -5,6 +5,7 @@ import awildgoose.gooseboy.Gooseboy;
 import com.dylibso.chicory.annotations.HostModule;
 import com.dylibso.chicory.annotations.WasmExport;
 import com.dylibso.chicory.runtime.HostFunction;
+import com.dylibso.chicory.runtime.Instance;
 
 @HostModule("framebuffer")
 public final class Framebuffer {
@@ -21,8 +22,8 @@ public final class Framebuffer {
 	}
 
 	@WasmExport
-	public void clear_framebuffer(int color) {
-		Gooseboy.ccb.clear(color);
+	public void clear_framebuffer(Instance instance, int color) {
+		Gooseboy.getCrate(instance).clearFramebuffer(color);
 	}
 
 	public HostFunction[] toHostFunctions() {

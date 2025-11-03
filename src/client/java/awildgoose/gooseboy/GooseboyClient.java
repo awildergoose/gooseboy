@@ -1,5 +1,6 @@
 package awildgoose.gooseboy;
 
+import awildgoose.gooseboy.crate.WasmCrate;
 import awildgoose.gooseboy.screen.WasmScreen;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.fabricmc.api.ClientModInitializer;
@@ -23,7 +24,9 @@ public class GooseboyClient implements ClientModInitializer {
 		ClientTickEvents.END_WORLD_TICK.register(w -> {
 			if (keyOpenWasm.isDown()) {
 				Minecraft mc = Minecraft.getInstance();
-				mc.setScreen(new WasmScreen(Wasm.getInstance(), "test"));
+
+				var crate = new WasmCrate(Wasm.createInstance("test"), "test");
+				mc.setScreen(new WasmScreen(crate));
 			}
 		});
 		ClientTickEvents.END_CLIENT_TICK.register(c -> RawAudioManager.tick());

@@ -1,9 +1,7 @@
 package awildgoose.gooseboy.screen;
 
 import awildgoose.gooseboy.Gooseboy;
-import awildgoose.gooseboy.storage.StorageCrate;
-import com.dylibso.chicory.runtime.ExportFunction;
-import com.dylibso.chicory.runtime.Instance;
+import awildgoose.gooseboy.crate.WasmCrate;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -26,65 +24,26 @@ public class WasmScreen extends Screen {
 			Gooseboy.MOD_ID, "wasm_framebuffer"
 	);
 
-	private static final int IMAGE_WIDTH = 330;
-	private static final int IMAGE_HEIGHT = 256;
+	public static final int IMAGE_WIDTH = 330;
+	public static final int IMAGE_HEIGHT = 256;
 
-	public static WasmScreen INSTANCE;
-
-	private final Instance instance;
+	private final WasmCrate crate;
 	private DynamicTexture texture;
-	private int fbPtr;
-	private int fbSize;
 	private ByteBuffer tmpBuf;
-	private ExportFunction updateFunction;
-	public StorageCrate storageCrate;
-	public String instanceName;
 
 	private long lastRenderNano = 0L;
 	private static final long FRAME_INTERVAL_NS = 1_000_000_000L / 60L; // 60 FPS cap
 
-	public WasmScreen(Instance instance, String instanceName) {
-		super(Component.literal(instanceName));
-		this.instance = instance;
-		this.instanceName = instanceName;
-		INSTANCE = this;
-	}
-
-	public void clear(int color) {
-		var mem = this.instance.memory();
-		int p = this.fbPtr;
-
-		for (int i = 0; i < fbSize; i += 4) {
-			mem.writeI32(p + i, color);
-		}
-	}
-
-	public int getMouseXInFramebuffer() {
-		double mouseX = Minecraft.getInstance().mouseHandler.xpos() * (double)this.width / (double)Minecraft.getInstance().getWindow().getScreenWidth();
-		int fbX = (int)(mouseX - (((this.width - IMAGE_WIDTH) / 2) + 5));
-		if (fbX < 0) fbX = 0;
-		if (fbX >= FRAMEBUFFER_WIDTH) fbX = FRAMEBUFFER_WIDTH - 1;
-		return fbX;
-	}
-
-	public int getMouseYInFramebuffer() {
-		double mouseY = Minecraft.getInstance().mouseHandler.ypos() * (double)this.height / (double)Minecraft.getInstance().getWindow().getScreenHeight();
-		int fbY = (int)(mouseY - (((this.height - IMAGE_HEIGHT) / 2) + 5));
-		if (fbY < 0) fbY = 0;
-		if (fbY >= FRAMEBUFFER_HEIGHT) fbY = FRAMEBUFFER_HEIGHT - 1;
-		return fbY;
+	public WasmScreen(WasmCrate crate) {
+		super(Component.literal(crate.name));
+		this.crate = crate;
 	}
 
 	@Override
 	protected void init() {
-		// TODO make sure the functions we're calling or exporting do exist!
 		this.texture = new DynamicTexture("Gooseboy WASM framebuffer", FRAMEBUFFER_WIDTH, FRAMEBUFFER_HEIGHT, false);
 		Minecraft.getInstance().getTextureManager().register(FRAMEBUFFER_TEXTURE, this.texture);
-		this.fbPtr = (int) this.instance.export("get_framebuffer_ptr").apply()[0];
-		this.fbSize = FRAMEBUFFER_WIDTH * FRAMEBUFFER_HEIGHT * 4;
-		this.tmpBuf = MemoryUtil.memAlloc(this.fbSize);
-		this.updateFunction = this.instance.export("update");
-		this.storageCrate = new StorageCrate(this.instanceName);
+		this.tmpBuf = MemoryUtil.memAlloc(this.crate.fbSize);
 	}
 
 	@Override
@@ -105,15 +64,15 @@ public class WasmScreen extends Screen {
 		boolean shouldUpdate = (now - lastRenderNano) >= FRAME_INTERVAL_NS;
 
 		if (shouldUpdate) {
-			this.updateFunction.apply(now);
+			this.crate.update();
 
-			byte[] fbBytes = instance.memory().readBytes(this.fbPtr, this.fbSize);
+			byte[] fbBytes = this.crate.getFramebufferBytes();
 			tmpBuf.clear();
 			tmpBuf.put(fbBytes).flip();
 
 			var pixels = this.texture.getPixels();
 			if (pixels != null)
-				MemoryUtil.memCopy(MemoryUtil.memAddress(tmpBuf), pixels.getPointer(), this.fbSize);
+				MemoryUtil.memCopy(MemoryUtil.memAddress(tmpBuf), pixels.getPointer(), this.crate.fbSize);
 
 			texture.upload();
 			lastRenderNano = now;
@@ -131,14 +90,12 @@ public class WasmScreen extends Screen {
 
 	@Override
 	public void onClose() {
-		INSTANCE = null;
 		if (this.tmpBuf != null) {
 			MemoryUtil.memFree(this.tmpBuf);
 			this.tmpBuf = null;
 		}
 		this.texture.close();
-		this.storageCrate.save();
-		// close wasm?
+		this.crate.close();
 		super.onClose();
 	}
 

@@ -36,9 +36,10 @@ public class Wasm {
 		}
 	}
 
-	public static Instance getInstance() {
+	public static Instance createInstance(String name) {
 		// TODO this function can throw UnlinkableException
-		var wasm = loadWasm("test.wasm");
+		// TODO this function can throw if main function doesn't exist
+		var wasm = loadWasm("%s.wasm".formatted(name));
 		if (wasm.isEmpty()) return null;
 
 		var module = Parser.parse(wasm.get());

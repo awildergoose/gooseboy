@@ -1,4 +1,4 @@
-package awildgoose.gooseboy.storage;
+package awildgoose.gooseboy.crate;
 
 import awildgoose.gooseboy.Gooseboy;
 import com.dylibso.chicory.runtime.Memory;
@@ -8,15 +8,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 
-public class StorageCrate {
+public class CrateStorage {
 	public static final int STORAGE_SIZE = 512 * 1024; // 512 KB
 
-	private final String name;
 	private final byte[] data = new byte[STORAGE_SIZE];
 	private final Path filePath;
 
-	public StorageCrate(String name) {
-		this.name = name;
+	public CrateStorage(String name) {
 		this.filePath = Gooseboy.getGooseboyDirectory().resolve("storage").resolve(name + ".bin");
 
 		byte[] fileData;
@@ -26,10 +24,6 @@ public class StorageCrate {
 			fileData = new byte[STORAGE_SIZE];
 		}
 		System.arraycopy(fileData, 0, data, 0, Math.min(fileData.length, STORAGE_SIZE));
-	}
-
-	public String getName() {
-		return name;
 	}
 
 	public int read(Memory mem, int offset, int wasmPtr, int len) {
