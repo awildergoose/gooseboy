@@ -1,5 +1,6 @@
 package awildgoose.gooseboy.screen.widgets;
 
+import awildgoose.gooseboy.ConfigManager;
 import awildgoose.gooseboy.Gooseboy;
 import awildgoose.gooseboy.Wasm;
 import awildgoose.gooseboy.crate.WasmCrate;
@@ -56,7 +57,11 @@ public class WasmSelectionList extends ObjectSelectionList<WasmSelectionList.Ent
 					ResourceLocation.fromNamespaceAndPath(Gooseboy.MOD_ID, "widget/run_button_highlighted")
 			), (b) -> {
 				// run
-				var instance = Wasm.createInstance(text);
+				var permissions = ConfigManager.getEffectivePermissions(text);
+				var instance = Wasm.createInstance(text,
+												   permissions.contains(WasmCrate.Permission.EXTENDED_MEMORY) ?
+														   64 * 1024
+														   : 8 * 1024);
 				if (instance == null) {
 					SystemToast.add(minecraft.getToastManager(), SystemToast.SystemToastId.CHUNK_LOAD_FAILURE,
 									Component.literal("Failed to load WASM crate"), Component.literal("Check the " +

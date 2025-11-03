@@ -13,12 +13,16 @@ public class RawAudioManager {
 	}
 
 	private static final List<PlayingSound> active = new ArrayList<>();
+
+	private static final int MAX_AUDIO_SIZE = 10 * 1024 * 1024; // 10 MB
+	private static final int MAX_CONCURRENT_SOUNDS = 32;
 	private static final int SAMPLE_RATE = 44100;
 
 	public static void play(byte[] pcm) {
-		// TODO check if all this is safe
-		// just remember we're feeding RAW, UNCHECKED, FROM AN UNCONTROLLED SCRIPT
-		// PCM data, to OpenAL, a C library.
+		if (pcm == null || pcm.length > MAX_AUDIO_SIZE) return;
+		if (pcm.length % 2 != 0) return;
+		if (active.size() >= MAX_CONCURRENT_SOUNDS) return;
+
 		ByteBuffer bufferDirect = ByteBuffer.allocateDirect(pcm.length)
 				.order(ByteOrder.nativeOrder());
 		bufferDirect.put(pcm);

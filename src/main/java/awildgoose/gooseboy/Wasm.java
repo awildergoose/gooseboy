@@ -7,6 +7,7 @@ import com.dylibso.chicory.runtime.Instance;
 import com.dylibso.chicory.wasm.InvalidException;
 import com.dylibso.chicory.wasm.Parser;
 import com.dylibso.chicory.wasm.UnlinkableException;
+import com.dylibso.chicory.wasm.types.MemoryLimits;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
@@ -59,14 +60,22 @@ public class Wasm {
 		}
 	}
 
-	public static @Nullable Instance createInstance(String filename) {
+	public static final int WASM_PAGE_SIZE_KB = 64;
+
+	private static int kilobytesToPages(int kilobytes) {
+		return (kilobytes + WASM_PAGE_SIZE_KB - 1) / WASM_PAGE_SIZE_KB;
+	}
+
+	public static @Nullable Instance createInstance(String filename, int maximumMemoryKilobytes) {
 		var wasm = loadWasm(filename);
 		if (wasm.isEmpty()) return null;
 
 		var module = Parser.parse(wasm.get());
 		var builder = Instance.builder(module)
 				.withImportValues(Registrar.register(ImportValues.builder()).build()).withMachineFactory(
-						MachineFactoryCompiler::compile);
+						MachineFactoryCompiler::compile).withMemoryLimits(
+						new MemoryLimits(0, kilobytesToPages(maximumMemoryKilobytes))
+				);
 
 		Instance instance = null;
 

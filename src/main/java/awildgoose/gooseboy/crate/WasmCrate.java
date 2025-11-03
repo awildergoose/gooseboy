@@ -93,5 +93,6 @@ public class WasmCrate {
 		INPUT_MOUSE_POS,
 		STORAGE_READ,
 		STORAGE_WRITE,
+		EXTENDED_MEMORY
 	}
 }
