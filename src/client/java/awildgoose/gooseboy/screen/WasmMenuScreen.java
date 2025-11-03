@@ -25,9 +25,8 @@ public class WasmMenuScreen extends Screen {
 	protected void init() {
 		LinearLayout header = this.layout.addToHeader(LinearLayout.vertical().spacing(4));
 		header.addChild(new StringWidget(this.title, this.font), LayoutSettings::alignHorizontallyCenter);
-		LinearLayout footer = this.layout.addToFooter(LinearLayout.vertical().spacing(4));
-		footer.addChild(Button.builder(Component.translatable("gui.ok"), (b) -> this.onClose()).build(),
-						LayoutSettings::alignHorizontallyCenter);
+		this.layout.addToFooter(Button.builder(Component.translatable("gui.ok"), (b) -> this.onClose()).build(),
+								(v) -> v.alignHorizontallyCenter().paddingTop(-10));
 		this.layout.visitWidgets(this::addRenderableWidget);
 		this.repositionElements();
 	}
