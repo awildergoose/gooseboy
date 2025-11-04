@@ -69,6 +69,17 @@ public class WasmScreen extends Screen {
 		if (shouldUpdate) {
 			if (this.crate.isOk) {
 				this.crate.update();
+
+				byte[] fbBytes = this.crate.getFramebufferBytes();
+				tmpBuf.clear();
+				tmpBuf.put(fbBytes).flip();
+
+				var pixels = this.texture.getPixels();
+				if (pixels != null)
+					MemoryUtil.memCopy(MemoryUtil.memAddress(tmpBuf), pixels.getPointer(), this.crate.fbSize);
+
+				texture.upload();
+				lastRenderNano = now;
 			} else if (!failed) {
 				assert minecraft != null;
 				SystemToast.add(minecraft.getToastManager(), SystemToast.SystemToastId.CHUNK_LOAD_FAILURE,
@@ -76,17 +87,6 @@ public class WasmScreen extends Screen {
 																											"console for more information."));
 				failed = true;
 			}
-
-			byte[] fbBytes = this.crate.getFramebufferBytes();
-			tmpBuf.clear();
-			tmpBuf.put(fbBytes).flip();
-
-			var pixels = this.texture.getPixels();
-			if (pixels != null)
-				MemoryUtil.memCopy(MemoryUtil.memAddress(tmpBuf), pixels.getPointer(), this.crate.fbSize);
-
-			texture.upload();
-			lastRenderNano = now;
 		}
 
 		RenderSystem.setShaderTexture(0, texture.getTextureView());

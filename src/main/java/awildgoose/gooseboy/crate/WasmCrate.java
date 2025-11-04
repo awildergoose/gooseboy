@@ -36,9 +36,9 @@ public class WasmCrate {
 		Gooseboy.addCrate(this);
 
 		try {
+			instance.export("main").apply();
 			this.fbPtr = (int) this.instance.export("get_framebuffer_ptr").apply()[0];
 			this.updateFunction = this.instance.export("update");
-			instance.export("main").apply();
 		} catch (Throwable ie) {
 			this.close();
 			if (ie instanceof TrapException) {
@@ -47,6 +47,7 @@ public class WasmCrate {
 			} else
 				throw ie;
 		}
+
 	}
 
 	public void clearFramebuffer(int color) {
