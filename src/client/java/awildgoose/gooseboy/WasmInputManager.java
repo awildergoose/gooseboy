@@ -6,26 +6,25 @@ import org.lwjgl.glfw.GLFW;
 
 
 public class WasmInputManager {
-	private static final int MAX_KEYS = GLFW.GLFW_KEY_LAST;
-	private static final boolean[] keys = new boolean[MAX_KEYS];
+	private static final boolean[] keys = new boolean[GLFW.GLFW_KEY_LAST + 1];
 
 	public static void update() {
 		long window = Minecraft.getInstance().getWindow().handle();
-		for (int i = 0; i < MAX_KEYS; i++) {
+
+		for (int i = 32; i <= GLFW.GLFW_KEY_LAST; i++) {
 			keys[i] = GLFW.glfwGetKey(window, i) == GLFW.GLFW_PRESS;
 		}
 	}
 
 	public static int getKeyCode() {
-		for (int i = 0; i < MAX_KEYS; i++) {
+		for (int i = 32; i <= GLFW.GLFW_KEY_LAST; i++) {
 			if (keys[i]) return i;
 		}
 		return -1;
 	}
 
 	public static boolean isKeyDown(int key) {
-		long window = Minecraft.getInstance().getWindow().handle();
-		return GLFW.glfwGetKey(window, key) == GLFW.GLFW_PRESS;
+		return key >= 32 && key <= GLFW.GLFW_KEY_LAST && keys[key];
 	}
 
 	public static boolean isMouseButtonDown(int button) {
