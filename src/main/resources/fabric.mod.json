@@ -8,7 +8,7 @@
 		"awildgoose"
 	],
 	"contact": {
-		"homepage": "https://fabricmc.net/",
+		"homepage": "https://modrinth.com/project/gooseboy",
 		"sources": "https://github.com/awildergoose/gooseboy"
 	},
 	"license": "CC0-1.0",
@@ -33,6 +33,6 @@
 		"fabricloader": ">=0.17.3",
 		"minecraft": "~1.21.10",
 		"java": ">=21",
-		"fabric-api": "*"
+		"fabric-api": ">=0.137.0"
 	}
 }

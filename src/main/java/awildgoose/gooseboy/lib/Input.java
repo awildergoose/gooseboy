@@ -42,6 +42,13 @@ public final class Input {
 		return Gooseboy.ccb.getMouseYInFramebuffer();
 	}
 
+	@WasmExport
+	public int get_key_code(Instance instance) {
+		if (!Gooseboy.getCrate(instance).permissions.contains(WasmCrate.Permission.INPUT_KEYBOARD))
+			return -1;
+		return Gooseboy.ccb.getKeyCode();
+	}
+
 	public HostFunction[] toHostFunctions() {
 		return Input_ModuleFactory.toHostFunctions(this);
 	}

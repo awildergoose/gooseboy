@@ -1,6 +1,7 @@
 package awildgoose.gooseboy;
 
 public interface ClientCommonBridge {
+	int getKeyCode();
 	boolean isKeyDown(int key);
 	boolean isMouseButtonDown(int button);
 	int getMouseXInFramebuffer();
