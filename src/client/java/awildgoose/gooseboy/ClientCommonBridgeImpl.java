@@ -22,7 +22,7 @@ public class ClientCommonBridgeImpl implements ClientCommonBridge {
 
 	@Override
 	public int getMouseXInFramebuffer() {
-		int width = Minecraft.getInstance().getWindow().getScreenWidth();
+		int width = Minecraft.getInstance().getWindow().getScreenWidth()/2;
 		double mouseX = Minecraft.getInstance().mouseHandler.xpos() * (double)width / (double)Minecraft.getInstance().getWindow().getScreenWidth();
 		int fbX = (int)(mouseX - (((width - WasmScreen.IMAGE_WIDTH) / 2) + 5));
 		if (fbX < 0) fbX = 0;
@@ -32,7 +32,7 @@ public class ClientCommonBridgeImpl implements ClientCommonBridge {
 
 	@Override
 	public int getMouseYInFramebuffer() {
-		int height = Minecraft.getInstance().getWindow().getScreenHeight();
+		int height = Minecraft.getInstance().getWindow().getScreenHeight()/2;
 		double mouseY = Minecraft.getInstance().mouseHandler.ypos() * (double)height / (double)Minecraft.getInstance().getWindow().getScreenHeight();
 		int fbY = (int)(mouseY - (((height - WasmScreen.IMAGE_HEIGHT) / 2) + 5));
 		if (fbY < 0) fbY = 0;
