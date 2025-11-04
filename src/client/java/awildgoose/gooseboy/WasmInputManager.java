@@ -4,23 +4,29 @@ import awildgoose.gooseboy.screen.WasmScreen;
 import net.minecraft.client.Minecraft;
 import org.lwjgl.glfw.GLFW;
 
+import java.util.ArrayDeque;
+import java.util.Queue;
+
 
 public class WasmInputManager {
 	private static final boolean[] keys = new boolean[GLFW.GLFW_KEY_LAST + 1];
+	private static final Queue<Integer> keyQueue = new ArrayDeque<>();
 
 	public static void update() {
 		long window = Minecraft.getInstance().getWindow().handle();
 
 		for (int i = 32; i <= GLFW.GLFW_KEY_LAST; i++) {
-			keys[i] = GLFW.glfwGetKey(window, i) == GLFW.GLFW_PRESS;
+			boolean down = GLFW.glfwGetKey(window, i) == GLFW.GLFW_PRESS;
+			if (down && !keys[i]) {
+				keyQueue.add(i);
+			}
+			keys[i] = down;
 		}
 	}
 
 	public static int getKeyCode() {
-		for (int i = 32; i <= GLFW.GLFW_KEY_LAST; i++) {
-			if (keys[i]) return i;
-		}
-		return -1;
+		Integer key = keyQueue.poll();
+		return key != null ? key : -1;
 	}
 
 	public static boolean isKeyDown(int key) {
