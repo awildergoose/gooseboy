@@ -59,8 +59,14 @@ public class RawAudioManager {
 		});
 	}
 
+	// TODO export to WASM
 	public static void stopAllSounds() {
-		active.forEach(ps -> stop(ps.id));
+		for (PlayingSound ps : List.copyOf(active)) {
+			AL10.alSourceStop(ps.source);
+			AL10.alDeleteSources(ps.source);
+			AL10.alDeleteBuffers(ps.buffer);
+		}
+		active.clear();
 	}
 
 	// TODO make the limiters configurable
