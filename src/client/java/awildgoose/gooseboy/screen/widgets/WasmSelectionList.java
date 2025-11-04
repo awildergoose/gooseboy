@@ -23,8 +23,6 @@ import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
 
 public class WasmSelectionList extends ObjectSelectionList<WasmSelectionList.Entry> {
-
-
 	public WasmSelectionList(Screen parent, Minecraft minecraft, int i, int j, int k, int l) {
 		super(minecraft, i, j, k, l);
 		Wasm.listWasmScripts().forEach(f -> this.addEntry(new Entry(parent, minecraft, this, f)));

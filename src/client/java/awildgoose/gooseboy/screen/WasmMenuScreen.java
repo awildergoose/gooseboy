@@ -1,6 +1,8 @@
 package awildgoose.gooseboy.screen;
 
+import awildgoose.gooseboy.Gooseboy;
 import awildgoose.gooseboy.screen.widgets.WasmSelectionList;
+import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.ObjectSelectionList;
@@ -25,8 +27,12 @@ public class WasmMenuScreen extends Screen {
 	protected void init() {
 		LinearLayout header = this.layout.addToHeader(LinearLayout.vertical().spacing(4));
 		header.addChild(new StringWidget(this.title, this.font), LayoutSettings::alignHorizontallyCenter);
-		this.layout.addToFooter(Button.builder(Component.translatable("gui.ok"), (b) -> this.onClose()).build(),
-								(v) -> v.alignHorizontallyCenter().paddingTop(-10));
+		LinearLayout footer = this.layout.addToFooter(LinearLayout.horizontal().spacing(4));
+		footer.addChild(Button.builder(Component.literal("Open scripts folder location"),
+									   (b) -> Util.getPlatform().openPath(Gooseboy.getGooseboyDirectory().resolve(
+											   "scripts"))).build(), (v) -> v.alignHorizontallyCenter().paddingTop(-5));
+		footer.addChild(Button.builder(Component.translatable("gui.ok"), (b) -> this.onClose()).build(),
+								(v) -> v.alignHorizontallyCenter().paddingTop(-5));
 		this.layout.visitWidgets(this::addRenderableWidget);
 		this.repositionElements();
 	}
