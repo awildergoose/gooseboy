@@ -16,8 +16,26 @@ public class CrateStorage {
 	private final Path filePath;
 
 	public CrateStorage(String name) {
-		this.filePath = Gooseboy.getGooseboyDirectory().resolve("storage").resolve(name + ".bin");
+		this.filePath = resolveFilePath(name);
 		this.load();
+	}
+
+	public static Path resolveFilePath(String name) {
+		return Gooseboy.getGooseboyDirectory().resolve("storage").resolve(name + ".bin");
+	}
+
+	public static long getSizeOf(String name) {
+		Path filePath = resolveFilePath(name);
+
+		if (!Files.exists(filePath)) {
+			return 0;
+		}
+
+		try {
+			return Files.size(filePath);
+		} catch (IOException e) {
+			return 0;
+		}
 	}
 
 	public int read(Memory mem, int offset, int wasmPtr, int len) {

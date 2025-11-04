@@ -1,6 +1,7 @@
 package awildgoose.gooseboy.screen.widgets;
 
 import awildgoose.gooseboy.ConfigManager;
+import awildgoose.gooseboy.crate.CrateStorage;
 import awildgoose.gooseboy.crate.WasmCrate;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -18,9 +19,30 @@ import java.util.List;
 public class WasmSettingsList extends ObjectSelectionList<WasmSettingsList.Entry> {
 	public List<WasmCrate.Permission> permissions;
 
+	public static String formatBytes(long bytes) {
+		if (bytes < 1024) return bytes + " B";
+
+		final String[] units = {"B", "KB", "MB", "GB", "TB", "PB"};
+		int unitIndex = 0;
+		double value = bytes;
+
+		while (value >= 1024 && unitIndex < units.length - 1) {
+			value /= 1024;
+			unitIndex++;
+		}
+
+		if (value % 1 == 0) {
+			return String.format("%.0f %s", value, units[unitIndex]);
+		} else {
+			return String.format("%.1f %s", value, units[unitIndex]);
+		}
+	}
+
 	public WasmSettingsList(Minecraft minecraft, int i, int j, int k, int l, String crateName) {
 		super(minecraft, i, j, k, l);
 		this.permissions = new ArrayList<>(ConfigManager.getEffectivePermissions(crateName));
+		this.addEntry(new TextEntry(minecraft, this,
+									"Allocated storage: %s".formatted(formatBytes(CrateStorage.getSizeOf(crateName)))));
 		this.addEntry(new TextEntry(minecraft, this, "Permissions"));
 		for (WasmCrate.Permission permission : WasmCrate.Permission.values()) {
 			String name = permission.name()

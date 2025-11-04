@@ -5,7 +5,6 @@ import com.dylibso.chicory.compiler.MachineFactoryCompiler;
 import com.dylibso.chicory.runtime.ImportValues;
 import com.dylibso.chicory.runtime.Instance;
 import com.dylibso.chicory.wasm.ChicoryException;
-import com.dylibso.chicory.wasm.InvalidException;
 import com.dylibso.chicory.wasm.Parser;
 import com.dylibso.chicory.wasm.types.MemoryLimits;
 import org.jetbrains.annotations.Nullable;
@@ -81,16 +80,12 @@ public class Wasm {
 						new MemoryLimits(initialPages, maxPages)
 				);
 
-		Instance instance = null;
+		Instance instance;
 
 		try {
 			instance = builder.build();
-			try {
-				instance.export("main").apply();
-			} catch (InvalidException e) {
-				e.printStackTrace();
-			}
 		} catch (ChicoryException e) {
+			instance = null;
 			e.printStackTrace();
 		}
 

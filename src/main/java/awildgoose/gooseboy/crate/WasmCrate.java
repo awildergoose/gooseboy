@@ -4,7 +4,6 @@ import awildgoose.gooseboy.ConfigManager;
 import awildgoose.gooseboy.Gooseboy;
 import com.dylibso.chicory.runtime.ExportFunction;
 import com.dylibso.chicory.runtime.Instance;
-import com.dylibso.chicory.wasm.InvalidException;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
 
@@ -30,22 +29,18 @@ public class WasmCrate {
 	}
 
 	private void init() {
-		try {
-			this.fbPtr = (int) this.instance.export("get_framebuffer_ptr")
-					.apply()[0];
-		} catch (InvalidException e) {
-			e.printStackTrace();
-		}
-
-		try {
-			this.updateFunction = this.instance.export("update");
-		} catch (InvalidException e) {
-			e.printStackTrace();
-		}
-
 		this.fbSize = FRAMEBUFFER_WIDTH * FRAMEBUFFER_HEIGHT * 4;
 		this.storage = new CrateStorage(this.name);
 		Gooseboy.addCrate(this);
+
+		try {
+			this.fbPtr = (int) this.instance.export("get_framebuffer_ptr").apply()[0];
+			this.updateFunction = this.instance.export("update");
+			instance.export("main").apply();
+		} catch (Throwable ie) {
+			this.close();
+			throw ie;
+		}
 	}
 
 	public void clearFramebuffer(int color) {

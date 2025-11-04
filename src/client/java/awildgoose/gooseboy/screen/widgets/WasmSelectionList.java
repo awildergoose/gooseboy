@@ -64,12 +64,20 @@ public class WasmSelectionList extends ObjectSelectionList<WasmSelectionList.Ent
 														   : 8 * 1024);
 				if (instance == null) {
 					SystemToast.add(minecraft.getToastManager(), SystemToast.SystemToastId.CHUNK_LOAD_FAILURE,
-									Component.literal("Failed to load WASM crate"), Component.literal("Check the " +
-																											  "console for more information"));
+									Component.literal("Failed to load crate"), Component.literal("Check the " +
+																											  "console for more information."));
 					return;
 				}
-				var crate = new WasmCrate(instance, text);
-				minecraft.setScreen(new WasmScreen(crate));
+
+				try {
+					var crate = new WasmCrate(instance, text);
+					minecraft.setScreen(new WasmScreen(crate));
+				} catch (Throwable e) {
+					SystemToast.add(minecraft.getToastManager(), SystemToast.SystemToastId.CHUNK_LOAD_FAILURE,
+									Component.literal("Failed to start crate"), Component.literal("Check the " +
+																											  "console for more information."));
+					e.printStackTrace();
+				}
 			});
 
 			this.settingsButton = new ImageButton(0, 0, 15, 15, new WidgetSprites(
