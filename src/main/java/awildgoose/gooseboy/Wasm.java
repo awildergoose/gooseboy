@@ -11,12 +11,15 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.JarURLConnection;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
+import java.nio.file.Paths;
+import java.util.*;
+import java.util.function.Consumer;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 import java.util.stream.Stream;
 
 public class Wasm {
@@ -46,17 +49,46 @@ public class Wasm {
 	}
 
 	public static List<String> listWasmScripts() {
-		Path wasmPath = Gooseboy.getGooseboyDirectory().resolve("scripts");
+		Set<String> scripts = new HashSet<>();
 
-		try (Stream<Path> stream = Files.list(wasmPath)) {
-			return stream
-					.filter(Files::isRegularFile)
-					.filter(f -> f.getFileName().toString().toLowerCase().endsWith(".wasm"))
-					.map(f -> f.getFileName().toString())
-					.collect(Collectors.toList());
-		} catch (IOException e) {
-			return new ArrayList<>();
+		Consumer<Stream<Path>> addWasmFiles = stream ->
+				stream.filter(Files::isRegularFile)
+						.filter(f -> f.getFileName().toString().toLowerCase().endsWith(".wasm"))
+						.map(f -> f.getFileName().toString())
+						.forEach(scripts::add);
+
+		Path wasmPath = Gooseboy.getGooseboyDirectory().resolve("scripts");
+		if (Files.exists(wasmPath)) {
+			try (Stream<Path> stream = Files.list(wasmPath)) {
+				addWasmFiles.accept(stream);
+			} catch (IOException ignored) {}
 		}
+
+		try {
+			URL resource = Gooseboy.class.getResource("/assets/gooseboy/scripts/");
+
+			if (resource != null) {
+				if ("jar".equals(resource.getProtocol())) {
+					JarURLConnection jarConnection = (JarURLConnection) resource.openConnection();
+					JarFile jarFile = jarConnection.getJarFile();
+					Enumeration<JarEntry> entries = jarFile.entries();
+					while (entries.hasMoreElements()) {
+						JarEntry entry = entries.nextElement();
+						String name = entry.getName();
+						if (name.startsWith("assets/gooseboy/scripts/") && name.endsWith(".wasm")) {
+							scripts.add(Paths.get(name).getFileName().toString());
+						}
+					}
+				} else if ("file".equals(resource.getProtocol())) {
+					Path dir = Paths.get(resource.toURI());
+					try (Stream<Path> stream = Files.list(dir)) {
+						addWasmFiles.accept(stream);
+					}
+				}
+			}
+		} catch (Exception ignored) {}
+
+		return new ArrayList<>(scripts);
 	}
 
 	public static final int WASM_PAGE_SIZE_KB = 64;
