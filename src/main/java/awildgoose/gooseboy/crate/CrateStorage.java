@@ -10,6 +10,7 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 public class CrateStorage {
+	// TODO make this configurable
 	public static final int STORAGE_SIZE = 512 * 1024; // 512 KB
 
 	private final byte[] data = new byte[STORAGE_SIZE];
