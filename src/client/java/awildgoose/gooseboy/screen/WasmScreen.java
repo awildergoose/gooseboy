@@ -21,8 +21,9 @@ import static awildgoose.gooseboy.Gooseboy.FRAMEBUFFER_WIDTH;
 public class WasmScreen extends Screen {
 	private static final ResourceLocation SCREEN_UI_LOCATION = ResourceLocation.fromNamespaceAndPath(
 			Gooseboy.MOD_ID, "textures/gui/wasm.png");
+	// TODO if multiple crates are running at the same time, wouldn't this break?
 	private static final ResourceLocation FRAMEBUFFER_TEXTURE = ResourceLocation.fromNamespaceAndPath(
-			Gooseboy.MOD_ID, "wasm_framebuffer"
+			Gooseboy.MOD_ID, "crate_framebuffer"
 	);
 
 	public static final int IMAGE_WIDTH = 330;
@@ -35,7 +36,8 @@ public class WasmScreen extends Screen {
 	private boolean failed = false;
 
 	private long lastRenderNano = 0L;
-	private static final long FRAME_INTERVAL_NS = 1_000_000_000L / 60L; // 60 FPS cap
+	// TODO make this configurable through a setting
+	private static final long FRAME_INTERVAL_NS = 1_000_000_000L / 60L;
 
 	public WasmScreen(WasmCrate crate) {
 		super(Component.literal(crate.name));
@@ -44,7 +46,7 @@ public class WasmScreen extends Screen {
 
 	@Override
 	protected void init() {
-		this.texture = new DynamicTexture("Gooseboy WASM framebuffer", FRAMEBUFFER_WIDTH, FRAMEBUFFER_HEIGHT, false);
+		this.texture = new DynamicTexture("Gooseboy crate framebuffer", FRAMEBUFFER_WIDTH, FRAMEBUFFER_HEIGHT, false);
 		Minecraft.getInstance().getTextureManager().register(FRAMEBUFFER_TEXTURE, this.texture);
 		this.tmpBuf = MemoryUtil.memAlloc(this.crate.fbSize);
 	}

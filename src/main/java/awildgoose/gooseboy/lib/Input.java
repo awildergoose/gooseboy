@@ -11,34 +11,31 @@ import com.dylibso.chicory.runtime.Instance;
 public final class Input {
 	public Input() {}
 
-	private static final int FALSE = 0;
-	private static final int TRUE = 1;
-
 	@WasmExport
 	public int get_key(Instance instance, int key) {
 		if (!Gooseboy.getCrate(instance).permissions.contains(WasmCrate.Permission.INPUT_KEYBOARD))
-			return FALSE;
-		return Gooseboy.ccb.isKeyDown(key) ? TRUE : FALSE;
+			return 0;
+		return Gooseboy.ccb.isKeyDown(key) ? 1 : 0;
 	}
 
 	@WasmExport
 	public int get_mouse_button(Instance instance, int button) {
 		if (!Gooseboy.getCrate(instance).permissions.contains(WasmCrate.Permission.INPUT_MOUSE))
-			return FALSE;
-		return Gooseboy.ccb.isMouseButtonDown(button) ? TRUE : FALSE;
+			return 0;
+		return Gooseboy.ccb.isMouseButtonDown(button) ? 1 : 0;
 	}
 
 	@WasmExport
 	public int get_mouse_x(Instance instance) {
 		if (!Gooseboy.getCrate(instance).permissions.contains(WasmCrate.Permission.INPUT_MOUSE_POS))
-			return FALSE;
+			return 0;
 		return Gooseboy.ccb.getMouseXInFramebuffer();
 	}
 
 	@WasmExport
 	public int get_mouse_y(Instance instance) {
 		if (!Gooseboy.getCrate(instance).permissions.contains(WasmCrate.Permission.INPUT_MOUSE_POS))
-			return FALSE;
+			return 0;
 		return Gooseboy.ccb.getMouseYInFramebuffer();
 	}
 

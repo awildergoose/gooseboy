@@ -16,6 +16,8 @@ public class RawAudioManager {
 	private static final List<PlayingSound> active = new ArrayList<>();
 
 	private static long AUDIO_ID;
+
+	// TODO make these configurable
 	private static final int MAX_AUDIO_SIZE = 10 * 1024 * 1024; // 10 MB
 	private static final int MAX_CONCURRENT_SOUNDS = 32;
 	private static final int SAMPLE_RATE = 44100;
@@ -57,6 +59,7 @@ public class RawAudioManager {
 		});
 	}
 
+	// TODO make the limiters configurable
 	public static void setVolume(long id, float volume) {
 		for (PlayingSound ps : active) {
 			if (ps.id == id) {
