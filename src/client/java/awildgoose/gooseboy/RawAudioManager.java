@@ -4,8 +4,8 @@ import org.lwjgl.openal.AL10;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class RawAudioManager {
 	private static class PlayingSound {
@@ -13,7 +13,7 @@ public class RawAudioManager {
 		long id;
 	}
 
-	private static final List<PlayingSound> active = new ArrayList<>();
+	private static final List<PlayingSound> active = new CopyOnWriteArrayList<>();
 
 	private static long AUDIO_ID;
 
