@@ -49,4 +49,19 @@ public class ClientCommonBridgeImpl implements ClientCommonBridge {
 	public void stopAudio(long id) {
 		RawAudioManager.stop(id);
 	}
+
+	@Override
+	public void setAudioVolume(long id, float volume) {
+		RawAudioManager.setVolume(id, volume);
+	}
+
+	@Override
+	public void setAudioPitch(long id, float pitch) {
+		RawAudioManager.setPitch(id, pitch);
+	}
+
+	@Override
+	public boolean isAudioPlaying(long id) {
+		return RawAudioManager.isPlaying(id);
+	}
 }

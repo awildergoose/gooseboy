@@ -24,6 +24,27 @@ public final class Audio {
 		Gooseboy.ccb.stopAudio(id);
 	}
 
+	@WasmExport
+	public void set_audio_volume(Instance instance, long id, float volume) {
+		if (!Gooseboy.getCrate(instance).permissions.contains(WasmCrate.Permission.AUDIO))
+			return;
+		Gooseboy.ccb.setAudioVolume(id, volume);
+	}
+
+	@WasmExport
+	public void set_audio_pitch(Instance instance, long id, float pitch) {
+		if (!Gooseboy.getCrate(instance).permissions.contains(WasmCrate.Permission.AUDIO))
+			return;
+		Gooseboy.ccb.setAudioPitch(id, pitch);
+	}
+
+	@WasmExport
+	public int is_audio_playing(Instance instance, long id) {
+		if (!Gooseboy.getCrate(instance).permissions.contains(WasmCrate.Permission.AUDIO))
+			return 0;
+		return Gooseboy.ccb.isAudioPlaying(id) ? 1 : 0;
+	}
+
 	public HostFunction[] toHostFunctions() {
 		return Audio_ModuleFactory.toHostFunctions(this);
 	}

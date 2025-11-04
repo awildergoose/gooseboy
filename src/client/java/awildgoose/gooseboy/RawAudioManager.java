@@ -57,6 +57,30 @@ public class RawAudioManager {
 		});
 	}
 
+	public static void setVolume(long id, float volume) {
+		for (PlayingSound ps : active) {
+			if (ps.id == id) {
+				float v = Math.max(0f, Math.min(10f, volume));
+				AL10.alSourcef(ps.source, AL10.AL_GAIN, v);
+				break;
+			}
+		}
+	}
+
+	public static void setPitch(long id, float pitch) {
+		for (PlayingSound ps : active) {
+			if (ps.id == id) {
+				float p = Math.max(0.1f, Math.min(10f, pitch));
+				AL10.alSourcef(ps.source, AL10.AL_PITCH, p);
+				break;
+			}
+		}
+	}
+
+	public static boolean isPlaying(long id) {
+		return active.stream().anyMatch(ps -> ps.id == id);
+	}
+
 	public static void tick() {
 		active.removeIf(ps -> {
 			int state = AL10.alGetSourcei(ps.source, AL10.AL_SOURCE_STATE);
