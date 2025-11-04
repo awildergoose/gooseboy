@@ -3,6 +3,7 @@ package awildgoose.gooseboy.screen.widgets;
 import awildgoose.gooseboy.ConfigManager;
 import awildgoose.gooseboy.Gooseboy;
 import awildgoose.gooseboy.Wasm;
+import awildgoose.gooseboy.WasmInputManager;
 import awildgoose.gooseboy.crate.WasmCrate;
 import awildgoose.gooseboy.screen.WasmScreen;
 import awildgoose.gooseboy.screen.WasmSettingsScreen;
@@ -69,6 +70,7 @@ public class WasmSelectionList extends ObjectSelectionList<WasmSelectionList.Ent
 					return;
 				}
 
+				WasmInputManager.reset();
 				WasmCrate crate = null;
 				try {
 					crate = new WasmCrate(instance, text);

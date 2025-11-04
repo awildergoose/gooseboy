@@ -5,8 +5,8 @@ import net.minecraft.client.Minecraft;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayDeque;
+import java.util.Arrays;
 import java.util.Queue;
-
 
 public class WasmInputManager {
 	private static final boolean[] keys = new boolean[GLFW.GLFW_KEY_LAST + 1];
@@ -31,6 +31,11 @@ public class WasmInputManager {
 
 	public static boolean isKeyDown(int key) {
 		return key >= 32 && key <= GLFW.GLFW_KEY_LAST && keys[key];
+	}
+
+	public static void reset() {
+		keyQueue.clear();
+		Arrays.fill(keys, false);
 	}
 
 	public static boolean isMouseButtonDown(int button) {
