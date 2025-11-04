@@ -21,7 +21,7 @@ public class WasmCrate {
 	public CrateStorage storage;
 	public final String name;
 	public final List<Permission> permissions;
-	public boolean isOk;
+	public boolean isOk = true;
 
 	public WasmCrate(Instance instance, String name) {
 		this.instance = instance;
@@ -67,7 +67,12 @@ public class WasmCrate {
 			ProfilerFiller profilerFiller = Profiler.get();
 			long now = System.nanoTime();
 			profilerFiller.push("wasm");
-			this.updateFunction.apply(now);
+			try {
+				this.updateFunction.apply(now);
+			} catch (TrapException e) {
+				this.isOk = false;
+				e.printStackTrace();
+			}
 			profilerFiller.pop();
 		}
 	}

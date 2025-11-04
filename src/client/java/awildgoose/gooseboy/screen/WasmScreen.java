@@ -5,6 +5,7 @@ import awildgoose.gooseboy.crate.WasmCrate;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.texture.DynamicTexture;
@@ -30,6 +31,8 @@ public class WasmScreen extends Screen {
 	private final WasmCrate crate;
 	private DynamicTexture texture;
 	private ByteBuffer tmpBuf;
+
+	private boolean failed = false;
 
 	private long lastRenderNano = 0L;
 	private static final long FRAME_INTERVAL_NS = 1_000_000_000L / 60L; // 60 FPS cap
@@ -64,7 +67,15 @@ public class WasmScreen extends Screen {
 		boolean shouldUpdate = (now - lastRenderNano) >= FRAME_INTERVAL_NS;
 
 		if (shouldUpdate) {
-			this.crate.update();
+			if (this.crate.isOk) {
+				this.crate.update();
+			} else if (!failed) {
+				assert minecraft != null;
+				SystemToast.add(minecraft.getToastManager(), SystemToast.SystemToastId.CHUNK_LOAD_FAILURE,
+								Component.literal("Crate aborted during update"), Component.literal("Check the " +
+																											"console for more information."));
+				failed = true;
+			}
 
 			byte[] fbBytes = this.crate.getFramebufferBytes();
 			tmpBuf.clear();
