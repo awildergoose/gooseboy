@@ -37,12 +37,13 @@ public class WasmScreen extends Screen {
 	private boolean failed = false;
 
 	private long lastRenderNano = 0L;
-	// TODO make this configurable through a setting
-	private static final long FRAME_INTERVAL_NS = 1_000_000_000L / 60L;
+	private final long frameIntervalNano;
 
 	public WasmScreen(WasmCrate crate) {
 		super(Component.literal(crate.name));
 		this.crate = crate;
+		// Should we *really* use the frame limit option here?
+		this.frameIntervalNano = 1_000_000_000L / Minecraft.getInstance().options.framerateLimit().get();
 	}
 
 	@Override
@@ -67,7 +68,7 @@ public class WasmScreen extends Screen {
 		super.render(guiGraphics, i, j, f);
 
 		long now = System.nanoTime();
-		boolean shouldUpdate = (now - lastRenderNano) >= FRAME_INTERVAL_NS;
+		boolean shouldUpdate = (now - lastRenderNano) >= this.frameIntervalNano;
 
 		if (shouldUpdate) {
 			if (this.crate.isOk) {
