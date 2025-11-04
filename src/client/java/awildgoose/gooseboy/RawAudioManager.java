@@ -59,6 +59,10 @@ public class RawAudioManager {
 		});
 	}
 
+	public static void stopAllSounds() {
+		active.forEach(ps -> stop(ps.id));
+	}
+
 	// TODO make the limiters configurable
 	public static void setVolume(long id, float volume) {
 		for (PlayingSound ps : active) {
