@@ -4,6 +4,7 @@ import awildgoose.gooseboy.ConfigManager;
 import awildgoose.gooseboy.Gooseboy;
 import com.dylibso.chicory.runtime.ExportFunction;
 import com.dylibso.chicory.runtime.Instance;
+import com.dylibso.chicory.runtime.TrapException;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
 
@@ -20,6 +21,7 @@ public class WasmCrate {
 	public CrateStorage storage;
 	public final String name;
 	public final List<Permission> permissions;
+	public boolean isOk;
 
 	public WasmCrate(Instance instance, String name) {
 		this.instance = instance;
@@ -39,7 +41,11 @@ public class WasmCrate {
 			instance.export("main").apply();
 		} catch (Throwable ie) {
 			this.close();
-			throw ie;
+			if (ie instanceof TrapException) {
+				this.isOk = false;
+				ie.printStackTrace();
+			} else
+				throw ie;
 		}
 	}
 

@@ -69,14 +69,22 @@ public class WasmSelectionList extends ObjectSelectionList<WasmSelectionList.Ent
 					return;
 				}
 
+				WasmCrate crate = null;
 				try {
-					var crate = new WasmCrate(instance, text);
-					minecraft.setScreen(new WasmScreen(crate));
+					crate = new WasmCrate(instance, text);
 				} catch (Throwable e) {
 					SystemToast.add(minecraft.getToastManager(), SystemToast.SystemToastId.CHUNK_LOAD_FAILURE,
 									Component.literal("Failed to start crate"), Component.literal("Check the " +
 																											  "console for more information."));
 					e.printStackTrace();
+				}
+
+				if (crate != null && crate.isOk) {
+					minecraft.setScreen(new WasmScreen(crate));
+				} else if (crate != null) {
+					SystemToast.add(minecraft.getToastManager(), SystemToast.SystemToastId.CHUNK_LOAD_FAILURE,
+									Component.literal("Crate aborted upon startup"), Component.literal("Check the " +
+																										  "console for more information."));
 				}
 			});
 
