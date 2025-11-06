@@ -2,7 +2,7 @@ package awildgoose.gooseboy.lib;
 
 import awildgoose.gooseboy.Gooseboy;
 import awildgoose.gooseboy.crate.CrateUtils;
-import awildgoose.gooseboy.crate.WasmCrate;
+import awildgoose.gooseboy.crate.GooseboyCrate;
 import com.dylibso.chicory.annotations.HostModule;
 import com.dylibso.chicory.annotations.WasmExport;
 import com.dylibso.chicory.runtime.HostFunction;
@@ -14,7 +14,7 @@ public final class Console {
 
 	@WasmExport
 	public void log(Instance instance, int ptr, int len) {
-		if (CrateUtils.doesNotHavePermission(instance, WasmCrate.Permission.CONSOLE))
+		if (CrateUtils.doesNotHavePermission(instance, GooseboyCrate.Permission.CONSOLE))
 			return;
 		Gooseboy.LOGGER.info("[{}] {}", Gooseboy.getCrate(instance).name, instance.memory().readString(ptr, len));
 	}

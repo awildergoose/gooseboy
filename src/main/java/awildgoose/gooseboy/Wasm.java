@@ -24,7 +24,7 @@ import java.util.jar.JarFile;
 import java.util.stream.Stream;
 
 public class Wasm {
-	public static Optional<byte[]> loadWasm(String relativePath) {
+	public static Optional<byte[]> loadCrateFile(String relativePath) {
 		Path wasmPath = Gooseboy.getGooseboyDirectory().resolve("crates").resolve(relativePath);
 
 		if (!Files.exists(wasmPath)) {
@@ -99,7 +99,7 @@ public class Wasm {
 	}
 
 	public static @Nullable Instance createInstance(String filename, int initialMemoryKilobytes, int maximumMemoryKilobytes) {
-		var wasm = loadWasm(filename);
+		var wasm = loadCrateFile(filename);
 		if (wasm.isEmpty()) return null;
 
 		int initialPages = kilobytesToPages(initialMemoryKilobytes);

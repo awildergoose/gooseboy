@@ -6,9 +6,9 @@ import com.dylibso.chicory.runtime.Instance;
 import java.util.ArrayList;
 
 public class CrateUtils {
-	private static final ArrayList<WasmCrate.Permission> permissionsWarned = new ArrayList<>();
+	private static final ArrayList<GooseboyCrate.Permission> permissionsWarned = new ArrayList<>();
 
-	public static boolean doesNotHavePermission(Instance instance, WasmCrate.Permission permission) {
+	public static boolean doesNotHavePermission(Instance instance, GooseboyCrate.Permission permission) {
 		if (Gooseboy.getCrate(instance).permissions.contains(permission)) {
 			return false;
 		}

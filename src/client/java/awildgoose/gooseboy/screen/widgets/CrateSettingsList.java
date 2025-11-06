@@ -2,7 +2,7 @@ package awildgoose.gooseboy.screen.widgets;
 
 import awildgoose.gooseboy.ConfigManager;
 import awildgoose.gooseboy.crate.CrateStorage;
-import awildgoose.gooseboy.crate.WasmCrate;
+import awildgoose.gooseboy.crate.GooseboyCrate;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Checkbox;
@@ -16,8 +16,8 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
-public class WasmSettingsList extends ObjectSelectionList<WasmSettingsList.Entry> {
-	public List<WasmCrate.Permission> permissions;
+public class CrateSettingsList extends ObjectSelectionList<CrateSettingsList.Entry> {
+	public List<GooseboyCrate.Permission> permissions;
 
 	public static String formatBytes(long bytes) {
 		if (bytes < 1024) return bytes + " B";
@@ -38,13 +38,13 @@ public class WasmSettingsList extends ObjectSelectionList<WasmSettingsList.Entry
 		}
 	}
 
-	public WasmSettingsList(Minecraft minecraft, int i, int j, int k, int l, String crateName) {
+	public CrateSettingsList(Minecraft minecraft, int i, int j, int k, int l, String crateName) {
 		super(minecraft, i, j, k, l);
 		this.permissions = new ArrayList<>(ConfigManager.getEffectivePermissions(crateName));
 		this.addEntry(new TextEntry(minecraft, this,
 									"Allocated storage: %s".formatted(formatBytes(CrateStorage.getSizeOf(crateName)))));
 		this.addEntry(new TextEntry(minecraft, this, "Permissions"));
-		for (WasmCrate.Permission permission : WasmCrate.Permission.values()) {
+		for (GooseboyCrate.Permission permission : GooseboyCrate.Permission.values()) {
 			String name = permission.name()
 					.replace("_", " ");
 			String title = Character.toUpperCase(name.charAt(0)) + name.substring(1)
@@ -70,10 +70,10 @@ public class WasmSettingsList extends ObjectSelectionList<WasmSettingsList.Entry
 		return super.keyPressed(keyEvent);
 	}
 
-	public abstract static class Entry extends ObjectSelectionList.Entry<WasmSettingsList.Entry> {
-		public WasmSettingsList list;
+	public abstract static class Entry extends ObjectSelectionList.Entry<CrateSettingsList.Entry> {
+		public CrateSettingsList list;
 
-		public Entry(Minecraft ignoredMinecraft, WasmSettingsList list, String ignoredText) {
+		public Entry(Minecraft ignoredMinecraft, CrateSettingsList list, String ignoredText) {
 			this.list = list;
 		}
 
@@ -95,7 +95,7 @@ public class WasmSettingsList extends ObjectSelectionList<WasmSettingsList.Entry
 	public static class TextEntry extends Entry {
 		private final StringWidget text;
 
-		public TextEntry(Minecraft minecraft, WasmSettingsList list, String text) {
+		public TextEntry(Minecraft minecraft, CrateSettingsList list, String text) {
 			super(minecraft, list, text);
 			int i = list.getRowWidth() - this.getTextX() - 2;
 			Component component = Component.literal(text);
@@ -125,7 +125,7 @@ public class WasmSettingsList extends ObjectSelectionList<WasmSettingsList.Entry
 	public static class BooleanEntry extends Entry {
 		private final Checkbox checkbox;
 
-		public BooleanEntry(Minecraft minecraft, WasmSettingsList list, String text, boolean checked,
+		public BooleanEntry(Minecraft minecraft, CrateSettingsList list, String text, boolean checked,
 							Checkbox.OnValueChange callback) {
 			super(minecraft, list, text);
 			checkbox =

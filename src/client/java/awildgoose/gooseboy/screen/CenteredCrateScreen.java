@@ -1,7 +1,7 @@
 package awildgoose.gooseboy.screen;
 
 import awildgoose.gooseboy.Gooseboy;
-import awildgoose.gooseboy.crate.WasmCrate;
+import awildgoose.gooseboy.crate.GooseboyCrate;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -18,7 +18,7 @@ import java.nio.ByteBuffer;
 import static awildgoose.gooseboy.Gooseboy.FRAMEBUFFER_HEIGHT;
 import static awildgoose.gooseboy.Gooseboy.FRAMEBUFFER_WIDTH;
 
-public class WasmScreen extends Screen {
+public class CenteredCrateScreen extends Screen {
 	private static final ResourceLocation SCREEN_UI_LOCATION = ResourceLocation.fromNamespaceAndPath(
 			Gooseboy.MOD_ID, "textures/gui/wasm.png");
 	// TODO if multiple crates are running at the same time, wouldn't this break?
@@ -29,7 +29,7 @@ public class WasmScreen extends Screen {
 	public static final int IMAGE_WIDTH = 330;
 	public static final int IMAGE_HEIGHT = 256;
 
-	private final WasmCrate crate;
+	private final GooseboyCrate crate;
 	private DynamicTexture texture;
 	private ByteBuffer tmpBuf;
 
@@ -38,7 +38,7 @@ public class WasmScreen extends Screen {
 	private long lastRenderNano = 0L;
 	private final long frameIntervalNano;
 
-	public WasmScreen(WasmCrate crate) {
+	public CenteredCrateScreen(GooseboyCrate crate) {
 		super(Component.literal(crate.name));
 		this.crate = crate;
 		// Should we *really* use the frame limit option here?

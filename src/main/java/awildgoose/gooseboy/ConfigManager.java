@@ -1,6 +1,6 @@
 package awildgoose.gooseboy;
 
-import awildgoose.gooseboy.crate.WasmCrate;
+import awildgoose.gooseboy.crate.GooseboyCrate;
 import com.google.gson.*;
 import net.fabricmc.loader.api.FabricLoader;
 
@@ -16,9 +16,9 @@ public final class ConfigManager {
 			.resolve("gooseboy.json");
 	private static final Gson GSON = new GsonBuilder()
 			.setPrettyPrinting()
-			.registerTypeAdapter(WasmCrate.Permission.class, (JsonDeserializer<WasmCrate.Permission>) (json, typeOfT, ctx) -> {
+			.registerTypeAdapter(GooseboyCrate.Permission.class, (JsonDeserializer<GooseboyCrate.Permission>) (json, typeOfT, ctx) -> {
 				try {
-					return WasmCrate.Permission.valueOf(json.getAsString());
+					return GooseboyCrate.Permission.valueOf(json.getAsString());
 				} catch (Exception e) {
 					Gooseboy.LOGGER.warn("Unknown permission: " + json.getAsString());
 					return null;
@@ -27,7 +27,7 @@ public final class ConfigManager {
 			.create();
 
 	public static class CrateSettings {
-		public List<WasmCrate.Permission> permissions = new ArrayList<>();
+		public List<GooseboyCrate.Permission> permissions = new ArrayList<>();
 	}
 
 	public static class RootConfig {
@@ -55,7 +55,7 @@ public final class ConfigManager {
 			} else {
 				config = new RootConfig();
 				config.default_crate_settings.permissions = Arrays.asList(
-						WasmCrate.Permission.CONSOLE, WasmCrate.Permission.INPUT_MOUSE, WasmCrate.Permission.INPUT_MOUSE_POS
+						GooseboyCrate.Permission.CONSOLE, GooseboyCrate.Permission.INPUT_MOUSE, GooseboyCrate.Permission.INPUT_MOUSE_POS
 				);
 				save();
 			}
@@ -102,7 +102,7 @@ public final class ConfigManager {
 		}
 	}
 
-	public static synchronized List<WasmCrate.Permission> getEffectivePermissions(String crateName) {
+	public static synchronized List<GooseboyCrate.Permission> getEffectivePermissions(String crateName) {
 		RootConfig cfg = getConfig();
 		CrateSettings specific = cfg.crate_settings.get(crateName);
 		if (specific != null && specific.permissions != null && !specific.permissions.isEmpty()) {
@@ -111,7 +111,7 @@ public final class ConfigManager {
 		return List.copyOf(cfg.default_crate_settings.permissions);
 	}
 
-	public static synchronized void setCratePermissions(String crateName, Collection<WasmCrate.Permission> permissions) {
+	public static synchronized void setCratePermissions(String crateName, Collection<GooseboyCrate.Permission> permissions) {
 		RootConfig cfg = getConfig();
 		CrateSettings s = new CrateSettings();
 		s.permissions = new ArrayList<>(permissions);

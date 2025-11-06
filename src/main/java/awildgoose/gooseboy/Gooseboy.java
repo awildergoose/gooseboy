@@ -1,6 +1,6 @@
 package awildgoose.gooseboy;
 
-import awildgoose.gooseboy.crate.WasmCrate;
+import awildgoose.gooseboy.crate.GooseboyCrate;
 import com.dylibso.chicory.runtime.Instance;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.loader.api.FabricLoader;
@@ -36,16 +36,16 @@ public class Gooseboy implements ModInitializer {
 		return gooseboyDir;
 	}
 
-	private static final HashMap<Instance, WasmCrate> runningCrates = new HashMap<>();
+	private static final HashMap<Instance, GooseboyCrate> runningCrates = new HashMap<>();
 
-	public static WasmCrate getCrate(Instance instance) {
+	public static GooseboyCrate getCrate(Instance instance) {
 		return runningCrates.get(instance);
 	}
 
-	public static void addCrate(WasmCrate crate) {
+	public static void addCrate(GooseboyCrate crate) {
 		runningCrates.put(crate.instance, crate);
 	}
-	public static void removeCrate(WasmCrate crate) {
+	public static void removeCrate(GooseboyCrate crate) {
 		runningCrates.remove(crate.instance);
 	}
 

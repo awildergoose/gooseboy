@@ -1,9 +1,11 @@
 package awildgoose.gooseboy.screen;
 
-import awildgoose.gooseboy.ConfigManager;
-import awildgoose.gooseboy.screen.widgets.WasmSettingsList;
+import awildgoose.gooseboy.Gooseboy;
+import awildgoose.gooseboy.screen.widgets.CrateSelectionList;
+import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.ObjectSelectionList;
 import net.minecraft.client.gui.components.StringWidget;
 import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
 import net.minecraft.client.gui.layouts.LayoutSettings;
@@ -11,17 +13,13 @@ import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 
-public class WasmSettingsScreen extends Screen {
+public class CrateListScreen extends Screen {
 	private final HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this, 20, 20);
-	protected final WasmSettingsList list;
-	private final String crateName;
-	private final Screen parent;
+	protected final ObjectSelectionList<?> list;
 
-	public WasmSettingsScreen(Screen parent, String crateName) {
-		super(Component.literal("%s - Settings".formatted(crateName)));
-		this.crateName = crateName;
-		this.parent = parent;
-		this.list = new WasmSettingsList(Minecraft.getInstance(), 0, 0, 200, 200, crateName);
+	public CrateListScreen() {
+		super(Component.literal("Gooseboy"));
+		this.list = new CrateSelectionList(this, Minecraft.getInstance(), 0, 0, 200, 200);
 		this.layout.addToContents(this.list);
 	}
 
@@ -29,9 +27,12 @@ public class WasmSettingsScreen extends Screen {
 	protected void init() {
 		LinearLayout header = this.layout.addToHeader(LinearLayout.vertical().spacing(4));
 		header.addChild(new StringWidget(this.title, this.font), LayoutSettings::alignHorizontallyCenter);
-		this.layout.addToFooter(
-				Button.builder(Component.translatable("gui.ok"), (b) -> this.onClose()).build(),
-				(v) -> v.alignHorizontallyCenter().paddingTop(-10));
+		LinearLayout footer = this.layout.addToFooter(LinearLayout.horizontal().spacing(4));
+		footer.addChild(Button.builder(Component.literal("Open crates folder location"),
+									   (b) -> Util.getPlatform().openPath(Gooseboy.getGooseboyDirectory().resolve(
+											   "crates"))).build(), (v) -> v.alignHorizontallyCenter().paddingTop(-5));
+		footer.addChild(Button.builder(Component.translatable("gui.ok"), (b) -> this.onClose()).build(),
+								(v) -> v.alignHorizontallyCenter().paddingTop(-5));
 		this.layout.visitWidgets(this::addRenderableWidget);
 		this.repositionElements();
 	}
@@ -45,11 +46,5 @@ public class WasmSettingsScreen extends Screen {
 	protected void repositionElements() {
 		this.list.updateSizeAndPosition(this.width, this.layout.getContentHeight(), this.layout.getHeaderHeight());
 		this.layout.arrangeElements();
-	}
-
-	@Override
-	public void onClose() {
-		if (this.minecraft != null) this.minecraft.setScreen(this.parent);
-		ConfigManager.setCratePermissions(this.crateName, this.list.permissions);
 	}
 }

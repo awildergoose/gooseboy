@@ -1,6 +1,6 @@
 package awildgoose.gooseboy;
 
-import awildgoose.gooseboy.crate.WasmCrate;
+import awildgoose.gooseboy.crate.GooseboyCrate;
 
 public interface ClientCommonBridge {
 	// input
@@ -23,6 +23,6 @@ public interface ClientCommonBridge {
 	void setAudioPitch(long id, float pitch);
 	boolean isAudioPlaying(long id);
 
-	void closeCrate(WasmCrate crate);
-	void warnPermission(WasmCrate.Permission permission);
+	void closeCrate(GooseboyCrate crate);
+	void warnPermission(GooseboyCrate.Permission permission);
 }

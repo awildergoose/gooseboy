@@ -1,6 +1,6 @@
 package awildgoose.gooseboy;
 
-import awildgoose.gooseboy.crate.WasmCrate;
+import awildgoose.gooseboy.crate.GooseboyCrate;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.network.chat.Component;
@@ -57,13 +57,13 @@ public class ClientCommonBridgeImpl implements ClientCommonBridge {
 	}
 
 	@Override
-	public void closeCrate(WasmCrate crate) {
+	public void closeCrate(GooseboyCrate crate) {
 		RawAudioManager.stopAllSounds();
 		WasmInputManager.releaseMouse();
 	}
 
 	@Override
-	public void warnPermission(WasmCrate.Permission permission) {
+	public void warnPermission(GooseboyCrate.Permission permission) {
 		SystemToast.add(
 				Minecraft.getInstance().getToastManager(),
 				SystemToast.SystemToastId.FILE_DROP_FAILURE,

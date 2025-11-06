@@ -4,9 +4,9 @@ import awildgoose.gooseboy.ConfigManager;
 import awildgoose.gooseboy.Gooseboy;
 import awildgoose.gooseboy.Wasm;
 import awildgoose.gooseboy.WasmInputManager;
-import awildgoose.gooseboy.crate.WasmCrate;
-import awildgoose.gooseboy.screen.WasmScreen;
-import awildgoose.gooseboy.screen.WasmSettingsScreen;
+import awildgoose.gooseboy.crate.GooseboyCrate;
+import awildgoose.gooseboy.screen.CenteredCrateScreen;
+import awildgoose.gooseboy.screen.CrateSettingsScreen;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.ImageButton;
@@ -22,8 +22,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
 
-public class WasmSelectionList extends ObjectSelectionList<WasmSelectionList.Entry> {
-	public WasmSelectionList(Screen parent, Minecraft minecraft, int i, int j, int k, int l) {
+public class CrateSelectionList extends ObjectSelectionList<CrateSelectionList.Entry> {
+	public CrateSelectionList(Screen parent, Minecraft minecraft, int i, int j, int k, int l) {
 		super(minecraft, i, j, k, l);
 		Wasm.listWasmCrates().forEach(f -> this.addEntry(new Entry(parent, minecraft, this, f)));
 	}
@@ -38,14 +38,14 @@ public class WasmSelectionList extends ObjectSelectionList<WasmSelectionList.Ent
 		return super.keyPressed(keyEvent);
 	}
 
-	public static class Entry extends ObjectSelectionList.Entry<WasmSelectionList.Entry> {
+	public static class Entry extends ObjectSelectionList.Entry<CrateSelectionList.Entry> {
 		private static final ResourceLocation WASM_ICON = ResourceLocation.fromNamespaceAndPath(
 				Gooseboy.MOD_ID, "textures/gui/wasm_icon.png");
 		private final StringWidget text;
 		private final ImageButton runButton;
 		private final ImageButton settingsButton;
 
-		public Entry(Screen parent, Minecraft minecraft, WasmSelectionList list, String text) {
+		public Entry(Screen parent, Minecraft minecraft, CrateSelectionList list, String text) {
 			int i = list.getRowWidth() - this.getTextX() - 2;
 			Component component = Component.literal(text);
 			this.text = new StringWidget(component, minecraft.font);
@@ -58,10 +58,10 @@ public class WasmSelectionList extends ObjectSelectionList<WasmSelectionList.Ent
 				// run
 				var permissions = ConfigManager.getEffectivePermissions(text);
 				var instance = Wasm.createInstance(text,
-                permissions.contains(WasmCrate.Permission.EXTENDED_MEMORY) ?
+                permissions.contains(GooseboyCrate.Permission.EXTENDED_MEMORY) ?
 														   32 * 1024
 														   : 6 * 1024,
-												   permissions.contains(WasmCrate.Permission.EXTENDED_MEMORY) ?
+												   permissions.contains(GooseboyCrate.Permission.EXTENDED_MEMORY) ?
 														   64 * 1024
 														   : 8 * 1024);
 				if (instance == null) {
@@ -72,9 +72,9 @@ public class WasmSelectionList extends ObjectSelectionList<WasmSelectionList.Ent
 				}
 
 				WasmInputManager.reset();
-				WasmCrate crate = null;
+				GooseboyCrate crate = null;
 				try {
-					crate = new WasmCrate(instance, text);
+					crate = new GooseboyCrate(instance, text);
 				} catch (Throwable e) {
 					SystemToast.add(minecraft.getToastManager(), SystemToast.SystemToastId.CHUNK_LOAD_FAILURE,
 									Component.literal("Failed to start crate"), Component.literal("Check the " +
@@ -84,7 +84,7 @@ public class WasmSelectionList extends ObjectSelectionList<WasmSelectionList.Ent
 
 				if (crate != null) {
 					if (crate.isOk) {
-						minecraft.setScreen(new WasmScreen(crate));
+						minecraft.setScreen(new CenteredCrateScreen(crate));
 					} else {
 						SystemToast.add(minecraft.getToastManager(), SystemToast.SystemToastId.CHUNK_LOAD_FAILURE,
 										Component.literal("Crate aborted upon startup"),
@@ -99,7 +99,7 @@ public class WasmSelectionList extends ObjectSelectionList<WasmSelectionList.Ent
 					ResourceLocation.fromNamespaceAndPath(Gooseboy.MOD_ID, "widget/settings_button_highlighted")
 			), (b) -> {
 				// settings
-				minecraft.setScreen(new WasmSettingsScreen(parent, text));
+				minecraft.setScreen(new CrateSettingsScreen(parent, text));
 			});
 		}
 

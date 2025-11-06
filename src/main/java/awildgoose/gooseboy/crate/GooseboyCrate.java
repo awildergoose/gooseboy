@@ -13,7 +13,7 @@ import java.util.List;
 import static awildgoose.gooseboy.Gooseboy.FRAMEBUFFER_HEIGHT;
 import static awildgoose.gooseboy.Gooseboy.FRAMEBUFFER_WIDTH;
 
-public class WasmCrate {
+public class GooseboyCrate {
 	public final Instance instance;
 	private int fbPtr;
 	public int fbSize;
@@ -23,7 +23,7 @@ public class WasmCrate {
 	public final List<Permission> permissions;
 	public boolean isOk = true;
 
-	public WasmCrate(Instance instance, String name) {
+	public GooseboyCrate(Instance instance, String name) {
 		this.instance = instance;
 		this.name = name;
 		this.permissions = this.loadPermissions();
@@ -47,7 +47,6 @@ public class WasmCrate {
 			} else
 				throw ie;
 		}
-
 	}
 
 	public void clearFramebuffer(int color) {
@@ -67,7 +66,7 @@ public class WasmCrate {
 		if (this.updateFunction != null) {
 			ProfilerFiller profilerFiller = Profiler.get();
 			long now = System.nanoTime();
-			profilerFiller.push("wasm");
+			profilerFiller.push("gooseboy");
 			try {
 				this.updateFunction.apply(now);
 			} catch (TrapException e) {
