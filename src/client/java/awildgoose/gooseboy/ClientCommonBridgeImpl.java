@@ -2,6 +2,8 @@ package awildgoose.gooseboy;
 
 import awildgoose.gooseboy.crate.WasmCrate;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.components.toasts.SystemToast;
+import net.minecraft.network.chat.Component;
 
 public class ClientCommonBridgeImpl implements ClientCommonBridge {
 	@Override
@@ -58,6 +60,16 @@ public class ClientCommonBridgeImpl implements ClientCommonBridge {
 	public void closeCrate(WasmCrate crate) {
 		RawAudioManager.stopAllSounds();
 		WasmInputManager.releaseMouse();
+	}
+
+	@Override
+	public void warnPermission(WasmCrate.Permission permission) {
+		SystemToast.add(
+				Minecraft.getInstance().getToastManager(),
+				SystemToast.SystemToastId.FILE_DROP_FAILURE,
+				Component.literal("Missing permissions"),
+				Component.literal("Crate attempted to access permission " + permission.name())
+		);
 	}
 
 	@Override

@@ -81,6 +81,7 @@ public class WasmCrate {
 	public void close() {
 		this.savePermissions();
 		this.storage.save();
+		CrateUtils.clearWarns();
 		Gooseboy.ccb.closeCrate(this);
 		Gooseboy.removeCrate(this);
 	}

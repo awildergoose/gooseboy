@@ -1,6 +1,7 @@
 package awildgoose.gooseboy.lib;
 
 import awildgoose.gooseboy.Gooseboy;
+import awildgoose.gooseboy.crate.CrateUtils;
 import awildgoose.gooseboy.crate.WasmCrate;
 import com.dylibso.chicory.annotations.HostModule;
 import com.dylibso.chicory.annotations.WasmExport;
@@ -11,7 +12,7 @@ import com.dylibso.chicory.runtime.Instance;
 public final class Audio {
 	@WasmExport
 	public long play_audio(Instance instance, int ptr, int len) {
-		if (!Gooseboy.getCrate(instance).permissions.contains(WasmCrate.Permission.AUDIO))
+		if (CrateUtils.doesNotHavePermission(instance, WasmCrate.Permission.AUDIO))
 			return -1;
 		byte[] pcm = instance.memory().readBytes(ptr, len);
 		return Gooseboy.ccb.playRawAudio(pcm);
@@ -19,35 +20,35 @@ public final class Audio {
 
 	@WasmExport
 	public void stop_audio(Instance instance, long id) {
-		if (!Gooseboy.getCrate(instance).permissions.contains(WasmCrate.Permission.AUDIO))
+		if (CrateUtils.doesNotHavePermission(instance, WasmCrate.Permission.AUDIO))
 			return;
 		Gooseboy.ccb.stopAudio(id);
 	}
 
 	@WasmExport
 	public void stop_all_audio(Instance instance) {
-		if (!Gooseboy.getCrate(instance).permissions.contains(WasmCrate.Permission.AUDIO))
+		if (CrateUtils.doesNotHavePermission(instance, WasmCrate.Permission.AUDIO))
 			return;
 		Gooseboy.ccb.stopAllAudio();
 	}
 
 	@WasmExport
 	public void set_audio_volume(Instance instance, long id, float volume) {
-		if (!Gooseboy.getCrate(instance).permissions.contains(WasmCrate.Permission.AUDIO))
+		if (CrateUtils.doesNotHavePermission(instance, WasmCrate.Permission.AUDIO))
 			return;
 		Gooseboy.ccb.setAudioVolume(id, volume);
 	}
 
 	@WasmExport
 	public void set_audio_pitch(Instance instance, long id, float pitch) {
-		if (!Gooseboy.getCrate(instance).permissions.contains(WasmCrate.Permission.AUDIO))
+		if (CrateUtils.doesNotHavePermission(instance, WasmCrate.Permission.AUDIO))
 			return;
 		Gooseboy.ccb.setAudioPitch(id, pitch);
 	}
 
 	@WasmExport
 	public int is_audio_playing(Instance instance, long id) {
-		if (!Gooseboy.getCrate(instance).permissions.contains(WasmCrate.Permission.AUDIO))
+		if (CrateUtils.doesNotHavePermission(instance, WasmCrate.Permission.AUDIO))
 			return 0;
 		return Gooseboy.ccb.isAudioPlaying(id) ? 1 : 0;
 	}

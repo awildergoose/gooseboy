@@ -24,4 +24,5 @@ public interface ClientCommonBridge {
 	boolean isAudioPlaying(long id);
 
 	void closeCrate(WasmCrate crate);
+	void warnPermission(WasmCrate.Permission permission);
 }

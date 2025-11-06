@@ -6,6 +6,7 @@ import com.dylibso.chicory.runtime.ImportValues;
 import com.dylibso.chicory.runtime.Instance;
 import com.dylibso.chicory.wasm.ChicoryException;
 import com.dylibso.chicory.wasm.Parser;
+import com.dylibso.chicory.wasm.UninstantiableException;
 import com.dylibso.chicory.wasm.types.MemoryLimits;
 import org.jetbrains.annotations.Nullable;
 
@@ -121,6 +122,10 @@ public class Wasm {
 		} catch (ChicoryException e) {
 			instance = null;
 			e.printStackTrace();
+
+			if (e instanceof UninstantiableException) {
+				Gooseboy.LOGGER.error("You may need to set the EXTENDED_MEMORY permission for this crate to work");
+			}
 		}
 
 		return instance;
