@@ -54,6 +54,13 @@ public final class Input {
 	}
 
 	@WasmExport
+	public int is_mouse_grabbed(Instance instance) {
+		if (!Gooseboy.getCrate(instance).permissions.contains(WasmCrate.Permission.INPUT_GRAB_MOUSE))
+			return 0;
+		return Gooseboy.ccb.isMouseGrabbed() ? 1 : 0;
+	}
+
+	@WasmExport
 	public int get_key_code(Instance instance) {
 		if (!Gooseboy.getCrate(instance).permissions.contains(WasmCrate.Permission.INPUT_KEYBOARD))
 			return -1;

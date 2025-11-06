@@ -50,6 +50,11 @@ public class ClientCommonBridgeImpl implements ClientCommonBridge {
 	}
 
 	@Override
+	public boolean isMouseGrabbed() {
+		return Minecraft.getInstance().mouseHandler.isMouseGrabbed();
+	}
+
+	@Override
 	public int getWindowWidth() {
 		return Minecraft.getInstance().getWindow().getWidth();
 	}

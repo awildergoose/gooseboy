@@ -13,6 +13,7 @@ public interface ClientCommonBridge {
 	void releaseMouse();
 	double getMouseAccumulatedDX();
 	double getMouseAccumulatedDY();
+	boolean isMouseGrabbed();
 
 	// audio
 	long playRawAudio(byte[] pcm);
