@@ -58,8 +58,8 @@ public class CenteredCrateScreen extends Screen {
 			this.tmpBuf = null;
 		}
 		this.texture.close();
-		this.crate.close();
 		Minecraft.getInstance().getTextureManager().release(this.framebufferTexture);
+		this.crate.close();
 		super.onClose();
 	}
 
