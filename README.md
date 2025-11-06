@@ -8,29 +8,31 @@
 
 This mod allows you to run [WebAssembly](https://webassembly.org/) scripts inside Minecraft on the client safely, allowing the creation of games, programs, and whatever your heart desires.
 
+> Disclaimer: Scripts are called crates in Gooseboy
+
 ## Features
 - Run games and applications inside Minecraft with minimal performance impact
 - Make games and applications using [Rust](https://rust-lang.org/) and [the standard library](https://github.com/awildergoose/gooseboy-rs)
-- Per-script permission control and storage
-- Script support for playing any audio, without reloading the game
+- Per-crate permission control and storage
+- Crate support for playing any audio, without reloading the game
 
 ## Permissions
-Every script by default has very minimal permissions to only the console and the mouse, you can change the permissions for each script by opening the settings of the script.
+Every crate by default has very minimal permissions to only the console and the mouse, you can change the permissions for each crate by opening the settings of the crate.
 The full list of permissions are as follows:
-- **CONSOLE**: Allows the script to log messages to the console.
-- **AUDIO**: Allows the script to play sounds and/or music, with any audio.
-- **INPUT_KEYBOARD**: Allows the script to know if you pressed a key.
-- **INPUT_MOUSE**: Allows the script to know if you clicked with your mouse.
-- **INPUT_MOUSE_POS**: Allows the script to know the position of your mouse, adjusted to the region of the screen.
-- **STORAGE_READ**: Allows the script to read from that script's 512 KBs of storage.
-- **STORAGE_WRITE**: Allows the script to write to its 512 KBs of storage.
-- **EXTENDED_MEMORY**: Allocates 64 MB of memory to the script instead of the regular 8 MB
+- **CONSOLE**: Allows the crate to log messages to the console.
+- **AUDIO**: Allows the crate to play sounds and/or music, with any audio.
+- **INPUT_KEYBOARD**: Allows the crate to know if you pressed a key.
+- **INPUT_MOUSE**: Allows the crate to know if you clicked with your mouse.
+- **INPUT_MOUSE_POS**: Allows the crate to know the position of your mouse, adjusted to the region of the screen.
+- **STORAGE_READ**: Allows the crate to read from that crate's 512 KBs of storage.
+- **STORAGE_WRITE**: Allows the crate to write to its 512 KBs of storage.
+- **EXTENDED_MEMORY**: Allocates 64 MB of memory to the crate instead of the regular 8 MB
 
 ### Security
-Scripts are run using the Java [Chicory](https://chicory.dev/) WASM runtime.
-For security, scripts can't:
+Crates are run using the Java [Chicory](https://chicory.dev/) WASM runtime.
+For security, crates can't:
 - access or modify Minecraft's state (e.g. where other players are in-game)
-- access or modify other scripts' storage
+- access or modify other crates' storage
 - access or modify your files
 - render onto the world
 - run in the background
@@ -38,16 +40,16 @@ For security, scripts can't:
 - use your internet or communicate with any server
 - run java code
 
-If you’ve found a script that can bypass these restrictions, please report it via [GitHub](https://github.com/awildergoose/).
+If you’ve found a crate that can bypass these restrictions, please report it via [GitHub](https://github.com/awildergoose/).
 
-## How-to add scripts
-You can add scripts by moving them to the scripts folder. You can open the scripts folder from the menu by pressing the "Open scripts folder location" button at the bottom.
+## How-to add crates
+You can add crates by moving them to the crates folder. You can open the crates folder from the menu by pressing the "Open crates folder location" button at the bottom.
 
-## How-to make scripts
-You can make scripts in any language that compiles to WebAssembly (WASI is unsupported due to security concerns).
+## How-to make crates
+You can make crates in any language that compiles to WebAssembly (WASI is unsupported due to security concerns).
 The recommended language to use is [Rust](https://rust-lang.org/), and so the [standard library](https://github.com/awildergoose/gooseboy-rs) is made in Rust as well.
 
-An example script is as follows:
+An example crate is as follows:
 ```rs
 #![no_main]
 
@@ -55,8 +57,8 @@ use gooseboy::framebuffer::{get_framebuffer_width, init_fb};
 use gooseboy::text::{draw_text, get_text_width};
 use gooseboy::{color::Color, framebuffer::clear_framebuffer};
 
-// Every script has to have a main function, make sure to decorate it
-// with gooseboy::main though, or else the script won't start
+// Every crate has to have a main function, make sure to decorate it
+// with gooseboy::main though, or else the crate won't start
 #[gooseboy::main]
 fn main() {
     // Initializes the framebuffer, you are required to initialize this
@@ -64,7 +66,7 @@ fn main() {
     init_fb();
 }
 
-// This is also required in every script, the gooseboy::update is required
+// This is also required in every crate, the gooseboy::update is required
 // here too, this function runs X times per second where X is equal to your
 // maximum framerate in the options
 #[gooseboy::update]
