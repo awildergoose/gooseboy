@@ -11,6 +11,8 @@ public interface ClientCommonBridge {
 	int getMouseYInFramebuffer();
 	void grabMouse();
 	void releaseMouse();
+	double getMouseAccumulatedDX();
+	double getMouseAccumulatedDY();
 
 	// audio
 	long playRawAudio(byte[] pcm);

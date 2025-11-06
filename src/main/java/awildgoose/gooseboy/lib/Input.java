@@ -40,6 +40,20 @@ public final class Input {
 	}
 
 	@WasmExport
+	public double get_mouse_accumulated_dx(Instance instance) {
+		if (!Gooseboy.getCrate(instance).permissions.contains(WasmCrate.Permission.INPUT_MOUSE_POS))
+			return 0;
+		return Gooseboy.ccb.getMouseAccumulatedDX();
+	}
+
+	@WasmExport
+	public double get_mouse_accumulated_dy(Instance instance) {
+		if (!Gooseboy.getCrate(instance).permissions.contains(WasmCrate.Permission.INPUT_MOUSE_POS))
+			return 0;
+		return Gooseboy.ccb.getMouseAccumulatedDY();
+	}
+
+	@WasmExport
 	public int get_key_code(Instance instance) {
 		if (!Gooseboy.getCrate(instance).permissions.contains(WasmCrate.Permission.INPUT_KEYBOARD))
 			return -1;

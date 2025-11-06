@@ -40,6 +40,16 @@ public class ClientCommonBridgeImpl implements ClientCommonBridge {
 	}
 
 	@Override
+	public double getMouseAccumulatedDX() {
+		return WasmInputManager.LAST_ACCUMULATED_MOUSE_X;
+	}
+
+	@Override
+	public double getMouseAccumulatedDY() {
+		return WasmInputManager.LAST_ACCUMULATED_MOUSE_Y;
+	}
+
+	@Override
 	public int getWindowWidth() {
 		return Minecraft.getInstance().getWindow().getWidth();
 	}

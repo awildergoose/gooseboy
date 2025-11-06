@@ -16,6 +16,10 @@ public class WasmInputManager {
 	private static final boolean[] keys = new boolean[GLFW.GLFW_KEY_LAST + 1];
 	private static final Queue<Integer> keyQueue = new ArrayDeque<>();
 
+	// These values are set from a mixin right before the values get reset to 0s
+	public static double LAST_ACCUMULATED_MOUSE_X = 0;
+	public static double LAST_ACCUMULATED_MOUSE_Y = 0;
+
 	public static void update() {
 		long window = Minecraft.getInstance().getWindow().handle();
 
@@ -85,7 +89,8 @@ public class WasmInputManager {
 				var yPos = minecraft
 						.getWindow()
 						.getScreenHeight() / 2;
-				accessor.gooseboy$onMove(minecraft.getWindow().handle(), xPos, yPos);
+				accessor.gooseboy$setXPos(xPos);
+				accessor.gooseboy$setYPos(yPos);
 				InputConstants.grabOrReleaseMouse(
 						minecraft.getWindow(), 212995,
 						xPos, yPos);

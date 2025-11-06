@@ -3,14 +3,19 @@ package awildgoose.gooseboy.mixin.client;
 import net.minecraft.client.MouseHandler;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
-import org.spongepowered.asm.mixin.gen.Invoker;
 
 @Mixin(MouseHandler.class)
 public interface MouseHandlerAccessor {
-	@Invoker("onMove")
-	void gooseboy$onMove(long handle, double x, double y);
+	@Accessor("xpos")
+	void gooseboy$setXPos(double value);
+	@Accessor("ypos")
+	void gooseboy$setYPos(double value);
 	@Accessor("mouseGrabbed")
 	boolean gooseboy$isMouseGrabbed();
 	@Accessor("mouseGrabbed")
 	void gooseboy$setMouseGrabbed(boolean grabbed);
+	@Accessor("accumulatedDX")
+	double gooseboy$getAccumulatedDX();
+	@Accessor("accumulatedDY")
+	double gooseboy$getAccumulatedDY();
 }

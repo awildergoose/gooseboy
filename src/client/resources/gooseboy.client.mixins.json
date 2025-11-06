@@ -3,7 +3,8 @@
 	"package": "awildgoose.gooseboy.mixin.client",
 	"compatibilityLevel": "JAVA_21",
 	"client": [
-		"MouseHandlerAccessor"
+		"MouseHandlerAccessor",
+		"DontTurnPlayerIfInCrateMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1
