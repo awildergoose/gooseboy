@@ -15,6 +15,7 @@ public class CrateStorage {
 
 	private final byte[] data = new byte[STORAGE_SIZE];
 	private final Path filePath;
+	private boolean dirty = false;
 
 	public CrateStorage(String name) {
 		this.filePath = resolveFilePath(name);
@@ -55,11 +56,13 @@ public class CrateStorage {
 
 		byte[] chunk = mem.readBytes(wasmPtr, toWrite);
 		System.arraycopy(chunk, 0, data, offset, toWrite);
+		this.dirty = true;
 		return toWrite;
 	}
 
 	public void clear() {
 		java.util.Arrays.fill(data, (byte) 0);
+		this.dirty = true;
 	}
 
 	public int size() {
@@ -159,6 +162,9 @@ public class CrateStorage {
 	}
 
 	public void save() {
+		if (!this.dirty)
+			return;
+
 		try {
 			Files.createDirectories(filePath.getParent());
 
@@ -180,7 +186,6 @@ public class CrateStorage {
 			} catch (AtomicMoveNotSupportedException ex) {
 				Files.move(temp, filePath, StandardCopyOption.REPLACE_EXISTING);
 			}
-
 		} catch (IOException e) {
 			Gooseboy.LOGGER.error("Failed to save WASM storage crate:", e);
 		}

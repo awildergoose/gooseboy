@@ -106,7 +106,10 @@ public class Wasm {
 
 		var module = Parser.parse(wasm.get());
 		var builder = Instance.builder(module)
-				.withImportValues(Registrar.register(ImportValues.builder()).build()).withMachineFactory(
+				.withImportValues(Registrar.register(ImportValues.builder()).build());
+
+		if (!ConfigManager.getConfig().useInterpreter)
+			builder.withMachineFactory(
 						MachineFactoryCompiler::compile).withMemoryLimits(
 						new MemoryLimits(initialPages, maxPages)
 				);

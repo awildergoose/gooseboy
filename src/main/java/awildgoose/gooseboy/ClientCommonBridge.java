@@ -23,9 +23,5 @@ public interface ClientCommonBridge {
 	void setAudioPitch(long id, float pitch);
 	boolean isAudioPlaying(long id);
 
-	// game
-	int getWindowWidth();
-	int getWindowHeight();
-
 	void closeCrate(WasmCrate crate);
 }

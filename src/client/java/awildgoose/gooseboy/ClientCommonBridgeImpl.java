@@ -55,16 +55,6 @@ public class ClientCommonBridgeImpl implements ClientCommonBridge {
 	}
 
 	@Override
-	public int getWindowWidth() {
-		return Minecraft.getInstance().getWindow().getWidth();
-	}
-
-	@Override
-	public int getWindowHeight() {
-		return Minecraft.getInstance().getWindow().getHeight();
-	}
-
-	@Override
 	public void closeCrate(WasmCrate crate) {
 		RawAudioManager.stopAllSounds();
 		WasmInputManager.releaseMouse();

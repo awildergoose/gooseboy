@@ -26,14 +26,15 @@ public final class ConfigManager {
 			})
 			.create();
 
-	public static class CrateSetting {
+	public static class CrateSettings {
 		public List<WasmCrate.Permission> permissions = new ArrayList<>();
 	}
 
 	public static class RootConfig {
 		@SuppressWarnings("unused") public String version = "1.0.0";
-		public Map<String, CrateSetting> crate_settings = new HashMap<>();
-		public CrateSetting default_crate_settings = new CrateSetting();
+		public boolean useInterpreter = false;
+		public Map<String, CrateSettings> crate_settings = new HashMap<>();
+		public CrateSettings default_crate_settings = new CrateSettings();
 	}
 
 	private static RootConfig config;
@@ -70,11 +71,11 @@ public final class ConfigManager {
 		if (cfg.default_crate_settings != null) {
 			cfg.default_crate_settings.permissions.removeIf(Objects::isNull);
 		} else {
-			cfg.default_crate_settings = new CrateSetting();
+			cfg.default_crate_settings = new CrateSettings();
 		}
 
 		if (cfg.crate_settings != null) {
-			for (CrateSetting s : cfg.crate_settings.values()) {
+			for (CrateSettings s : cfg.crate_settings.values()) {
 				if (s != null && s.permissions != null) s.permissions.removeIf(Objects::isNull);
 			}
 		} else {
@@ -103,7 +104,7 @@ public final class ConfigManager {
 
 	public static synchronized List<WasmCrate.Permission> getEffectivePermissions(String crateName) {
 		RootConfig cfg = getConfig();
-		CrateSetting specific = cfg.crate_settings.get(crateName);
+		CrateSettings specific = cfg.crate_settings.get(crateName);
 		if (specific != null && specific.permissions != null && !specific.permissions.isEmpty()) {
 			return List.copyOf(specific.permissions);
 		}
@@ -112,15 +113,9 @@ public final class ConfigManager {
 
 	public static synchronized void setCratePermissions(String crateName, Collection<WasmCrate.Permission> permissions) {
 		RootConfig cfg = getConfig();
-		CrateSetting s = new CrateSetting();
+		CrateSettings s = new CrateSettings();
 		s.permissions = new ArrayList<>(permissions);
 		cfg.crate_settings.put(crateName, s);
-		save();
-	}
-
-	public static synchronized void removeCrateConfig(String crateName) {
-		RootConfig cfg = getConfig();
-		cfg.crate_settings.remove(crateName);
 		save();
 	}
 }

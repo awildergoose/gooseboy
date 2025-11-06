@@ -11,7 +11,7 @@ public class Registrar {
 		Input input = new Input();
 		Audio audio = new Audio();
 		Storage storage = new Storage();
-		Game game = new Game();
+		GameSystem system = new GameSystem();
 
 		HostFunction[] consoleHostFunctions = console.toHostFunctions();
 		HostFunction[] framebufferHostFunctions = fb.toHostFunctions();
@@ -19,7 +19,7 @@ public class Registrar {
 		HostFunction[] inputHostFunctions = input.toHostFunctions();
 		HostFunction[] audioHostFunctions = audio.toHostFunctions();
 		HostFunction[] storageHostFunctions = storage.toHostFunctions();
-		HostFunction[] gameHostFunctions = game.toHostFunctions();
+		HostFunction[] systemHostFunctions = system.toHostFunctions();
 
 		return builder.addFunction(consoleHostFunctions)
 				.addFunction(framebufferHostFunctions)
@@ -27,6 +27,6 @@ public class Registrar {
 				.addFunction(inputHostFunctions)
 				.addFunction(audioHostFunctions)
 				.addFunction(storageHostFunctions)
-				.addFunction(gameHostFunctions);
+				.addFunction(systemHostFunctions);
 	}
 }
