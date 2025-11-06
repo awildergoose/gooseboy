@@ -3,6 +3,7 @@
 	"package": "awildgoose.gooseboy.mixin.client",
 	"compatibilityLevel": "JAVA_21",
 	"client": [
+		"MouseHandlerAccessor"
 	],
 	"injectors": {
 		"defaultRequire": 1

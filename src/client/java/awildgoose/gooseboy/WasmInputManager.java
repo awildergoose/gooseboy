@@ -1,7 +1,11 @@
 package awildgoose.gooseboy;
 
+import awildgoose.gooseboy.mixin.client.MouseHandlerAccessor;
 import awildgoose.gooseboy.screen.WasmScreen;
+import com.mojang.blaze3d.platform.InputConstants;
+import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.input.InputQuirks;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayDeque;
@@ -64,7 +68,32 @@ public class WasmInputManager {
 	}
 
 	public static void grabMouse() {
-		Minecraft.getInstance().mouseHandler.grabMouse();
+		var minecraft = Minecraft.getInstance();
+		var mouseHandler = minecraft.mouseHandler;
+		if (minecraft.isWindowActive()) {
+			//noinspection ReferenceToMixin
+			var accessor = (MouseHandlerAccessor)mouseHandler;
+			if (!accessor.gooseboy$isMouseGrabbed()) {
+				if (InputQuirks.RESTORE_KEY_STATE_AFTER_MOUSE_GRAB) {
+					KeyMapping.setAll();
+				}
+
+				accessor.gooseboy$setMouseGrabbed(true);
+				var xPos = minecraft
+						.getWindow()
+						.getScreenWidth() / 2;
+				var yPos = minecraft
+						.getWindow()
+						.getScreenHeight() / 2;
+				accessor.gooseboy$onMove(minecraft.getWindow().handle(), xPos, yPos);
+				InputConstants.grabOrReleaseMouse(
+						minecraft.getWindow(), 212995,
+						xPos, yPos);
+	//			minecraft.setScreen(null);
+				minecraft.missTime = 10000;
+				mouseHandler.cursorEntered();
+			}
+		}
 	}
 
 	public static void releaseMouse() {
