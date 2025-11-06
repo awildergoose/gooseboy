@@ -97,12 +97,11 @@ public class Wasm {
 		return (kilobytes + WASM_PAGE_SIZE_KB - 1) / WASM_PAGE_SIZE_KB;
 	}
 
-	public static @Nullable Instance createInstance(String filename, int maximumMemoryKilobytes) {
+	public static @Nullable Instance createInstance(String filename, int initialMemoryKilobytes, int maximumMemoryKilobytes) {
 		var wasm = loadWasm(filename);
 		if (wasm.isEmpty()) return null;
 
-		int minimumInitialKb = 2048;
-		int initialPages = kilobytesToPages(Math.min(maximumMemoryKilobytes, minimumInitialKb));
+		int initialPages = kilobytesToPages(initialMemoryKilobytes);
 		int maxPages = kilobytesToPages(maximumMemoryKilobytes);
 
 		var module = Parser.parse(wasm.get());

@@ -58,6 +58,9 @@ public class WasmSelectionList extends ObjectSelectionList<WasmSelectionList.Ent
 				// run
 				var permissions = ConfigManager.getEffectivePermissions(text);
 				var instance = Wasm.createInstance(text,
+                permissions.contains(WasmCrate.Permission.EXTENDED_MEMORY) ?
+														   32 * 1024
+														   : 6 * 1024,
 												   permissions.contains(WasmCrate.Permission.EXTENDED_MEMORY) ?
 														   64 * 1024
 														   : 8 * 1024);
