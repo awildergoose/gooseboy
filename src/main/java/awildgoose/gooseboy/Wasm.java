@@ -25,12 +25,12 @@ import java.util.stream.Stream;
 
 public class Wasm {
 	public static Optional<byte[]> loadWasm(String relativePath) {
-		Path wasmPath = Gooseboy.getGooseboyDirectory().resolve("scripts").resolve(relativePath);
+		Path wasmPath = Gooseboy.getGooseboyDirectory().resolve("crates").resolve(relativePath);
 
 		if (!Files.exists(wasmPath)) {
 			// Try loading from the JAR
 			try (InputStream in = Gooseboy.class.getResourceAsStream(
-					"/assets/gooseboy/scripts/" + relativePath
+					"/assets/gooseboy/crates/" + relativePath
 			)) {
 				if (in == null) {
 					return Optional.empty();
@@ -49,16 +49,16 @@ public class Wasm {
 		}
 	}
 
-	public static List<String> listWasmScripts() {
-		Set<String> scripts = new HashSet<>();
+	public static List<String> listWasmCrates() {
+		Set<String> crates = new HashSet<>();
 
 		Consumer<Stream<Path>> addWasmFiles = stream ->
 				stream.filter(Files::isRegularFile)
 						.filter(f -> f.getFileName().toString().toLowerCase().endsWith(".wasm"))
 						.map(f -> f.getFileName().toString())
-						.forEach(scripts::add);
+						.forEach(crates::add);
 
-		Path wasmPath = Gooseboy.getGooseboyDirectory().resolve("scripts");
+		Path wasmPath = Gooseboy.getGooseboyDirectory().resolve("crates");
 		if (Files.exists(wasmPath)) {
 			try (Stream<Path> stream = Files.list(wasmPath)) {
 				addWasmFiles.accept(stream);
@@ -66,7 +66,7 @@ public class Wasm {
 		}
 
 		try {
-			URL resource = Gooseboy.class.getResource("/assets/gooseboy/scripts/");
+			URL resource = Gooseboy.class.getResource("/assets/gooseboy/crates/");
 
 			if (resource != null) {
 				if ("jar".equals(resource.getProtocol())) {
@@ -76,8 +76,8 @@ public class Wasm {
 					while (entries.hasMoreElements()) {
 						JarEntry entry = entries.nextElement();
 						String name = entry.getName();
-						if (name.startsWith("assets/gooseboy/scripts/") && name.endsWith(".wasm")) {
-							scripts.add(Paths.get(name).getFileName().toString());
+						if (name.startsWith("assets/gooseboy/crates/") && name.endsWith(".wasm")) {
+							crates.add(Paths.get(name).getFileName().toString());
 						}
 					}
 				} else if ("file".equals(resource.getProtocol())) {
@@ -89,7 +89,7 @@ public class Wasm {
 			}
 		} catch (Exception ignored) {}
 
-		return new ArrayList<>(scripts);
+		return new ArrayList<>(crates);
 	}
 
 	public static final int WASM_PAGE_SIZE_KB = 64;
