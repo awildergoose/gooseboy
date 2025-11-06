@@ -24,6 +24,7 @@ The full list of permissions are as follows:
 - **INPUT_KEYBOARD**: Allows the crate to know if you pressed a key.
 - **INPUT_MOUSE**: Allows the crate to know if you clicked with your mouse.
 - **INPUT_MOUSE_POS**: Allows the crate to know the position of your mouse, adjusted to the region of the screen.
+- **INPUT_GRAB_MOUSE**: Allows the crate to hide the mouse and lock it to the center
 - **STORAGE_READ**: Allows the crate to read from that crate's 512 KBs of storage.
 - **STORAGE_WRITE**: Allows the crate to write to its 512 KBs of storage.
 - **EXTENDED_MEMORY**: Allocates 64 MB of memory to the crate instead of the regular 8 MB

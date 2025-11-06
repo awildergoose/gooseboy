@@ -8,7 +8,9 @@ import com.dylibso.chicory.runtime.TrapException;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import static awildgoose.gooseboy.Gooseboy.FRAMEBUFFER_HEIGHT;
 import static awildgoose.gooseboy.Gooseboy.FRAMEBUFFER_WIDTH;
@@ -94,14 +96,24 @@ public class GooseboyCrate {
 	}
 
 	public enum Permission {
-		CONSOLE,
-		AUDIO,
-		INPUT_KEYBOARD,
-		INPUT_MOUSE,
-		INPUT_MOUSE_POS,
-		INPUT_GRAB_MOUSE,
-		STORAGE_READ,
-		STORAGE_WRITE,
-		EXTENDED_MEMORY
+		CONSOLE(0),
+		AUDIO(1),
+		INPUT_KEYBOARD(2),
+		INPUT_MOUSE(3),
+		INPUT_MOUSE_POS(4),
+		INPUT_GRAB_MOUSE(5),
+		STORAGE_READ(6),
+		STORAGE_WRITE(7),
+		EXTENDED_MEMORY(8);
+
+		private final int id;
+
+		Permission(int id) {
+			this.id = id;
+		}
+
+		public static Optional<Permission> intToEnum(int i) {
+			return Arrays.stream(Permission.values()).filter(f -> f.id == i).findFirst();
+		}
 	}
 }
