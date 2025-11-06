@@ -46,6 +46,20 @@ public final class Input {
 		return Gooseboy.ccb.getKeyCode();
 	}
 
+	@WasmExport
+	public void grab_mouse(Instance instance) {
+		if (!Gooseboy.getCrate(instance).permissions.contains(WasmCrate.Permission.INPUT_GRAB_MOUSE))
+			return;
+		Gooseboy.ccb.grabMouse();
+	}
+
+	@WasmExport
+	public void release_mouse(Instance instance) {
+		if (!Gooseboy.getCrate(instance).permissions.contains(WasmCrate.Permission.INPUT_GRAB_MOUSE))
+			return;
+		Gooseboy.ccb.releaseMouse();
+	}
+
 	public HostFunction[] toHostFunctions() {
 		return Input_ModuleFactory.toHostFunctions(this);
 	}

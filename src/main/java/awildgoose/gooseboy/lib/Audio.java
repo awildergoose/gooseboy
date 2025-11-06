@@ -25,6 +25,13 @@ public final class Audio {
 	}
 
 	@WasmExport
+	public void stop_all_audio(Instance instance) {
+		if (!Gooseboy.getCrate(instance).permissions.contains(WasmCrate.Permission.AUDIO))
+			return;
+		Gooseboy.ccb.stopAllAudio();
+	}
+
+	@WasmExport
 	public void set_audio_volume(Instance instance, long id, float volume) {
 		if (!Gooseboy.getCrate(instance).permissions.contains(WasmCrate.Permission.AUDIO))
 			return;

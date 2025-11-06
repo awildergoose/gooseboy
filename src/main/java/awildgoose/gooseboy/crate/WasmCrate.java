@@ -81,6 +81,7 @@ public class WasmCrate {
 	public void close() {
 		this.savePermissions();
 		this.storage.save();
+		Gooseboy.ccb.closeCrate(this);
 		Gooseboy.removeCrate(this);
 	}
 
@@ -98,6 +99,7 @@ public class WasmCrate {
 		INPUT_KEYBOARD,
 		INPUT_MOUSE,
 		INPUT_MOUSE_POS,
+		INPUT_GRAB_MOUSE,
 		STORAGE_READ,
 		STORAGE_WRITE,
 		EXTENDED_MEMORY

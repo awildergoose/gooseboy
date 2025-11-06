@@ -59,7 +59,6 @@ public class RawAudioManager {
 		});
 	}
 
-	// TODO export to WASM
 	public static void stopAllSounds() {
 		for (PlayingSound ps : List.copyOf(active)) {
 			AL10.alSourceStop(ps.source);

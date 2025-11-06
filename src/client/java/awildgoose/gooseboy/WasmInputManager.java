@@ -62,4 +62,12 @@ public class WasmInputManager {
 		if (fbY >= Gooseboy.FRAMEBUFFER_HEIGHT) fbY = Gooseboy.FRAMEBUFFER_HEIGHT - 1;
 		return fbY;
 	}
+
+	public static void grabMouse() {
+		Minecraft.getInstance().mouseHandler.grabMouse();
+	}
+
+	public static void releaseMouse() {
+		Minecraft.getInstance().mouseHandler.releaseMouse();
+	}
 }

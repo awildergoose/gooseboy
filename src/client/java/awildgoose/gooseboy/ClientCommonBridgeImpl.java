@@ -1,5 +1,8 @@
 package awildgoose.gooseboy;
 
+import awildgoose.gooseboy.crate.WasmCrate;
+import net.minecraft.client.Minecraft;
+
 public class ClientCommonBridgeImpl implements ClientCommonBridge {
 	@Override
 	public int getKeyCode() {
@@ -27,6 +30,32 @@ public class ClientCommonBridgeImpl implements ClientCommonBridge {
 	}
 
 	@Override
+	public void grabMouse() {
+		WasmInputManager.grabMouse();
+	}
+
+	@Override
+	public void releaseMouse() {
+		WasmInputManager.releaseMouse();
+	}
+
+	@Override
+	public int getWindowWidth() {
+		return Minecraft.getInstance().getWindow().getWidth();
+	}
+
+	@Override
+	public int getWindowHeight() {
+		return Minecraft.getInstance().getWindow().getHeight();
+	}
+
+	@Override
+	public void closeCrate(WasmCrate crate) {
+		RawAudioManager.stopAllSounds();
+		WasmInputManager.releaseMouse();
+	}
+
+	@Override
 	public long playRawAudio(byte[] pcm) {
 		return RawAudioManager.play(pcm);
 	}
@@ -34,6 +63,11 @@ public class ClientCommonBridgeImpl implements ClientCommonBridge {
 	@Override
 	public void stopAudio(long id) {
 		RawAudioManager.stop(id);
+	}
+
+	@Override
+	public void stopAllAudio() {
+		RawAudioManager.stopAllSounds();
 	}
 
 	@Override

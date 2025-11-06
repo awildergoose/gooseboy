@@ -1,7 +1,6 @@
 package awildgoose.gooseboy.screen;
 
 import awildgoose.gooseboy.Gooseboy;
-import awildgoose.gooseboy.RawAudioManager;
 import awildgoose.gooseboy.crate.WasmCrate;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
@@ -111,7 +110,6 @@ public class WasmScreen extends Screen {
 		}
 		this.texture.close();
 		this.crate.close();
-		RawAudioManager.stopAllSounds();
 		super.onClose();
 	}
 
