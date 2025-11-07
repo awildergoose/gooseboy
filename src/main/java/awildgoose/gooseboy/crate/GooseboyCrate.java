@@ -51,12 +51,11 @@ public class GooseboyCrate {
 		}
 	}
 
-	public void clearFramebuffer(int color) {
+	public void clearSurface(int ptr, int size, int color) {
 		var mem = this.instance.memory();
-		int p = this.fbPtr;
 
-		for (int i = 0; i < this.fbSize; i += 4) {
-			mem.writeI32(p + i, color);
+		for (int i = 0; i < size; i += 4) {
+			mem.writeI32(ptr + i, color);
 		}
 	}
 

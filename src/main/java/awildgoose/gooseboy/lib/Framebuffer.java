@@ -22,8 +22,8 @@ public final class Framebuffer {
 	}
 
 	@WasmExport
-	public void clear_framebuffer(Instance instance, int color) {
-		Gooseboy.getCrate(instance).clearFramebuffer(color);
+	public void clear_surface(Instance instance, int ptr, int size, int color) {
+		Gooseboy.getCrate(instance).clearSurface(ptr, size, color);
 	}
 
 	public HostFunction[] toHostFunctions() {
