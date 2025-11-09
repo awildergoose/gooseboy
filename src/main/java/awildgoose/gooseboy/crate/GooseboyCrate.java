@@ -103,7 +103,8 @@ public class GooseboyCrate {
 		INPUT_GRAB_MOUSE(5),
 		STORAGE_READ(6),
 		STORAGE_WRITE(7),
-		EXTENDED_MEMORY(8);
+		EXTENDED_MEMORY(8),
+		EXTENDED_EXTENDED_MEMORY(9);
 
 		private final int id;
 

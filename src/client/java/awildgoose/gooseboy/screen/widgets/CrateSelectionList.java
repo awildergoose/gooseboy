@@ -57,13 +57,22 @@ public class CrateSelectionList extends ObjectSelectionList<CrateSelectionList.E
 			), (b) -> {
 				// run
 				var permissions = ConfigManager.getEffectivePermissions(text);
-				var instance = Wasm.createInstance(text,
-                permissions.contains(GooseboyCrate.Permission.EXTENDED_MEMORY) ?
-														   32 * 1024
-														   : 6 * 1024,
-												   permissions.contains(GooseboyCrate.Permission.EXTENDED_MEMORY) ?
-														   64 * 1024
-														   : 8 * 1024);
+
+				int initialMemory;
+				int maxMemory;
+
+				if (permissions.contains(GooseboyCrate.Permission.EXTENDED_EXTENDED_MEMORY)) {
+					initialMemory = 256 * 1024;
+					maxMemory = 512 * 1024;
+				} else if (permissions.contains(GooseboyCrate.Permission.EXTENDED_MEMORY)) {
+					initialMemory = 32 * 1024;
+					maxMemory = 64 * 1024;
+				} else {
+					initialMemory = 6 * 1024;
+					maxMemory = 8 * 1024;
+				}
+
+				var instance = Wasm.createInstance(text, initialMemory, maxMemory);
 				if (instance == null) {
 					SystemToast.add(minecraft.getToastManager(), SystemToast.SystemToastId.CHUNK_LOAD_FAILURE,
 									Component.literal("Failed to load crate"), Component.literal("Check the " +
