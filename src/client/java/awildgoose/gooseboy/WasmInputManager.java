@@ -51,24 +51,49 @@ public class WasmInputManager {
 		return GLFW.glfwGetMouseButton(window, button) == GLFW.GLFW_PRESS;
 	}
 
+	private static int mapMouseToFramebuffer(boolean xAxis) {
+		Minecraft mc = Minecraft.getInstance();
+		var window = mc.getWindow();
+
+		int guiW = window.getGuiScaledWidth();
+		int guiH = window.getGuiScaledHeight();
+		double mouseGui = xAxis
+				? mc.mouseHandler.xpos() * (double) guiW / (double) window.getScreenWidth()
+				: mc.mouseHandler.ypos() * (double) guiH / (double) window.getScreenHeight();
+
+		double availableW = Math.max(1, guiW - 20);
+		double availableH = Math.max(1, guiH - 20);
+		double scale = Math.min(availableW / (double) CenteredCrateScreen.IMAGE_WIDTH,
+								availableH / (double) CenteredCrateScreen.IMAGE_HEIGHT);
+
+		int bgWidth = (int) Math.round(CenteredCrateScreen.IMAGE_WIDTH * scale);
+		int bgHeight = (int) Math.round(CenteredCrateScreen.IMAGE_HEIGHT * scale);
+		int bgX = (guiW - bgWidth) / 2;
+		int bgY = (guiH - bgHeight) / 2;
+		int inset = (int) Math.round(5 * scale);
+
+		int fbGuiX = bgX + inset;
+		int fbGuiY = bgY + inset;
+
+		double fbPixelD = Math.floor((mouseGui - (xAxis ? fbGuiX : fbGuiY)) / scale);
+		int fbPixel = (int) fbPixelD;
+
+		if (fbPixel < 0) fbPixel = 0;
+		if (xAxis) {
+			if (fbPixel >= Gooseboy.FRAMEBUFFER_WIDTH) fbPixel = Gooseboy.FRAMEBUFFER_WIDTH - 1;
+		} else {
+			if (fbPixel >= Gooseboy.FRAMEBUFFER_HEIGHT) fbPixel = Gooseboy.FRAMEBUFFER_HEIGHT - 1;
+		}
+
+		return fbPixel;
+	}
+
 	public static int getMouseXInFramebuffer() {
-		int width = Minecraft.getInstance().getWindow().getScreenWidth() / 2;
-		double mouseX =
-				Minecraft.getInstance().mouseHandler.xpos() * (double) width / (double)Minecraft.getInstance().getWindow().getScreenWidth();
-		int fbX = (int)(mouseX - (((width - CenteredCrateScreen.IMAGE_WIDTH) / 2) + 5));
-		if (fbX < 0) fbX = 0;
-		if (fbX >= Gooseboy.FRAMEBUFFER_WIDTH) fbX = Gooseboy.FRAMEBUFFER_WIDTH - 1;
-		return fbX;
+		return mapMouseToFramebuffer(true);
 	}
 
 	public static int getMouseYInFramebuffer() {
-		int height = Minecraft.getInstance().getWindow().getScreenHeight() / 2;
-		double mouseY =
-				Minecraft.getInstance().mouseHandler.ypos() * (double) height / (double) Minecraft.getInstance().getWindow().getScreenHeight();
-		int fbY = (int)(mouseY - (((height - CenteredCrateScreen.IMAGE_HEIGHT) / 2) + 5));
-		if (fbY < 0) fbY = 0;
-		if (fbY >= Gooseboy.FRAMEBUFFER_HEIGHT) fbY = Gooseboy.FRAMEBUFFER_HEIGHT - 1;
-		return fbY;
+		return mapMouseToFramebuffer(false);
 	}
 
 	public static void grabMouse() {

@@ -24,6 +24,9 @@ public class CenteredCrateScreen extends Screen {
 	public static final int IMAGE_WIDTH = 330;
 	public static final int IMAGE_HEIGHT = 214;
 
+	private static final int GUI_PADDING = 20;
+	private static final int INSET_PIXELS = 5;
+
 	private final GooseboyCrate crate;
 	private final ResourceLocation framebufferTexture;
 	private DynamicTexture texture;
@@ -74,84 +77,92 @@ public class CenteredCrateScreen extends Screen {
 	}
 
 	@Override
-	public void render(GuiGraphics guiGraphics, int i, int j, float f) {
-		super.render(guiGraphics, i, j, f);
+	public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
+		super.render(guiGraphics, mouseX, mouseY, partialTicks);
 
 		long now = System.nanoTime();
-		boolean shouldUpdate = (now - lastRenderNano) >= this.frameIntervalNano;
+		updateTextureIfNeeded(now);
 
-		if (shouldUpdate) {
-			if (this.crate.isOk) {
-				this.crate.update();
-
-				byte[] fbBytes = this.crate.getFramebufferBytes();
-				tmpBuf.clear();
-				tmpBuf.put(fbBytes).flip();
-
-				var pixels = this.texture.getPixels();
-				if (pixels != null)
-					MemoryUtil.memCopy(MemoryUtil.memAddress(tmpBuf), pixels.getPointer(), this.crate.fbSize);
-
-				texture.upload();
-				lastRenderNano = now;
-			} else if (!failed) {
-				assert minecraft != null;
-				SystemToast.add(minecraft.getToastManager(), SystemToast.SystemToastId.CHUNK_LOAD_FAILURE,
-								Component.literal("Crate aborted during update"), Component.literal("Check the " +
-																											"console for more information."));
-				failed = true;
-			}
-		}
-
-		double availableW = Math.max(1, this.width - 20);
-		double availableH = Math.max(1, this.height - 20);
-		double scale = Math.min(availableW / (double) IMAGE_WIDTH, availableH / (double) IMAGE_HEIGHT);
-
-		int bgWidth = (int) Math.round(IMAGE_WIDTH * scale);
-		int bgHeight = (int) Math.round(IMAGE_HEIGHT * scale);
-
-		int fbDestWidth = (int) Math.round(FRAMEBUFFER_WIDTH * scale);
-		int fbDestHeight = (int) Math.round(FRAMEBUFFER_HEIGHT * scale);
-
-		int bgX = (this.width - bgWidth) / 2;
-		int bgY = (this.height - bgHeight) / 2;
-
-		int inset = (int) Math.round(5 * scale);
-		int fbX = bgX + inset;
-		int fbY = bgY + inset;
+		Layout layout = Layout.forSize(this.width, this.height);
 
 		RenderSystem.setShaderTexture(0, texture.getTextureView());
 		guiGraphics.blit(
 				RenderPipelines.GUI_TEXTURED,
 				this.framebufferTexture,
-				fbX, fbY,
+				layout.fbX, layout.fbY,
 				0, 0,
-				fbDestWidth,
-				fbDestHeight,
-				fbDestWidth,
-				fbDestHeight
+				layout.fbDestWidth,
+				layout.fbDestHeight,
+				layout.fbDestWidth,
+				layout.fbDestHeight
 		);
 	}
 
 	@Override
-	public void renderBackground(GuiGraphics guiGraphics, int i, int j, float f) {
-		super.renderBackground(guiGraphics, i, j, f);
+	public void renderBackground(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
+		super.renderBackground(guiGraphics, mouseX, mouseY, partialTicks);
 
-		double availableW = Math.max(1, this.width - 20);
-		double availableH = Math.max(1, this.height - 20);
-		double scale = Math.min(availableW / (double) IMAGE_WIDTH, availableH / (double) IMAGE_HEIGHT);
-
-		int bgWidth = (int) Math.round(IMAGE_WIDTH * scale);
-		int bgHeight = (int) Math.round(IMAGE_HEIGHT * scale);
-		int bgX = (this.width - bgWidth) / 2;
-		int bgY = (this.height - bgHeight) / 2;
+		Layout layout = Layout.forSize(this.width, this.height);
 
 		guiGraphics.blit(
 				RenderPipelines.GUI_TEXTURED, SCREEN_UI_LOCATION,
-				bgX, bgY,
+				layout.bgX, layout.bgY,
 				0, 0,
-				bgWidth, bgHeight,
-				bgWidth, bgHeight
+				layout.bgWidth, layout.bgHeight,
+				layout.bgWidth, layout.bgHeight
 		);
 	}
+
+	private void updateTextureIfNeeded(long now) {
+		boolean shouldUpdate = (now - lastRenderNano) >= this.frameIntervalNano;
+		if (!shouldUpdate) return;
+
+		if (this.crate.isOk) {
+			this.crate.update();
+
+			byte[] fbBytes = this.crate.getFramebufferBytes();
+
+			if (tmpBuf != null) {
+				tmpBuf.clear();
+				tmpBuf.put(fbBytes).flip();
+
+				var pixels = this.texture.getPixels();
+				if (pixels != null) {
+					MemoryUtil.memCopy(MemoryUtil.memAddress(tmpBuf), pixels.getPointer(), this.crate.fbSize);
+				}
+				texture.upload();
+			}
+
+			lastRenderNano = now;
+		} else if (!failed) {
+			assert minecraft != null;
+			SystemToast.add(minecraft.getToastManager(),
+							SystemToast.SystemToastId.CHUNK_LOAD_FAILURE,
+							Component.literal("Crate aborted during update"),
+							Component.literal("Check the console for more information."));
+			failed = true;
+		}
+	}
+
+	private record Layout(double scale, int bgWidth, int bgHeight, int bgX, int bgY, int fbDestWidth, int fbDestHeight,
+						  int inset, int fbX, int fbY) {
+		static Layout forSize(int guiWidth, int guiHeight) {
+				double availableW = Math.max(1, guiWidth - GUI_PADDING);
+				double availableH = Math.max(1, guiHeight - GUI_PADDING);
+				double scale = Math.min(availableW / (double) IMAGE_WIDTH, availableH / (double) IMAGE_HEIGHT);
+
+				int bgWidth = (int) Math.round(IMAGE_WIDTH * scale);
+				int bgHeight = (int) Math.round(IMAGE_HEIGHT * scale);
+				int bgX = (guiWidth - bgWidth) / 2;
+				int bgY = (guiHeight - bgHeight) / 2;
+
+				int fbDestWidth = (int) Math.round(FRAMEBUFFER_WIDTH * scale);
+				int fbDestHeight = (int) Math.round(FRAMEBUFFER_HEIGHT * scale);
+				int inset = (int) Math.round(INSET_PIXELS * scale);
+				int fbX = bgX + inset;
+				int fbY = bgY + inset;
+
+				return new Layout(scale, bgWidth, bgHeight, bgX, bgY, fbDestWidth, fbDestHeight, inset, fbX, fbY);
+			}
+		}
 }
