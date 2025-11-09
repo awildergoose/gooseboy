@@ -47,6 +47,9 @@ If you’ve found a crate that can bypass these restrictions, please report it v
 ## How-to open the crates menu
 Go in-game, and press `M`. (you can change the keybind in the Controls options if you'd like to!)
 
+## Where to find crates
+You can find the official example crates [here](https://github.com/awildergoose/gooseboy-rs/releases/tag/1.1.0)
+
 ## How-to add a crate
 You can add crates by moving them to the crates folder. You can open the crates folder from the menu by pressing the "Open crates folder location" button at the bottom.
 
