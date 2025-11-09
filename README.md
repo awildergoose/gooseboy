@@ -28,6 +28,7 @@ The full list of permissions are as follows:
 - **STORAGE_READ**: Allows the crate to read from that crate's 512 KBs of storage.
 - **STORAGE_WRITE**: Allows the crate to write to its 512 KBs of storage.
 - **EXTENDED_MEMORY**: Allocates 64 MB of memory to the crate instead of the regular 8 MB
+- **EXTENDED_EXTENDED_MEMORY**: Allocates 512 MB of memory to the crate (overrides the 64 MB)
 
 ### Security
 Crates are run using the Java [Chicory](https://chicory.dev/) WASM runtime.
