@@ -44,10 +44,13 @@ For security, crates can't:
 
 If you’ve found a crate that can bypass these restrictions, please report it via [GitHub](https://github.com/awildergoose/).
 
-## How-to add crates
+## How-to open the crates menu
+Go in-game, and press `M`. (you can change the keybind in the Controls options if you'd like to!)
+
+## How-to add a crate
 You can add crates by moving them to the crates folder. You can open the crates folder from the menu by pressing the "Open crates folder location" button at the bottom.
 
-## How-to make crates
+## How-to create crates
 You can make crates in any language that compiles to WebAssembly (WASI is unsupported due to security concerns).
 The recommended language to use is [Rust](https://rust-lang.org/), and so the [standard library](https://github.com/awildergoose/gooseboy-rs) is made in Rust as well.
 
