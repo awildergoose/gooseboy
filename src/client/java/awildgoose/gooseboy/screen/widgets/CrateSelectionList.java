@@ -55,17 +55,17 @@ public class CrateSelectionList extends ObjectSelectionList<CrateSelectionList.E
 			), (b) -> {
 				// run
 				WasmInputManager.reset();
-				var crate = CrateLoader.makeCrate(text);
+				try {
+					var crate = CrateLoader.makeCrate(text);
 
-				if (crate != null) {
 					if (crate.isOk) {
 						minecraft.setScreen(new CenteredCrateScreen(crate));
 					} else {
-						Gooseboy.ccb.doErrorMessage("Crate aborted upon startup",
-													"Check the console for more information.");
+						throw new RuntimeException("Crate aborted upon startup");
 					}
-				} else {
+				} catch (Exception e) {
 					Gooseboy.ccb.doErrorMessage("Failed to load crate", "Check the console for more information.");
+					e.printStackTrace();
 				}
 			});
 

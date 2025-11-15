@@ -75,22 +75,14 @@ public class CrateLoader {
 		return meta;
 	}
 
-	public static GooseboyCrate makeCrate(String filename) {
-		CrateMeta meta;
-
-		try {
-			meta = CrateLoader.loadCrate(filename);
-		} catch (Exception e) {
-			e.printStackTrace();
-			return null;
-		}
-
+	public static GooseboyCrate makeCrate(String filename) throws IOException {
+		CrateMeta meta = CrateLoader.loadCrate(filename);
 		var permissions = ConfigManager.getEffectivePermissions(filename);
 		if (!(new HashSet<>(permissions).containsAll(meta.permissions))) {
-			// TODO better error message
-			new RuntimeException("Missing permissions").printStackTrace();
-			return null;
+			throw new RuntimeException("Missing permissions: " + permissions.stream().filter(f -> !meta.permissions.contains(f)).map(
+					Enum::name).toList());
 		}
+
 		var wasm = meta.binary;
 
 		// TODO do we really need these to be separate values?
@@ -100,18 +92,9 @@ public class CrateLoader {
 
 		var instance = Wasm.createInstance(wasm, initialMemory, maxMemory);
 		if (instance == null) {
-			return null;
+			throw new RuntimeException("Failed to create WASM instance");
 		}
 
-		GooseboyCrate crate;
-
-		try {
-			crate = new GooseboyCrate(instance, filename, meta);
-		} catch (Throwable e) {
-			e.printStackTrace();
-			return null;
-		}
-
-		return crate;
+		return new GooseboyCrate(instance, filename, meta);
 	}
 }
