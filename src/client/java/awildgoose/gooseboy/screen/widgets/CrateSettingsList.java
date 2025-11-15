@@ -123,6 +123,11 @@ public class CrateSettingsList extends ObjectSelectionList<CrateSettingsList.Ent
 			this.text.setMaxWidth(i);
 		}
 
+		@Override
+		public boolean shouldTakeFocusAfterInteraction() {
+			return false;
+		}
+
 		private int getTextX() {
 			return this.getContentX() + 16 + 4;
 		}
@@ -153,6 +158,11 @@ public class CrateSettingsList extends ObjectSelectionList<CrateSettingsList.Ent
 							.selected(checked)
 							.onValueChange(callback)
 							.build();
+		}
+
+		@Override
+		public @NotNull Component getNarration() {
+			return checkbox.getMessage();
 		}
 
 		@Override
@@ -192,6 +202,11 @@ public class CrateSettingsList extends ObjectSelectionList<CrateSettingsList.Ent
 			editBox.setCursorPosition(0);
 			editBox.setHighlightPos(0);
 			editBox.setFocused(true);
+		}
+
+		@Override
+		public @NotNull Component getNarration() {
+			return editBox.getMessage();
 		}
 
 		@Override
