@@ -4,14 +4,11 @@ import awildgoose.gooseboy.lib.Registrar;
 import com.dylibso.chicory.compiler.MachineFactoryCompiler;
 import com.dylibso.chicory.runtime.ImportValues;
 import com.dylibso.chicory.runtime.Instance;
-import com.dylibso.chicory.wasm.ChicoryException;
-import com.dylibso.chicory.wasm.Parser;
-import com.dylibso.chicory.wasm.UninstantiableException;
+import com.dylibso.chicory.wasm.*;
 import com.dylibso.chicory.wasm.types.MemoryLimits;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.JarURLConnection;
 import java.net.URL;
 import java.nio.file.Files;
@@ -24,29 +21,8 @@ import java.util.jar.JarFile;
 import java.util.stream.Stream;
 
 public class Wasm {
-	public static Optional<byte[]> loadCrateFile(String relativePath) {
-		Path wasmPath = Gooseboy.getGooseboyDirectory().resolve("crates").resolve(relativePath);
-
-		if (!Files.exists(wasmPath)) {
-			// Try loading from the JAR
-			try (InputStream in = Gooseboy.class.getResourceAsStream(
-					"/assets/gooseboy/crates/" + relativePath
-			)) {
-				if (in == null) {
-					return Optional.empty();
-				}
-
-				return Optional.ofNullable(in.readAllBytes());
-			} catch (IOException e) {
-				return Optional.empty();
-			}
-		}
-
-		try {
-			return Optional.of(Files.readAllBytes(wasmPath));
-		} catch (IOException e) {
-			return Optional.empty();
-		}
+	public static boolean isValidGooseboyFilename(String f) {
+		return f.toLowerCase().endsWith(".zip") || f.toLowerCase().endsWith(".gbcrate");
 	}
 
 	public static List<String> listWasmCrates() {
@@ -54,7 +30,7 @@ public class Wasm {
 
 		Consumer<Stream<Path>> addWasmFiles = stream ->
 				stream.filter(Files::isRegularFile)
-						.filter(f -> f.getFileName().toString().toLowerCase().endsWith(".wasm"))
+						.filter(f -> isValidGooseboyFilename(f.getFileName().toString()))
 						.map(f -> f.getFileName().toString())
 						.forEach(crates::add);
 
@@ -76,7 +52,7 @@ public class Wasm {
 					while (entries.hasMoreElements()) {
 						JarEntry entry = entries.nextElement();
 						String name = entry.getName();
-						if (name.startsWith("assets/gooseboy/crates/") && name.endsWith(".wasm")) {
+						if (name.startsWith("assets/gooseboy/crates/") && isValidGooseboyFilename(name)) {
 							crates.add(Paths.get(name).getFileName().toString());
 						}
 					}
@@ -98,27 +74,35 @@ public class Wasm {
 		return (kilobytes + WASM_PAGE_SIZE_KB - 1) / WASM_PAGE_SIZE_KB;
 	}
 
-	public static @Nullable Instance createInstance(String filename, int initialMemoryKilobytes, int maximumMemoryKilobytes) {
-		var wasm = loadCrateFile(filename);
-		if (wasm.isEmpty()) return null;
-
+	public static @Nullable Instance createInstance(byte[] wasm, int initialMemoryKilobytes,
+													int maximumMemoryKilobytes) {
 		int initialPages = kilobytesToPages(initialMemoryKilobytes);
 		int maxPages = kilobytesToPages(maximumMemoryKilobytes);
 
-		var module = Parser.parse(wasm.get());
+		WasmModule module;
+
+		try {
+			module = Parser.parse(wasm);
+		} catch (MalformedException e) {
+			e.printStackTrace();
+			return null;
+		}
+
 		var builder = Instance.builder(module)
 				.withImportValues(Registrar.register(ImportValues.builder()).build());
 
 		if (!ConfigManager.getConfig().useInterpreter)
 			builder.withMachineFactory(
-						MachineFactoryCompiler::compile).withMemoryLimits(
-						new MemoryLimits(initialPages, maxPages)
-				);
+						MachineFactoryCompiler::compile);
 
 		Instance instance;
 
 		try {
-			instance = builder.build();
+			// This takes quite a bit for big crates
+			// I think that's reasonable, though
+			instance = builder.withMemoryLimits(
+					new MemoryLimits(initialPages, maxPages)
+			).build();
 		} catch (ChicoryException e) {
 			instance = null;
 			e.printStackTrace();
@@ -130,5 +114,4 @@ public class Wasm {
 
 		return instance;
 	}
-
 }

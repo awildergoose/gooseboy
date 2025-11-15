@@ -16,6 +16,7 @@ public final class ConfigManager {
 			.resolve("gooseboy.json");
 	private static final Gson GSON = new GsonBuilder()
 			.setPrettyPrinting()
+			.setStrictness(Strictness.LENIENT)
 			.registerTypeAdapter(GooseboyCrate.Permission.class, (JsonDeserializer<GooseboyCrate.Permission>) (json, typeOfT, ctx) -> {
 				try {
 					return GooseboyCrate.Permission.valueOf(json.getAsString());

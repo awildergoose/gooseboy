@@ -1,10 +1,9 @@
 package awildgoose.gooseboy.screen.widgets;
 
-import awildgoose.gooseboy.ConfigManager;
 import awildgoose.gooseboy.Gooseboy;
 import awildgoose.gooseboy.Wasm;
 import awildgoose.gooseboy.WasmInputManager;
-import awildgoose.gooseboy.crate.GooseboyCrate;
+import awildgoose.gooseboy.crate.CrateLoader;
 import awildgoose.gooseboy.screen.CenteredCrateScreen;
 import awildgoose.gooseboy.screen.CrateSettingsScreen;
 import net.minecraft.client.Minecraft;
@@ -56,40 +55,8 @@ public class CrateSelectionList extends ObjectSelectionList<CrateSelectionList.E
 					ResourceLocation.fromNamespaceAndPath(Gooseboy.MOD_ID, "widget/run_button_highlighted")
 			), (b) -> {
 				// run
-				var permissions = ConfigManager.getEffectivePermissions(text);
-
-				int initialMemory;
-				int maxMemory;
-
-				if (permissions.contains(GooseboyCrate.Permission.EXTENDED_EXTENDED_MEMORY)) {
-					initialMemory = 256 * 1024;
-					maxMemory = 512 * 1024;
-				} else if (permissions.contains(GooseboyCrate.Permission.EXTENDED_MEMORY)) {
-					initialMemory = 32 * 1024;
-					maxMemory = 64 * 1024;
-				} else {
-					initialMemory = 6 * 1024;
-					maxMemory = 8 * 1024;
-				}
-
-				var instance = Wasm.createInstance(text, initialMemory, maxMemory);
-				if (instance == null) {
-					SystemToast.add(minecraft.getToastManager(), SystemToast.SystemToastId.CHUNK_LOAD_FAILURE,
-									Component.literal("Failed to load crate"), Component.literal("Check the " +
-																											  "console for more information."));
-					return;
-				}
-
 				WasmInputManager.reset();
-				GooseboyCrate crate = null;
-				try {
-					crate = new GooseboyCrate(instance, text);
-				} catch (Throwable e) {
-					SystemToast.add(minecraft.getToastManager(), SystemToast.SystemToastId.CHUNK_LOAD_FAILURE,
-									Component.literal("Failed to start crate"), Component.literal("Check the " +
-																											  "console for more information."));
-					e.printStackTrace();
-				}
+				var crate = CrateLoader.makeCrate(text);
 
 				if (crate != null) {
 					if (crate.isOk) {
@@ -100,6 +67,10 @@ public class CrateSelectionList extends ObjectSelectionList<CrateSelectionList.E
 										Component.literal("Check the " +
 																  "console for more information."));
 					}
+				} else {
+					SystemToast.add(minecraft.getToastManager(), SystemToast.SystemToastId.CHUNK_LOAD_FAILURE,
+									Component.literal("Failed to load crate"), Component.literal("Check the " +
+																								 "console for more information."));
 				}
 			});
 

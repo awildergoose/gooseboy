@@ -25,17 +25,17 @@ public class GooseboyCrate {
 	public final List<Permission> permissions;
 	public boolean isOk = true;
 
-	public GooseboyCrate(Instance instance, String name) {
+	public GooseboyCrate(Instance instance, String name, CrateMeta meta) {
 		this.instance = instance;
 		this.name = name;
 		this.permissions = this.loadPermissions();
-		this.init();
+		this.init(meta);
 	}
 
-	private void init() {
+	private void init(CrateMeta meta) {
 		this.fbSize = FRAMEBUFFER_WIDTH * FRAMEBUFFER_HEIGHT * 4;
 		this.storage = new CrateStorage(this.name);
-		Gooseboy.addCrate(this);
+		Gooseboy.addCrate(this, meta);
 
 		try {
 			instance.export("main").apply();

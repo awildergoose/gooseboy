@@ -1,11 +1,13 @@
 package awildgoose.gooseboy;
 
+import awildgoose.gooseboy.crate.CrateMeta;
 import awildgoose.gooseboy.crate.GooseboyCrate;
 import com.dylibso.chicory.runtime.Instance;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.loader.api.FabricLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -36,14 +38,17 @@ public class Gooseboy implements ModInitializer {
 		return gooseboyDir;
 	}
 
-	private static final HashMap<Instance, GooseboyCrate> runningCrates = new HashMap<>();
+	private static final HashMap<Instance, Pair<GooseboyCrate, CrateMeta>> runningCrates = new HashMap<>();
 
 	public static GooseboyCrate getCrate(Instance instance) {
-		return runningCrates.get(instance);
+		return runningCrates.get(instance).getLeft();
+	}
+	public static CrateMeta getCrateMeta(Instance instance) {
+		return runningCrates.get(instance).getRight();
 	}
 
-	public static void addCrate(GooseboyCrate crate) {
-		runningCrates.put(crate.instance, crate);
+	public static void addCrate(GooseboyCrate crate, CrateMeta meta) {
+		runningCrates.put(crate.instance, Pair.of(crate, meta));
 	}
 	public static void removeCrate(GooseboyCrate crate) {
 		runningCrates.remove(crate.instance);
