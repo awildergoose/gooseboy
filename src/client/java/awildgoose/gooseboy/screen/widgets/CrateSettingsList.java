@@ -6,18 +6,23 @@ import awildgoose.gooseboy.crate.GooseboyCrate;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Checkbox;
+import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.ObjectSelectionList;
 import net.minecraft.client.gui.components.StringWidget;
+import net.minecraft.client.input.CharacterEvent;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
+import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 public class CrateSettingsList extends ObjectSelectionList<CrateSettingsList.Entry> {
 	public List<GooseboyCrate.Permission> permissions;
+	public Pair<Integer, Integer> memoryLimits;
 
 	public static String formatBytes(long bytes) {
 		if (bytes < 1024) return bytes + " B";
@@ -41,8 +46,23 @@ public class CrateSettingsList extends ObjectSelectionList<CrateSettingsList.Ent
 	public CrateSettingsList(Minecraft minecraft, int i, int j, int k, int l, String crateName) {
 		super(minecraft, i, j, k, l);
 		this.permissions = new ArrayList<>(ConfigManager.getEffectivePermissions(crateName));
+		this.memoryLimits = ConfigManager.getMemoryLimits(crateName);
 		this.addEntry(new TextEntry(minecraft, this,
 									"Allocated storage: %s".formatted(formatBytes(CrateStorage.getSizeOf(crateName)))));
+		this.addEntry(new TextEntry(minecraft, this, "Initial memory in KBs"));
+		this.addEntry(new NumberEditEntry(minecraft, this, "Initial memory in kilobytes",
+										  memoryLimits.getLeft().toString(), s -> {
+			if (s.chars().noneMatch(Character::isDigit)) return;
+			var n = Integer.parseInt(s);
+			this.memoryLimits = Pair.of(n, this.memoryLimits.getRight());
+		}));
+		this.addEntry(new TextEntry(minecraft, this, "Maximum memory in KBs"));
+		this.addEntry(new NumberEditEntry(minecraft, this, "Max memory in kilobytes",
+										  memoryLimits.getRight().toString(), s -> {
+			if (s.chars().noneMatch(Character::isDigit)) return;
+			var n = Integer.parseInt(s);
+			this.memoryLimits = Pair.of(this.memoryLimits.getLeft(), n);
+		}));
 		this.addEntry(new TextEntry(minecraft, this, "Permissions"));
 		for (GooseboyCrate.Permission permission : GooseboyCrate.Permission.values()) {
 			String name = permission.name()
@@ -115,7 +135,7 @@ public class CrateSettingsList extends ObjectSelectionList<CrateSettingsList.Ent
 		@Override
 		public void renderContent(GuiGraphics guiGraphics, int i, int j, boolean bl, float f) {
 			super.renderContent(guiGraphics, i, j, bl, f);
-			int contentY = this.getContentY() + 1;
+			int contentY = this.getContentY() + 3;
 			int k = this.getTextX();
 			this.text.setPosition(k, contentY);
 			this.text.render(guiGraphics, i, j, f);
@@ -156,6 +176,65 @@ public class CrateSettingsList extends ObjectSelectionList<CrateSettingsList.Ent
 
 			checkbox.setPosition(contentX, centeredY);
 			checkbox.render(guiGraphics, i, j, f);
+		}
+	}
+
+	public static class NumberEditEntry extends Entry {
+		private final EditBox editBox;
+
+		public NumberEditEntry(Minecraft minecraft, CrateSettingsList list, String text, String defaultText,
+							   Consumer<String> responder) {
+			super(minecraft, list, text);
+			editBox = new EditBox(minecraft.font, 0, 0, Component.literal(text));
+			editBox.setValue(defaultText);
+			editBox.setFilter(p -> p.chars().allMatch(Character::isDigit));
+			editBox.setResponder(responder);
+			editBox.setCursorPosition(0);
+			editBox.setHighlightPos(0);
+			editBox.setFocused(true);
+		}
+
+		@Override
+		public boolean mouseClicked(MouseButtonEvent mouseButtonEvent, boolean bl) {
+			if (this.editBox.mouseClicked(mouseButtonEvent, bl)) return true;
+			return super.mouseClicked(mouseButtonEvent, bl);
+		}
+
+		@Override
+		public boolean mouseReleased(MouseButtonEvent mouseButtonEvent) {
+			if (this.editBox.mouseReleased(mouseButtonEvent)) return true;
+			return super.mouseReleased(mouseButtonEvent);
+		}
+
+		@Override
+		public boolean keyPressed(KeyEvent keyEvent) {
+			if (this.editBox.keyPressed(keyEvent)) return true;
+			return super.keyPressed(keyEvent);
+		}
+
+		@Override
+		public boolean keyReleased(KeyEvent keyEvent) {
+			if (this.editBox.keyReleased(keyEvent)) return true;
+			return super.keyReleased(keyEvent);
+		}
+
+		@Override
+		public boolean charTyped(CharacterEvent characterEvent) {
+			if (this.editBox.charTyped(characterEvent)) return true;
+			return super.charTyped(characterEvent);
+		}
+
+		@Override
+		public void renderContent(GuiGraphics guiGraphics, int i, int j, boolean bl, float f) {
+			super.renderContent(guiGraphics, i, j, bl, f);
+			int contentX = this.getContentX() - 2;
+			int contentY = this.getContentY();
+			int centeredY = contentY - 2;
+
+			editBox.setWidth(this.getWidth());
+			editBox.setHeight(this.getHeight());
+			editBox.setPosition(contentX, centeredY);
+			editBox.render(guiGraphics, i, j, f);
 		}
 	}
 }

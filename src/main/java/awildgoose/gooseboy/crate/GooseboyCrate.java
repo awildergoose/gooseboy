@@ -35,6 +35,9 @@ public class GooseboyCrate {
 	private void init(CrateMeta meta) {
 		this.fbSize = FRAMEBUFFER_WIDTH * FRAMEBUFFER_HEIGHT * 4;
 		this.storage = new CrateStorage(this.name);
+
+		// Free the binary, as we don't need it anymore
+		meta.binary = null;
 		Gooseboy.addCrate(this, meta);
 
 		try {
@@ -102,9 +105,7 @@ public class GooseboyCrate {
 		INPUT_MOUSE_POS(4),
 		INPUT_GRAB_MOUSE(5),
 		STORAGE_READ(6),
-		STORAGE_WRITE(7),
-		EXTENDED_MEMORY(8),
-		EXTENDED_EXTENDED_MEMORY(9);
+		STORAGE_WRITE(7);
 
 		private final int id;
 

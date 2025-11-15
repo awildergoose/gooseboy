@@ -2,12 +2,15 @@ package awildgoose.gooseboy.crate;
 
 import awildgoose.gooseboy.ConfigManager;
 import awildgoose.gooseboy.Gooseboy;
+import awildgoose.gooseboy.RawImage;
 import awildgoose.gooseboy.Wasm;
 import com.google.gson.*;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.util.HashSet;
+import java.util.function.Function;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -31,34 +34,42 @@ public class CrateLoader {
 
 	public static CrateMeta loadCrate(String relPath) throws IOException, JsonSyntaxException {
 		var file = resolvePath(relPath).toFile();
-		CrateMeta meta = null;
+		CrateMeta meta;
 
 		try (ZipFile zipFile = new ZipFile(file)) {
 			ZipEntry crateEntry = zipFile.getEntry("crate.json");
-			if (crateEntry != null) {
-				try (InputStream in = zipFile.getInputStream(crateEntry)) {
-					String crateMeta = new String(in.readAllBytes(), StandardCharsets.UTF_8);
-					meta = GSON.fromJson(crateMeta, CrateMeta.class);
-				}
+			if (crateEntry == null)
+				throw new RuntimeException("Meta missing");
+
+			try (InputStream in = zipFile.getInputStream(crateEntry)) {
+				meta = GSON.fromJson(new String(in.readAllBytes(), StandardCharsets.UTF_8), CrateMeta.class);
 			}
 
 			if (meta == null)
 				throw new RuntimeException("Meta failed");
 
+			Function<String, ZipEntry> find = name -> {
+				ZipEntry e = zipFile.getEntry(name);
+				if (e == null)
+					throw new RuntimeException("Missing file in crate: " + name);
+				return e;
+			};
+
 			if (meta.icon != null) {
-				CrateMeta finalMeta = meta;
-				meta.rawIcon =
-						zipFile.getInputStream(zipFile.stream().filter(e -> e.getName().equals(finalMeta.icon)).findFirst().orElseThrow()).readAllBytes();
+				try (InputStream in = zipFile.getInputStream(find.apply(meta.icon))) {
+					meta.iconImage = RawImage.load((ByteArrayInputStream) in);
+				}
 			}
 
 			if (meta.banner != null) {
-				CrateMeta finalMeta = meta;
-				meta.rawBanner =
-						zipFile.getInputStream(zipFile.stream().filter(e -> e.getName().equals(finalMeta.banner)).findFirst().orElseThrow()).readAllBytes();
+				try (InputStream in = zipFile.getInputStream(find.apply(meta.banner))) {
+					meta.bannerImage = RawImage.load((ByteArrayInputStream) in);
+				}
 			}
 
-			CrateMeta finalMeta = meta;
-			meta.binary = zipFile.getInputStream(zipFile.stream().filter(e -> e.getName().equals(finalMeta.entrypoint)).findFirst().orElseThrow()).readAllBytes();
+			try (InputStream in = zipFile.getInputStream(find.apply(meta.entrypoint))) {
+				meta.binary = in.readAllBytes();
+			}
 		}
 
 		return meta;
@@ -74,23 +85,18 @@ public class CrateLoader {
 			return null;
 		}
 
-		var wasm = meta.binary;
 		var permissions = ConfigManager.getEffectivePermissions(filename);
-
-		int initialMemory;
-		int maxMemory;
-
-		// TODO a better system instead of this mess
-		if (permissions.contains(GooseboyCrate.Permission.EXTENDED_EXTENDED_MEMORY)) {
-			initialMemory = 256 * 1024;
-			maxMemory = 512 * 1024;
-		} else if (permissions.contains(GooseboyCrate.Permission.EXTENDED_MEMORY)) {
-			initialMemory = 32 * 1024;
-			maxMemory = 64 * 1024;
-		} else {
-			initialMemory = 6 * 1024;
-			maxMemory = 8 * 1024;
+		if (!(new HashSet<>(permissions).containsAll(meta.permissions))) {
+			// TODO better error message
+			new RuntimeException("Missing permissions").printStackTrace();
+			return null;
 		}
+		var wasm = meta.binary;
+
+		// TODO do we really need these to be separate values?
+		var memoryLimits = ConfigManager.getMemoryLimits(filename);
+		int initialMemory = memoryLimits.getLeft();
+		int maxMemory = memoryLimits.getRight();
 
 		var instance = Wasm.createInstance(wasm, initialMemory, maxMemory);
 		if (instance == null) {

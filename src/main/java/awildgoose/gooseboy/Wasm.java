@@ -91,7 +91,7 @@ public class Wasm {
 		var builder = Instance.builder(module)
 				.withImportValues(Registrar.register(ImportValues.builder()).build());
 
-		if (!ConfigManager.getConfig().useInterpreter)
+		if (!ConfigManager.getConfig().use_interpreter)
 			builder.withMachineFactory(
 						MachineFactoryCompiler::compile);
 

@@ -36,19 +36,26 @@ public class CenteredCrateScreen extends Screen {
 	private long lastRenderNano = 0L;
 	private final long frameIntervalNano;
 
+	private static String sanitizePath(String s) {
+		s = s.toLowerCase();
+
+		return s.replaceAll("[^a-z0-9/._-]", "_");
+	}
+
 	public CenteredCrateScreen(GooseboyCrate crate) {
 		super(Component.literal(crate.name));
 		this.crate = crate;
-		// Should we *really* use the frame limit option here?
+		// Should we *really* use the frame limit (VSync, I think) option here?
 		this.frameIntervalNano = 1_000_000_000L / Minecraft.getInstance().options.framerateLimit().get();
 		this.framebufferTexture =  ResourceLocation.fromNamespaceAndPath(
-				Gooseboy.MOD_ID, "crate_framebuffer_" + crate.name
+				Gooseboy.MOD_ID, "crate_framebuffer_" + sanitizePath(crate.name)
 		);
 	}
 
 	@Override
 	protected void init() {
-		this.texture = new DynamicTexture("Gooseboy crate framebuffer", FRAMEBUFFER_WIDTH, FRAMEBUFFER_HEIGHT, false);
+		this.texture = new DynamicTexture(
+				"Gooseboy crate framebuffer for '" + crate.name + "'", FRAMEBUFFER_WIDTH, FRAMEBUFFER_HEIGHT, false);
 		Minecraft.getInstance().getTextureManager().register(this.framebufferTexture, this.texture);
 		this.tmpBuf = MemoryUtil.memAlloc(this.crate.fbSize);
 	}

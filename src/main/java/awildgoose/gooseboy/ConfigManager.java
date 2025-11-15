@@ -3,6 +3,7 @@ package awildgoose.gooseboy;
 import awildgoose.gooseboy.crate.GooseboyCrate;
 import com.google.gson.*;
 import net.fabricmc.loader.api.FabricLoader;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -29,11 +30,13 @@ public final class ConfigManager {
 
 	public static class CrateSettings {
 		public List<GooseboyCrate.Permission> permissions = new ArrayList<>();
+		public int initial_memory = 6 * 1024; // 6 KB
+		public int max_memory = 8 * 1024; // 8 KB
 	}
 
 	public static class RootConfig {
-		@SuppressWarnings("unused") public String version = "1.0.0";
-		public boolean useInterpreter = false;
+		@SuppressWarnings("unused") public String version = "1.1.0";
+		public boolean use_interpreter = false;
 		public Map<String, CrateSettings> crate_settings = new HashMap<>();
 		public CrateSettings default_crate_settings = new CrateSettings();
 	}
@@ -112,11 +115,31 @@ public final class ConfigManager {
 		return List.copyOf(cfg.default_crate_settings.permissions);
 	}
 
-	public static synchronized void setCratePermissions(String crateName, Collection<GooseboyCrate.Permission> permissions) {
+	public static synchronized Pair<Integer, Integer> getMemoryLimits(String crateName) {
 		RootConfig cfg = getConfig();
-		CrateSettings s = new CrateSettings();
+		CrateSettings specific = cfg.crate_settings.get(crateName);
+		if (specific != null) {
+			return Pair.of(specific.initial_memory, specific.max_memory);
+		}
+
+		return Pair.of(cfg.default_crate_settings.initial_memory, cfg.default_crate_settings.max_memory);
+	}
+
+	private static CrateSettings getOrCreateSettings(String crateName) {
+		RootConfig cfg = getConfig();
+		return cfg.crate_settings.computeIfAbsent(crateName, k -> new CrateSettings());
+	}
+
+	public static synchronized void setCratePermissions(String crateName, Collection<GooseboyCrate.Permission> permissions) {
+		CrateSettings s = getOrCreateSettings(crateName);
 		s.permissions = new ArrayList<>(permissions);
-		cfg.crate_settings.put(crateName, s);
+		save();
+	}
+
+	public static synchronized void setCrateMemoryLimits(String crateName, Pair<Integer, Integer> memoryLimits) {
+		CrateSettings s = getOrCreateSettings(crateName);
+		s.initial_memory = memoryLimits.getLeft();
+		s.max_memory = memoryLimits.getRight();
 		save();
 	}
 }

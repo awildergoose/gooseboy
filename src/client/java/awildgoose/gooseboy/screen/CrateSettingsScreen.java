@@ -51,5 +51,6 @@ public class CrateSettingsScreen extends Screen {
 	public void onClose() {
 		if (this.minecraft != null) this.minecraft.setScreen(this.parent);
 		ConfigManager.setCratePermissions(this.crateName, this.list.permissions);
+		ConfigManager.setCrateMemoryLimits(this.crateName, this.list.memoryLimits);
 	}
 }
