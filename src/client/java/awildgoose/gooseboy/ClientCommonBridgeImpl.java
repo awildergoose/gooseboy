@@ -7,6 +7,13 @@ import net.minecraft.network.chat.Component;
 
 public class ClientCommonBridgeImpl implements ClientCommonBridge {
 	@Override
+	public void doErrorMessage(String title, String body) {
+		SystemToast.add(Minecraft.getInstance().getToastManager(), SystemToast.SystemToastId.CHUNK_LOAD_FAILURE,
+			Component.literal(title), Component.literal(body)
+		);
+	}
+
+	@Override
 	public int getKeyCode() {
 		return WasmInputManager.getKeyCode();
 	}

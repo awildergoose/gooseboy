@@ -3,6 +3,9 @@ package awildgoose.gooseboy;
 import awildgoose.gooseboy.crate.GooseboyCrate;
 
 public interface ClientCommonBridge {
+	// misc
+	void doErrorMessage(String title, String body);
+
 	// input
 	int getKeyCode();
 	boolean isKeyDown(int key);

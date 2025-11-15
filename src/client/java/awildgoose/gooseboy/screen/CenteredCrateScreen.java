@@ -5,7 +5,6 @@ import awildgoose.gooseboy.crate.GooseboyCrate;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.texture.DynamicTexture;
@@ -136,10 +135,9 @@ public class CenteredCrateScreen extends Screen {
 			lastRenderNano = now;
 		} else if (!failed) {
 			assert minecraft != null;
-			SystemToast.add(minecraft.getToastManager(),
-							SystemToast.SystemToastId.CHUNK_LOAD_FAILURE,
-							Component.literal("Crate aborted during update"),
-							Component.literal("Check the console for more information."));
+
+			Gooseboy.ccb.doErrorMessage("Crate aborted during update",
+							"Check the console for more information.");
 			failed = true;
 		}
 	}

@@ -12,7 +12,6 @@ import net.minecraft.client.gui.components.ImageButton;
 import net.minecraft.client.gui.components.ObjectSelectionList;
 import net.minecraft.client.gui.components.StringWidget;
 import net.minecraft.client.gui.components.WidgetSprites;
-import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
@@ -62,15 +61,11 @@ public class CrateSelectionList extends ObjectSelectionList<CrateSelectionList.E
 					if (crate.isOk) {
 						minecraft.setScreen(new CenteredCrateScreen(crate));
 					} else {
-						SystemToast.add(minecraft.getToastManager(), SystemToast.SystemToastId.CHUNK_LOAD_FAILURE,
-										Component.literal("Crate aborted upon startup"),
-										Component.literal("Check the " +
-																  "console for more information."));
+						Gooseboy.ccb.doErrorMessage("Crate aborted upon startup",
+													"Check the console for more information.");
 					}
 				} else {
-					SystemToast.add(minecraft.getToastManager(), SystemToast.SystemToastId.CHUNK_LOAD_FAILURE,
-									Component.literal("Failed to load crate"), Component.literal("Check the " +
-																								 "console for more information."));
+					Gooseboy.ccb.doErrorMessage("Failed to load crate", "Check the console for more information.");
 				}
 			});
 
