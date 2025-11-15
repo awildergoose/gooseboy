@@ -22,7 +22,7 @@ public final class ConfigManager {
 				try {
 					return GooseboyCrate.Permission.valueOf(json.getAsString());
 				} catch (Exception e) {
-					Gooseboy.LOGGER.warn("Unknown permission: " + json.getAsString());
+					Gooseboy.LOGGER.warn("Unknown permission: '" + json.getAsString() + "'");
 					return null;
 				}
 			})
@@ -51,6 +51,7 @@ public final class ConfigManager {
 	public static synchronized void load() {
 		try {
 			Files.createDirectories(CONFIG_PATH.getParent());
+
 			if (Files.exists(CONFIG_PATH)) {
 				try (Reader r = Files.newBufferedReader(CONFIG_PATH)) {
 					config = GSON.fromJson(r, RootConfig.class);
@@ -61,6 +62,7 @@ public final class ConfigManager {
 				config.default_crate_settings.permissions = Arrays.asList(
 						GooseboyCrate.Permission.CONSOLE, GooseboyCrate.Permission.INPUT_MOUSE, GooseboyCrate.Permission.INPUT_MOUSE_POS
 				);
+
 				save();
 			}
 
@@ -112,6 +114,7 @@ public final class ConfigManager {
 		if (specific != null && specific.permissions != null && !specific.permissions.isEmpty()) {
 			return List.copyOf(specific.permissions);
 		}
+
 		return List.copyOf(cfg.default_crate_settings.permissions);
 	}
 
@@ -126,8 +129,7 @@ public final class ConfigManager {
 	}
 
 	private static CrateSettings getOrCreateSettings(String crateName) {
-		RootConfig cfg = getConfig();
-		return cfg.crate_settings.computeIfAbsent(crateName, k -> new CrateSettings());
+		return getConfig().crate_settings.computeIfAbsent(crateName, k -> new CrateSettings());
 	}
 
 	public static synchronized void setCratePermissions(String crateName, Collection<GooseboyCrate.Permission> permissions) {
