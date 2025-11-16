@@ -1,6 +1,7 @@
 package awildgoose.gooseboy.screen;
 
 import awildgoose.gooseboy.ConfigManager;
+import awildgoose.gooseboy.Gooseboy;
 import awildgoose.gooseboy.screen.widgets.CrateSettingsList;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Button;
@@ -10,6 +11,7 @@ import net.minecraft.client.gui.layouts.LayoutSettings;
 import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
+import org.apache.commons.lang3.tuple.Pair;
 
 public class CrateSettingsScreen extends Screen {
 	private final HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this, 20, 20);
@@ -51,6 +53,17 @@ public class CrateSettingsScreen extends Screen {
 	public void onClose() {
 		if (this.minecraft != null) this.minecraft.setScreen(this.parent);
 		ConfigManager.setCratePermissions(this.crateName, this.list.permissions);
-		ConfigManager.setCrateMemoryLimits(this.crateName, this.list.memoryLimits);
+
+		var memoryLimits = this.list.memoryLimits;
+
+		// if max < min
+		if (memoryLimits.getRight() < memoryLimits.getLeft()) {
+			// set it to (max, max), I have no idea why, but left is max here
+			memoryLimits = Pair.of(memoryLimits.getLeft(), memoryLimits.getLeft());
+			Gooseboy.ccb.doErrorMessage("Memory limits updated", "Maximum memory was less than initial memory, now " +
+					"both values are max");
+		}
+
+		ConfigManager.setCrateMemoryLimits(this.crateName, memoryLimits);
 	}
 }

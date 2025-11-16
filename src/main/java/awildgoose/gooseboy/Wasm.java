@@ -6,7 +6,6 @@ import com.dylibso.chicory.runtime.ImportValues;
 import com.dylibso.chicory.runtime.Instance;
 import com.dylibso.chicory.wasm.*;
 import com.dylibso.chicory.wasm.types.MemoryLimits;
-import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.net.JarURLConnection;
@@ -74,20 +73,13 @@ public class Wasm {
 		return (kilobytes + WASM_PAGE_SIZE_KB - 1) / WASM_PAGE_SIZE_KB;
 	}
 
-	public static @Nullable Instance createInstance(byte[] wasm, int initialMemoryKilobytes,
-													int maximumMemoryKilobytes) {
+	public static Instance createInstance(byte[] wasm, int initialMemoryKilobytes,
+													int maximumMemoryKilobytes) throws ChicoryException
+	{
 		int initialPages = kilobytesToPages(initialMemoryKilobytes);
 		int maxPages = kilobytesToPages(maximumMemoryKilobytes);
 
-		WasmModule module;
-
-		try {
-			module = Parser.parse(wasm);
-		} catch (MalformedException e) {
-			e.printStackTrace();
-			return null;
-		}
-
+		WasmModule module = Parser.parse(wasm);
 		var builder = Instance.builder(module)
 				.withImportValues(Registrar.register(ImportValues.builder()).build());
 
@@ -95,23 +87,12 @@ public class Wasm {
 			builder.withMachineFactory(
 						MachineFactoryCompiler::compile);
 
-		Instance instance;
+		builder.withMemoryLimits(
+				new MemoryLimits(initialPages, maxPages)
+		);
 
-		try {
-			// This takes quite a bit for big crates
-			// I think that's reasonable, though
-			instance = builder.withMemoryLimits(
-					new MemoryLimits(initialPages, maxPages)
-			).build();
-		} catch (ChicoryException e) {
-			instance = null;
-			e.printStackTrace();
-
-			if (e instanceof UninstantiableException) {
-				Gooseboy.LOGGER.error("You may need to set the EXTENDED_MEMORY permission for this crate to work");
-			}
-		}
-
-		return instance;
+		// This takes quite a bit for big crates
+		// I think that's reasonable, though
+		return builder.build();
 	}
 }

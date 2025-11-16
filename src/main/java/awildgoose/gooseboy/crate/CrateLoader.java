@@ -4,6 +4,7 @@ import awildgoose.gooseboy.ConfigManager;
 import awildgoose.gooseboy.Gooseboy;
 import awildgoose.gooseboy.RawImage;
 import awildgoose.gooseboy.Wasm;
+import com.dylibso.chicory.wasm.ChicoryException;
 import com.google.gson.*;
 
 import java.io.*;
@@ -75,7 +76,7 @@ public class CrateLoader {
 		return meta;
 	}
 
-	public static GooseboyCrate makeCrate(String filename) throws IOException {
+	public static GooseboyCrate makeCrate(String filename) throws IOException, ChicoryException {
 		CrateMeta meta = CrateLoader.loadCrate(filename);
 		var permissions = ConfigManager.getEffectivePermissions(filename);
 		if (!(new HashSet<>(permissions).containsAll(meta.permissions))) {
@@ -89,11 +90,7 @@ public class CrateLoader {
 		var memoryLimits = ConfigManager.getMemoryLimits(filename);
 		int initialMemory = memoryLimits.getLeft();
 		int maxMemory = memoryLimits.getRight();
-
 		var instance = Wasm.createInstance(wasm, initialMemory, maxMemory);
-		if (instance == null) {
-			throw new RuntimeException("Failed to create WASM instance");
-		}
 
 		return new GooseboyCrate(instance, filename, meta);
 	}

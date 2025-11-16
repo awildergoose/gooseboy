@@ -11,6 +11,7 @@ public class ClientCommonBridgeImpl implements ClientCommonBridge {
 		SystemToast.add(Minecraft.getInstance().getToastManager(), SystemToast.SystemToastId.CHUNK_LOAD_FAILURE,
 			Component.literal(title), Component.literal(body)
 		);
+		Gooseboy.LOGGER.error("%s: %s".formatted(title, body));
 	}
 
 	@Override

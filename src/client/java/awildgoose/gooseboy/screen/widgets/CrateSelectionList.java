@@ -6,6 +6,7 @@ import awildgoose.gooseboy.WasmInputManager;
 import awildgoose.gooseboy.crate.CrateLoader;
 import awildgoose.gooseboy.screen.CenteredCrateScreen;
 import awildgoose.gooseboy.screen.CrateSettingsScreen;
+import com.dylibso.chicory.wasm.UninstantiableException;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.ImageButton;
@@ -13,7 +14,6 @@ import net.minecraft.client.gui.components.ObjectSelectionList;
 import net.minecraft.client.gui.components.StringWidget;
 import net.minecraft.client.gui.components.WidgetSprites;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
@@ -29,11 +29,6 @@ public class CrateSelectionList extends ObjectSelectionList<CrateSelectionList.E
 	@Override
 	public int getRowWidth() {
 		return 270;
-	}
-
-	@Override
-	public boolean keyPressed(KeyEvent keyEvent) {
-		return super.keyPressed(keyEvent);
 	}
 
 	public static class Entry extends ObjectSelectionList.Entry<CrateSelectionList.Entry> {
@@ -55,6 +50,7 @@ public class CrateSelectionList extends ObjectSelectionList<CrateSelectionList.E
 			), (b) -> {
 				// run
 				WasmInputManager.reset();
+
 				try {
 					var crate = CrateLoader.makeCrate(text);
 
@@ -64,8 +60,14 @@ public class CrateSelectionList extends ObjectSelectionList<CrateSelectionList.E
 						throw new RuntimeException("Crate aborted upon startup");
 					}
 				} catch (Exception e) {
-					Gooseboy.ccb.doErrorMessage("Failed to load crate", "Check the console for more information.");
 					e.printStackTrace();
+
+					if (e instanceof UninstantiableException) {
+						Gooseboy.ccb.doErrorMessage("Crate may not have enough memory", "Increase the initial and " +
+								"maximum memory for this crate");
+					} else {
+						Gooseboy.ccb.doErrorMessage("Failed to run crate", "Check the console for more information.");
+					}
 				}
 			});
 

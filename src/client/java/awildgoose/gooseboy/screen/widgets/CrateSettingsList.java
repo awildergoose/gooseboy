@@ -85,11 +85,6 @@ public class CrateSettingsList extends ObjectSelectionList<CrateSettingsList.Ent
 		return 270;
 	}
 
-	@Override
-	public boolean keyPressed(KeyEvent keyEvent) {
-		return super.keyPressed(keyEvent);
-	}
-
 	public abstract static class Entry extends ObjectSelectionList.Entry<CrateSettingsList.Entry> {
 		public CrateSettingsList list;
 
