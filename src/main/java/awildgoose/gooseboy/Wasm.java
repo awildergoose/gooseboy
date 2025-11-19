@@ -1,10 +1,13 @@
 package awildgoose.gooseboy;
 
+import awildgoose.gooseboy.crate.CrateLoader;
 import awildgoose.gooseboy.lib.Registrar;
 import com.dylibso.chicory.compiler.MachineFactoryCompiler;
 import com.dylibso.chicory.runtime.ImportValues;
 import com.dylibso.chicory.runtime.Instance;
-import com.dylibso.chicory.wasm.*;
+import com.dylibso.chicory.wasm.ChicoryException;
+import com.dylibso.chicory.wasm.Parser;
+import com.dylibso.chicory.wasm.WasmModule;
 import com.dylibso.chicory.wasm.types.MemoryLimits;
 
 import java.io.IOException;
@@ -20,8 +23,12 @@ import java.util.jar.JarFile;
 import java.util.stream.Stream;
 
 public class Wasm {
+	public static final int WASM_PAGE_SIZE_KB = 64;
+
 	public static boolean isValidGooseboyFilename(String f) {
-		return f.toLowerCase().endsWith(".zip") || f.toLowerCase().endsWith(".gbcrate");
+		return f.toLowerCase()
+				.endsWith(".zip") || f.toLowerCase()
+				.endsWith(".gbcrate");
 	}
 
 	public static List<String> listWasmCrates() {
@@ -29,15 +36,36 @@ public class Wasm {
 
 		Consumer<Stream<Path>> addWasmFiles = stream ->
 				stream.filter(Files::isRegularFile)
-						.filter(f -> isValidGooseboyFilename(f.getFileName().toString()))
-						.map(f -> f.getFileName().toString())
-						.forEach(crates::add);
+						.filter(f -> isValidGooseboyFilename(f.getFileName()
+																	 .toString()))
+						.map(f -> f.getFileName()
+								.toString())
+						.forEach(name -> {
+							if (crates.contains(name)) {
+								Gooseboy.ccb.doErrorMessage(
+										"Duplicate crate",
+										"Duplicate crate found: \"%s\", please rename the crate!".formatted(name));
+								return;
+							}
 
-		Path wasmPath = Gooseboy.getGooseboyDirectory().resolve("crates");
+							crates.add(name);
+						});
+
+		Path wasmPath = Gooseboy.getGooseboyDirectory()
+				.resolve("crates");
 		if (Files.exists(wasmPath)) {
 			try (Stream<Path> stream = Files.list(wasmPath)) {
 				addWasmFiles.accept(stream);
-			} catch (IOException ignored) {}
+			} catch (IOException ignored) {
+			}
+		}
+
+		Path homePath = CrateLoader.getHomeGooseboyCratesFolder();
+		if (homePath != null && Files.exists(homePath)) {
+			try (Stream<Path> stream = Files.list(homePath)) {
+				addWasmFiles.accept(stream);
+			} catch (IOException ignored) {
+			}
 		}
 
 		try {
@@ -52,7 +80,9 @@ public class Wasm {
 						JarEntry entry = entries.nextElement();
 						String name = entry.getName();
 						if (name.startsWith("assets/gooseboy/crates/") && isValidGooseboyFilename(name)) {
-							crates.add(Paths.get(name).getFileName().toString());
+							crates.add(Paths.get(name)
+											   .getFileName()
+											   .toString());
 						}
 					}
 				} else if ("file".equals(resource.getProtocol())) {
@@ -62,30 +92,29 @@ public class Wasm {
 					}
 				}
 			}
-		} catch (Exception ignored) {}
+		} catch (Exception ignored) {
+		}
 
 		return new ArrayList<>(crates);
 	}
-
-	public static final int WASM_PAGE_SIZE_KB = 64;
 
 	private static int kilobytesToPages(int kilobytes) {
 		return (kilobytes + WASM_PAGE_SIZE_KB - 1) / WASM_PAGE_SIZE_KB;
 	}
 
 	public static Instance createInstance(byte[] wasm, int initialMemoryKilobytes,
-													int maximumMemoryKilobytes) throws ChicoryException
-	{
+										  int maximumMemoryKilobytes) throws ChicoryException {
 		int initialPages = kilobytesToPages(initialMemoryKilobytes);
 		int maxPages = kilobytesToPages(maximumMemoryKilobytes);
 
 		WasmModule module = Parser.parse(wasm);
 		var builder = Instance.builder(module)
-				.withImportValues(Registrar.register(ImportValues.builder()).build());
+				.withImportValues(Registrar.register(ImportValues.builder())
+										  .build());
 
 		if (!ConfigManager.getConfig().use_interpreter)
 			builder.withMachineFactory(
-						MachineFactoryCompiler::compile);
+					MachineFactoryCompiler::compile);
 
 		builder.withMemoryLimits(
 				new MemoryLimits(initialPages, maxPages)

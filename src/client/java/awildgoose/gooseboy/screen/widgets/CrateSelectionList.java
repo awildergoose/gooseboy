@@ -65,6 +65,8 @@ public class CrateSelectionList extends ObjectSelectionList<CrateSelectionList.E
 					if (e instanceof UninstantiableException) {
 						Gooseboy.ccb.doErrorMessage("Crate may not have enough memory", "Increase the initial and " +
 								"maximum memory for this crate");
+					} else if (e instanceof CrateLoader.CrateLoaderException er) {
+						Gooseboy.ccb.doErrorMessage(er.title, er.body);
 					} else {
 						Gooseboy.ccb.doErrorMessage("Failed to run crate", "Check the console for more information.");
 					}

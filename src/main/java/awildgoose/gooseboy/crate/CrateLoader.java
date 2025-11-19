@@ -6,11 +6,17 @@ import awildgoose.gooseboy.RawImage;
 import awildgoose.gooseboy.Wasm;
 import com.dylibso.chicory.wasm.ChicoryException;
 import com.google.gson.*;
+import org.jetbrains.annotations.Nullable;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashSet;
+import java.nio.file.Paths;
+import java.util.List;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -19,22 +25,61 @@ public class CrateLoader {
 	private static final Gson GSON = new GsonBuilder()
 			.setPrettyPrinting()
 			.setStrictness(Strictness.LENIENT)
-			.registerTypeAdapter(GooseboyCrate.Permission.class, (JsonDeserializer<GooseboyCrate.Permission>) (json, typeOfT, ctx) -> {
-				try {
-					return GooseboyCrate.Permission.valueOf(json.getAsString());
-				} catch (Exception e) {
-					Gooseboy.LOGGER.warn("Unknown permission: " + json.getAsString());
-					return null;
-				}
-			})
+			.registerTypeAdapter(
+					GooseboyCrate.Permission.class,
+					(JsonDeserializer<GooseboyCrate.Permission>) (json, typeOfT, ctx) -> {
+						try {
+							return GooseboyCrate.Permission.valueOf(json.getAsString());
+						} catch (Exception e) {
+							Gooseboy.LOGGER.warn("Unknown permission: " + json.getAsString());
+							return null;
+						}
+					})
 			.create();
 
-	private static Path resolvePath(String relPath) {
-		return Gooseboy.getGooseboyDirectory().resolve("crates").resolve(relPath);
+	public static @Nullable Path getHomeGooseboyCratesFolder() {
+		String home = System.getenv("HOME");
+		if (home == null || home.isEmpty()) {
+			home = System.getenv("USERPROFILE");
+
+			if (home == null || home.isEmpty()) {
+				return null;
+			}
+		}
+
+		Path folder = Paths.get(home)
+				.resolve(".gooseboy");
+
+		if (!Files.exists(folder)) {
+			try {
+				Files.createDirectories(folder);
+			} catch (IOException ignored) {
+			}
+		}
+
+		return folder;
+	}
+
+	private static @Nullable Path resolvePath(String relPath) {
+		var first = Gooseboy.getGooseboyDirectory()
+				.resolve("crates")
+				.resolve(relPath);
+		if (Files.exists(first)) {
+			return first;
+		}
+
+		var home = getHomeGooseboyCratesFolder();
+		if (home != null)
+			return home.resolve(relPath);
+		return null;
 	}
 
 	public static CrateMeta loadCrate(String relPath) throws IOException, JsonSyntaxException {
-		var file = resolvePath(relPath).toFile();
+		var path = resolvePath(relPath);
+		if (path == null) {
+			throw new RuntimeException("Failed to find crate: " + relPath);
+		}
+		var file = path.toFile();
 		CrateMeta meta;
 
 		try (ZipFile zipFile = new ZipFile(file)) {
@@ -76,12 +121,19 @@ public class CrateLoader {
 		return meta;
 	}
 
-	public static GooseboyCrate makeCrate(String filename) throws IOException, ChicoryException {
+	public static GooseboyCrate makeCrate(String filename) throws IOException, ChicoryException, CrateLoaderException {
 		CrateMeta meta = CrateLoader.loadCrate(filename);
-		var permissions = ConfigManager.getEffectivePermissions(filename);
-		if (!(new HashSet<>(permissions).containsAll(meta.permissions))) {
-			throw new RuntimeException("Missing permissions: " + permissions.stream().filter(f -> !meta.permissions.contains(f)).map(
-					Enum::name).toList());
+		var permissions = ConfigManager.getEffectivePermissions(filename)
+				.stream()
+				.filter(Objects::nonNull)
+				.toList();
+		List<GooseboyCrate.Permission> missing = meta.permissions.stream()
+				.filter(p -> !permissions.contains(p))
+				.filter(Objects::nonNull)
+				.toList();
+
+		if (!missing.isEmpty()) {
+			throw new CrateLoaderException("Missing permissions", missing.toString());
 		}
 
 		var wasm = meta.binary;
@@ -93,5 +145,20 @@ public class CrateLoader {
 		var instance = Wasm.createInstance(wasm, initialMemory, maxMemory);
 
 		return new GooseboyCrate(instance, filename, meta);
+	}
+
+	public static class CrateLoaderException extends Exception {
+		public String title, body;
+
+		public CrateLoaderException(String title, String body) {
+			super();
+			this.title = title;
+			this.body = body;
+		}
+
+		@Override
+		public String getMessage() {
+			return "%s: %s".formatted(this.title, this.body);
+		}
 	}
 }
