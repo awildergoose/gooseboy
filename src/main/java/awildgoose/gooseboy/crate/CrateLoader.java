@@ -60,9 +60,13 @@ public class CrateLoader {
 		return folder;
 	}
 
+	public static Path getGooseboyCratesPath() {
+		return Gooseboy.getGooseboyDirectory()
+				.resolve("crates");
+	}
+
 	private static @Nullable Path resolvePath(String relPath) {
-		var first = Gooseboy.getGooseboyDirectory()
-				.resolve("crates")
+		var first = getGooseboyCratesPath()
 				.resolve(relPath);
 		if (Files.exists(first)) {
 			return first;

@@ -1,9 +1,12 @@
 {
   "key.open_wasm": "Open Gooseboy menu",
   "key.category.gooseboy.wasm": "Gooseboy",
+  "ui.gooseboy.upload_failed.title": "Upload failed",
+  "ui.gooseboy.upload_failed.body": "Failed to upload %s, check the console for more information",
+  "ui.gooseboy.upload_failed.bad_filename": "%s is not a valid crate filename!",
   "ui.gooseboy.missing_permissions.title": "Missing permissions",
   "ui.gooseboy.missing_permissions.body": "Crate attempted to access permission %s",
-  "ui.gooseboy.not_enough_memory.title": "Crate may not have enough memory",
+  "ui.gooseboy.not_enough_memory.title": "Crate does not have enough memory",
   "ui.gooseboy.not_enough_memory.body": "Increase the initial and maximum memory for this crate",
   "ui.gooseboy.crate_run_failed.title": "Failed to run crate",
   "ui.gooseboy.crate_run_failed.body": "Check the console for more information",
