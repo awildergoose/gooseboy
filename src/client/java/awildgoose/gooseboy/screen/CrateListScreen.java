@@ -94,11 +94,6 @@ public class CrateListScreen extends Screen {
 						})
 								.build(), (v) -> v.alignHorizontallyCenter()
 				.paddingTop(-5));
-		footer.addChild(
-				Button.builder(Component.translatable("gui.ok"), (b) -> this.onClose())
-						.build(),
-				(v) -> v.alignHorizontallyCenter()
-						.paddingTop(-5));
 		this.layout.visitWidgets(this::addRenderableWidget);
 		this.repositionElements();
 	}
