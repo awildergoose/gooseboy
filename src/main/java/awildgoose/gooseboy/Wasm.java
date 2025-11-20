@@ -42,10 +42,9 @@ public class Wasm {
 							String filename = f.getFileName()
 									.toString();
 							if (crates.containsKey(filename)) {
-								Gooseboy.ccb.doErrorMessage(
-										"Duplicate crate",
-										"Duplicate crate found: \"%s\", please rename the crate!"
-												.formatted(filename));
+								Gooseboy.ccb.doTranslatedErrorMessage(
+										"ui.gooseboy.duplicate_crate.title",
+										"ui.gooseboy.duplicate_crate.body", filename);
 								return;
 							}
 							crates.put(filename, f.toAbsolutePath()
@@ -86,10 +85,9 @@ public class Wasm {
 									.getFileName()
 									.toString();
 							if (crates.containsKey(filename)) {
-								Gooseboy.ccb.doErrorMessage(
-										"Duplicate crate",
-										"Duplicate crate found: \"%s\", please rename the crate!"
-												.formatted(filename));
+								Gooseboy.ccb.doTranslatedErrorMessage(
+										"ui.gooseboy.duplicate_crate.title",
+										"ui.gooseboy.duplicate_crate.body", filename);
 								continue;
 							}
 

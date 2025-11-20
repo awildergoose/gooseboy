@@ -14,6 +14,8 @@
   "ui.gooseboy.crate_update_failed.body": "Check the console for more information",
   "ui.gooseboy.memory_limits_updated.title": "Memory limits updated",
   "ui.gooseboy.memory_limits_updated.body": "Maximum memory was less than initial memory, now both values are max",
+  "ui.gooseboy.duplicate_crate.title": "Duplicate crate",
+  "ui.gooseboy.duplicate_crate.body": "Duplicate crate found: \"%s\", please rename the crate!",
   "ui.gooseboy.open_crates_folder": "Open crates folder location",
   "ui.gooseboy.refresh": "Refresh",
   "ui.gooseboy.settings.title": "%s - Settings",
