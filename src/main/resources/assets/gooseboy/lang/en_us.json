@@ -1,4 +1,20 @@
 {
   "key.open_wasm": "Open Gooseboy menu",
-  "key.category.gooseboy.wasm": "Gooseboy"
+  "key.category.gooseboy.wasm": "Gooseboy",
+  "ui.gooseboy.missing_permissions.title": "Missing permissions",
+  "ui.gooseboy.missing_permissions.body": "Crate attempted to access permission %s",
+  "ui.gooseboy.open_crates_folder": "Open crates folder location",
+  "ui.gooseboy.settings.title": "%s - Settings",
+  "ui.gooseboy.settings.allocated": "Allocated storage: %s",
+  "ui.gooseboy.settings.initial_memory": "Initial memory in KBs",
+  "ui.gooseboy.settings.maximum_memory": "Maximum memory in KBs",
+  "ui.gooseboy.settings.permissions": "Permissions",
+  "ui.gooseboy.settings.permission.CONSOLE": "Console",
+  "ui.gooseboy.settings.permission.AUDIO": "Audio",
+  "ui.gooseboy.settings.permission.INPUT_KEYBOARD": "Read keyboard inputs",
+  "ui.gooseboy.settings.permission.INPUT_MOUSE": "Read mouse inputs",
+  "ui.gooseboy.settings.permission.INPUT_MOUSE_POS": "Get mouse position",
+  "ui.gooseboy.settings.permission.INPUT_GRAB_MOUSE": "Grab mouse",
+  "ui.gooseboy.settings.permission.STORAGE_READ": "Read storage",
+  "ui.gooseboy.settings.permission.STORAGE_WRITE": "Write storage"
 }

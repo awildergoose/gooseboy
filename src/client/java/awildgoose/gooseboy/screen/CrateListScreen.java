@@ -28,9 +28,14 @@ public class CrateListScreen extends Screen {
 		LinearLayout header = this.layout.addToHeader(LinearLayout.vertical().spacing(4));
 		header.addChild(new StringWidget(this.title, this.font), LayoutSettings::alignHorizontallyCenter);
 		LinearLayout footer = this.layout.addToFooter(LinearLayout.horizontal().spacing(4));
-		footer.addChild(Button.builder(Component.literal("Open crates folder location"),
-									   (b) -> Util.getPlatform().openPath(Gooseboy.getGooseboyDirectory().resolve(
-											   "crates"))).build(), (v) -> v.alignHorizontallyCenter().paddingTop(-5));
+		footer.addChild(Button.builder(
+						Component.translatable("ui.gooseboy.open_crates_folder"),
+						(b) -> Util.getPlatform()
+								.openPath(Gooseboy.getGooseboyDirectory()
+												  .resolve(
+														  "crates")))
+								.build(), (v) -> v.alignHorizontallyCenter()
+				.paddingTop(-5));
 		footer.addChild(Button.builder(Component.translatable("gui.ok"), (b) -> this.onClose()).build(),
 								(v) -> v.alignHorizontallyCenter().paddingTop(-5));
 		this.layout.visitWidgets(this::addRenderableWidget);

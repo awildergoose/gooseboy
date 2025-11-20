@@ -48,27 +48,29 @@ public class CrateSettingsList extends ObjectSelectionList<CrateSettingsList.Ent
 		this.permissions = new ArrayList<>(ConfigManager.getEffectivePermissions(crateName));
 		this.memoryLimits = ConfigManager.getMemoryLimits(crateName);
 		this.addEntry(new TextEntry(minecraft, this,
-									"Allocated storage: %s".formatted(formatBytes(CrateStorage.getSizeOf(crateName)))));
-		this.addEntry(new TextEntry(minecraft, this, "Initial memory in KBs"));
-		this.addEntry(new NumberEditEntry(minecraft, this, "Initial memory in kilobytes",
-										  memoryLimits.getLeft().toString(), s -> {
-			if (s.chars().noneMatch(Character::isDigit)) return;
+									"ui.gooseboy.settings.allocated", formatBytes(CrateStorage.getSizeOf(crateName))));
+		this.addEntry(new TextEntry(minecraft, this, "ui.gooseboy.settings.initial_memory"));
+		this.addEntry(new NumberEditEntry(minecraft, this, "ui.gooseboy.settings.initial_memory",
+										  memoryLimits.getLeft()
+												  .toString(), s -> {
+			if (s.chars()
+					.noneMatch(Character::isDigit)) return;
 			var n = Integer.parseInt(s);
 			this.memoryLimits = Pair.of(n, this.memoryLimits.getRight());
 		}));
-		this.addEntry(new TextEntry(minecraft, this, "Maximum memory in KBs"));
-		this.addEntry(new NumberEditEntry(minecraft, this, "Max memory in kilobytes",
-										  memoryLimits.getRight().toString(), s -> {
-			if (s.chars().noneMatch(Character::isDigit)) return;
+		this.addEntry(new TextEntry(minecraft, this, "ui.gooseboy.settings.maximum_memory"));
+		this.addEntry(new NumberEditEntry(minecraft, this, "ui.gooseboy.settings.maximum_memory",
+										  memoryLimits.getRight()
+												  .toString(), s -> {
+			if (s.chars()
+					.noneMatch(Character::isDigit)) return;
 			var n = Integer.parseInt(s);
 			this.memoryLimits = Pair.of(this.memoryLimits.getLeft(), n);
 		}));
-		this.addEntry(new TextEntry(minecraft, this, "Permissions"));
+		this.addEntry(new TextEntry(minecraft, this, "ui.gooseboy.settings.permissions"));
+
 		for (GooseboyCrate.Permission permission : GooseboyCrate.Permission.values()) {
-			String name = permission.name()
-					.replace("_", " ");
-			String title = Character.toUpperCase(name.charAt(0)) + name.substring(1)
-					.toLowerCase();
+			String title = "ui.gooseboy.settings.permission.%s".formatted(permission.name());
 			this.addEntry(new BooleanEntry(minecraft, this, title, permissions.contains(permission),
 										   (checkbox, bl) -> {
 											   if (bl) {
@@ -110,10 +112,10 @@ public class CrateSettingsList extends ObjectSelectionList<CrateSettingsList.Ent
 	public static class TextEntry extends Entry {
 		private final StringWidget text;
 
-		public TextEntry(Minecraft minecraft, CrateSettingsList list, String text) {
+		public TextEntry(Minecraft minecraft, CrateSettingsList list, String text, Object... o) {
 			super(minecraft, list, text);
 			int i = list.getRowWidth() - this.getTextX() - 2;
-			Component component = Component.literal(text);
+			Component component = Component.translatable(text, o);
 			this.text = new StringWidget(component, minecraft.font);
 			this.text.setMaxWidth(i);
 		}
@@ -146,10 +148,10 @@ public class CrateSettingsList extends ObjectSelectionList<CrateSettingsList.Ent
 		private final Checkbox checkbox;
 
 		public BooleanEntry(Minecraft minecraft, CrateSettingsList list, String text, boolean checked,
-							Checkbox.OnValueChange callback) {
+							Checkbox.OnValueChange callback, Object... o) {
 			super(minecraft, list, text);
 			checkbox =
-					Checkbox.builder(Component.literal(text), minecraft.font)
+					Checkbox.builder(Component.translatable(text, o), minecraft.font)
 							.selected(checked)
 							.onValueChange(callback)
 							.build();
@@ -188,11 +190,12 @@ public class CrateSettingsList extends ObjectSelectionList<CrateSettingsList.Ent
 		private final EditBox editBox;
 
 		public NumberEditEntry(Minecraft minecraft, CrateSettingsList list, String text, String defaultText,
-							   Consumer<String> responder) {
+							   Consumer<String> responder, Object... o) {
 			super(minecraft, list, text);
-			editBox = new EditBox(minecraft.font, 0, 0, Component.literal(text));
+			editBox = new EditBox(minecraft.font, 0, 0, Component.translatable(text, o));
 			editBox.setValue(defaultText);
-			editBox.setFilter(p -> p.chars().allMatch(Character::isDigit));
+			editBox.setFilter(p -> p.chars()
+					.allMatch(Character::isDigit));
 			editBox.setResponder(responder);
 			editBox.setCursorPosition(0);
 			editBox.setHighlightPos(0);

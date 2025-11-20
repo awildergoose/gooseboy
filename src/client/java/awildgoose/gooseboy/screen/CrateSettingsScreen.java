@@ -20,7 +20,7 @@ public class CrateSettingsScreen extends Screen {
 	private final Screen parent;
 
 	public CrateSettingsScreen(Screen parent, String crateName) {
-		super(Component.literal("%s - Settings".formatted(crateName)));
+		super(Component.translatable("ui.gooseboy.settings.title", crateName));
 		this.crateName = crateName;
 		this.parent = parent;
 		this.list = new CrateSettingsList(Minecraft.getInstance(), 0, 0, 200, 200, crateName);

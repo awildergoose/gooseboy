@@ -73,10 +73,11 @@ public class ClientCommonBridgeImpl implements ClientCommonBridge {
 	@Override
 	public void warnPermission(GooseboyCrate.Permission permission) {
 		SystemToast.add(
-				Minecraft.getInstance().getToastManager(),
+				Minecraft.getInstance()
+						.getToastManager(),
 				SystemToast.SystemToastId.FILE_DROP_FAILURE,
-				Component.literal("Missing permissions"),
-				Component.literal("Crate attempted to access permission " + permission.name())
+				Component.translatable("ui.gooseboy.missing_permissions.title"),
+				Component.translatable("ui.gooseboy.missing_permissions.body", permission.name())
 		);
 	}
 
