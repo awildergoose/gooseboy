@@ -22,6 +22,7 @@ import static awildgoose.gooseboy.Wasm.isValidGooseboyFilename;
 public class CrateListScreen extends Screen {
 	protected ObjectSelectionList<?> list;
 	private HeaderAndFooterLayout layout;
+	private CrateSelectionList.Sort sort = CrateSelectionList.Sort.LAST_MODIFIED;
 
 	public CrateListScreen() {
 		super(Component.literal("Gooseboy"));
@@ -56,7 +57,7 @@ public class CrateListScreen extends Screen {
 	public void reloadList(boolean rebuild) {
 		this.layout = new HeaderAndFooterLayout(this, 20, 20);
 		this.list = new CrateSelectionList(
-				this, Minecraft.getInstance(), 0, 0, 200, 200, CrateSelectionList.Sort.FILENAME);
+				this, Minecraft.getInstance(), 0, 0, 200, 200, this.sort);
 		this.layout.addToContents(this.list);
 		if (rebuild)
 			this.rebuildWidgets();
@@ -82,6 +83,15 @@ public class CrateListScreen extends Screen {
 		footer.addChild(Button.builder(
 						Component.translatable("ui.gooseboy.refresh"),
 						(b) -> this.reloadList(true))
+								.build(), (v) -> v.alignHorizontallyCenter()
+				.paddingTop(-5));
+		footer.addChild(Button.builder(
+						Component.translatable("ui.gooseboy.sort." + this.sort.name()),
+						(b) -> {
+							this.sort = this.sort == CrateSelectionList.Sort.FILENAME ?
+									CrateSelectionList.Sort.LAST_MODIFIED : CrateSelectionList.Sort.FILENAME;
+							this.reloadList(true);
+						})
 								.build(), (v) -> v.alignHorizontallyCenter()
 				.paddingTop(-5));
 		footer.addChild(

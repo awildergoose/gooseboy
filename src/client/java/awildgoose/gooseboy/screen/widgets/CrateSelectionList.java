@@ -37,26 +37,27 @@ public class CrateSelectionList extends ObjectSelectionList<CrateSelectionList.E
 			case FILENAME -> crates.sort(Comparator.comparing(p -> p.getFileName()
 					.toString()));
 			case LAST_MODIFIED -> crates.sort(Comparator.comparingLong(p -> {
-				try {
-					return Files.getLastModifiedTime(p)
-							.toMillis();
-				} catch (IOException e) {
-					return Long.MIN_VALUE;
-				}
-			}));
+						try {
+							return Files.getLastModifiedTime((Path) p)
+									.toMillis();
+						} catch (IOException e) {
+							return Long.MIN_VALUE;
+						}
+					})
+													  .reversed());
 		}
 
 		crates.forEach(f -> this.addEntry(new Entry(parent, minecraft, this, f)));
 	}
 
-	public enum Sort {
-		FILENAME,
-		LAST_MODIFIED
-	}
-
 	@Override
 	public int getRowWidth() {
 		return 270;
+	}
+
+	public enum Sort {
+		FILENAME,
+		LAST_MODIFIED
 	}
 
 	public static class Entry extends ObjectSelectionList.Entry<CrateSelectionList.Entry> {

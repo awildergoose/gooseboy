@@ -30,5 +30,7 @@
   "ui.gooseboy.settings.permission.INPUT_MOUSE_POS": "Get mouse position",
   "ui.gooseboy.settings.permission.INPUT_GRAB_MOUSE": "Grab mouse",
   "ui.gooseboy.settings.permission.STORAGE_READ": "Read storage",
-  "ui.gooseboy.settings.permission.STORAGE_WRITE": "Write storage"
+  "ui.gooseboy.settings.permission.STORAGE_WRITE": "Write storage",
+  "ui.gooseboy.sort.FILENAME": "Sort by: Filename",
+  "ui.gooseboy.sort.LAST_MODIFIED": "Sort by: Last modified"
 }
