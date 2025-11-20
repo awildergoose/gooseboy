@@ -4,6 +4,7 @@ import awildgoose.gooseboy.Gooseboy;
 import awildgoose.gooseboy.Wasm;
 import awildgoose.gooseboy.WasmInputManager;
 import awildgoose.gooseboy.crate.CrateLoader;
+import awildgoose.gooseboy.crate.GooseboyCrate;
 import awildgoose.gooseboy.screen.CenteredCrateScreen;
 import awildgoose.gooseboy.screen.CrateSettingsScreen;
 import com.dylibso.chicory.wasm.UninstantiableException;
@@ -20,10 +21,37 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Comparator;
+import java.util.List;
+
 public class CrateSelectionList extends ObjectSelectionList<CrateSelectionList.Entry> {
-	public CrateSelectionList(Screen parent, Minecraft minecraft, int i, int j, int k, int l) {
+	public CrateSelectionList(Screen parent, Minecraft minecraft, int i, int j, int k, int l, Sort sort) {
 		super(minecraft, i, j, k, l);
-		Wasm.listWasmCrates().forEach(f -> this.addEntry(new Entry(parent, minecraft, this, f)));
+
+		List<Path> crates = Wasm.listWasmCrates();
+
+		switch (sort) {
+			case FILENAME -> crates.sort(Comparator.comparing(p -> p.getFileName()
+					.toString()));
+			case LAST_MODIFIED -> crates.sort(Comparator.comparingLong(p -> {
+				try {
+					return Files.getLastModifiedTime(p)
+							.toMillis();
+				} catch (IOException e) {
+					return Long.MIN_VALUE;
+				}
+			}));
+		}
+
+		crates.forEach(f -> this.addEntry(new Entry(parent, minecraft, this, f)));
+	}
+
+	public enum Sort {
+		FILENAME,
+		LAST_MODIFIED
 	}
 
 	@Override
@@ -38,8 +66,10 @@ public class CrateSelectionList extends ObjectSelectionList<CrateSelectionList.E
 		private final ImageButton runButton;
 		private final ImageButton settingsButton;
 
-		public Entry(Screen parent, Minecraft minecraft, CrateSelectionList list, String text) {
+		public Entry(Screen parent, Minecraft minecraft, CrateSelectionList list, Path path) {
 			int i = list.getRowWidth() - this.getTextX() - 2;
+			String text = path.getFileName()
+					.toString();
 			Component component = Component.literal(text);
 			this.text = new StringWidget(component, minecraft.font);
 			this.text.setMaxWidth(i);
@@ -52,7 +82,7 @@ public class CrateSelectionList extends ObjectSelectionList<CrateSelectionList.E
 				WasmInputManager.reset();
 
 				try {
-					var crate = CrateLoader.makeCrate(text);
+					GooseboyCrate crate = CrateLoader.makeCrate(path);
 
 					if (crate.isOk) {
 						minecraft.setScreen(new CenteredCrateScreen(crate));

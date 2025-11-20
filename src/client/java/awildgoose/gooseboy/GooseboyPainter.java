@@ -1,6 +1,7 @@
 package awildgoose.gooseboy;
 
 import awildgoose.gooseboy.crate.GooseboyCrate;
+import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -91,7 +92,7 @@ public class GooseboyPainter implements AutoCloseable {
 				tmpBuf.put(fbBytes)
 						.flip();
 
-				var pixels = this.texture.getPixels();
+				NativeImage pixels = this.texture.getPixels();
 				if (pixels != null) {
 					MemoryUtil.memCopy(MemoryUtil.memAddress(tmpBuf), pixels.getPointer(), this.crate.fbSize);
 				}

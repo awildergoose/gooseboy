@@ -4,6 +4,7 @@ import awildgoose.gooseboy.ConfigManager;
 import awildgoose.gooseboy.Gooseboy;
 import com.dylibso.chicory.runtime.ExportFunction;
 import com.dylibso.chicory.runtime.Instance;
+import com.dylibso.chicory.runtime.Memory;
 import com.dylibso.chicory.runtime.TrapException;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
@@ -55,7 +56,7 @@ public class GooseboyCrate implements AutoCloseable {
 	}
 
 	public void clearSurface(int ptr, int size, int color) {
-		var mem = this.instance.memory();
+		Memory mem = this.instance.memory();
 
 		for (int i = 0; i < size; i += 4) {
 			mem.writeI32(ptr + i, color);

@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.function.Consumer;
 
 public class CrateSettingsList extends ObjectSelectionList<CrateSettingsList.Entry> {
-	public List<GooseboyCrate.Permission> permissions;
+	public final List<GooseboyCrate.Permission> permissions;
 	public Pair<Integer, Integer> memoryLimits;
 
 	public static String formatBytes(long bytes) {
@@ -55,7 +55,7 @@ public class CrateSettingsList extends ObjectSelectionList<CrateSettingsList.Ent
 												  .toString(), s -> {
 			if (s.chars()
 					.noneMatch(Character::isDigit)) return;
-			var n = Integer.parseInt(s);
+			int n = Integer.parseInt(s);
 			this.memoryLimits = Pair.of(n, this.memoryLimits.getRight());
 		}));
 		this.addEntry(new TextEntry(minecraft, this, "ui.gooseboy.settings.maximum_memory"));
@@ -64,7 +64,7 @@ public class CrateSettingsList extends ObjectSelectionList<CrateSettingsList.Ent
 												  .toString(), s -> {
 			if (s.chars()
 					.noneMatch(Character::isDigit)) return;
-			var n = Integer.parseInt(s);
+			int n = Integer.parseInt(s);
 			this.memoryLimits = Pair.of(this.memoryLimits.getLeft(), n);
 		}));
 		this.addEntry(new TextEntry(minecraft, this, "ui.gooseboy.settings.permissions"));
@@ -88,7 +88,7 @@ public class CrateSettingsList extends ObjectSelectionList<CrateSettingsList.Ent
 	}
 
 	public abstract static class Entry extends ObjectSelectionList.Entry<CrateSettingsList.Entry> {
-		public CrateSettingsList list;
+		public final CrateSettingsList list;
 
 		public Entry(Minecraft ignoredMinecraft, CrateSettingsList list, String ignoredText) {
 			this.list = list;

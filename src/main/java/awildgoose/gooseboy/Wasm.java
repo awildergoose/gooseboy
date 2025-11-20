@@ -31,24 +31,25 @@ public class Wasm {
 				.endsWith(".gbcrate");
 	}
 
-	public static List<String> listWasmCrates() {
-		Set<String> crates = new HashSet<>();
+	public static List<Path> listWasmCrates() {
+		Map<String, Path> crates = new LinkedHashMap<>();
 
 		Consumer<Stream<Path>> addWasmFiles = stream ->
 				stream.filter(Files::isRegularFile)
 						.filter(f -> isValidGooseboyFilename(f.getFileName()
 																	 .toString()))
-						.map(f -> f.getFileName()
-								.toString())
-						.forEach(name -> {
-							if (crates.contains(name)) {
+						.forEach(f -> {
+							String filename = f.getFileName()
+									.toString();
+							if (crates.containsKey(filename)) {
 								Gooseboy.ccb.doErrorMessage(
 										"Duplicate crate",
-										"Duplicate crate found: \"%s\", please rename the crate!".formatted(name));
+										"Duplicate crate found: \"%s\", please rename the crate!"
+												.formatted(filename));
 								return;
 							}
-
-							crates.add(name);
+							crates.put(filename, f.toAbsolutePath()
+									.normalize());
 						});
 
 		Path wasmPath = Gooseboy.getGooseboyDirectory()
@@ -70,7 +71,6 @@ public class Wasm {
 
 		try {
 			URL resource = Gooseboy.class.getResource("/assets/gooseboy/crates/");
-
 			if (resource != null) {
 				if ("jar".equals(resource.getProtocol())) {
 					JarURLConnection jarConnection = (JarURLConnection) resource.openConnection();
@@ -79,10 +79,25 @@ public class Wasm {
 					while (entries.hasMoreElements()) {
 						JarEntry entry = entries.nextElement();
 						String name = entry.getName();
-						if (name.startsWith("assets/gooseboy/crates/") && isValidGooseboyFilename(name)) {
-							crates.add(Paths.get(name)
-											   .getFileName()
-											   .toString());
+						if (name.startsWith("assets/gooseboy/crates/")
+								&& isValidGooseboyFilename(name)) {
+
+							String filename = Paths.get(name)
+									.getFileName()
+									.toString();
+							if (crates.containsKey(filename)) {
+								Gooseboy.ccb.doErrorMessage(
+										"Duplicate crate",
+										"Duplicate crate found: \"%s\", please rename the crate!"
+												.formatted(filename));
+								continue;
+							}
+
+							Path jarFilePath = Paths.get(jarFile.getName())
+									.toAbsolutePath()
+									.normalize();
+							Path full = jarFilePath.resolve(name);
+							crates.put(filename, full);
 						}
 					}
 				} else if ("file".equals(resource.getProtocol())) {
@@ -95,7 +110,7 @@ public class Wasm {
 		} catch (Exception ignored) {
 		}
 
-		return new ArrayList<>(crates);
+		return new ArrayList<>(crates.values());
 	}
 
 	private static int kilobytesToPages(int kilobytes) {
@@ -108,7 +123,7 @@ public class Wasm {
 		int maxPages = kilobytesToPages(maximumMemoryKilobytes);
 
 		WasmModule module = Parser.parse(wasm);
-		var builder = Instance.builder(module)
+		Instance.Builder builder = Instance.builder(module)
 				.withImportValues(Registrar.register(ImportValues.builder())
 										  .build());
 

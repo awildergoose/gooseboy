@@ -55,7 +55,8 @@ public class CrateListScreen extends Screen {
 
 	public void reloadList(boolean rebuild) {
 		this.layout = new HeaderAndFooterLayout(this, 20, 20);
-		this.list = new CrateSelectionList(this, Minecraft.getInstance(), 0, 0, 200, 200);
+		this.list = new CrateSelectionList(
+				this, Minecraft.getInstance(), 0, 0, 200, 200, CrateSelectionList.Sort.FILENAME);
 		this.layout.addToContents(this.list);
 		if (rebuild)
 			this.rebuildWidgets();

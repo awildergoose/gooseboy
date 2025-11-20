@@ -112,7 +112,7 @@ public class CrateStorage {
 			}
 
 			try (DataInputStream in = new DataInputStream(Files.newInputStream(filePath))) {
-				var magic = in.readNBytes(FF_MAGIC.length);
+				byte[] magic = in.readNBytes(FF_MAGIC.length);
 				if (!Arrays.equals(magic, FF_MAGIC)) {
 					Gooseboy.LOGGER.error("Invalid storage crate file, magic identifier is wrong!");
 					return;
@@ -168,11 +168,13 @@ public class CrateStorage {
 		try {
 			Files.createDirectories(filePath.getParent());
 
-			var compressedData = this.gzipCompressData();
-			var compression = CompressionType.GZIP;
+			byte[] compressedData = this.gzipCompressData();
+			CompressionType compression = CompressionType.GZIP;
 
-			Path temp = filePath.resolveSibling(filePath.getFileName().toString() + ".tmp");
-			try (DataOutputStream out = new DataOutputStream(Files.newOutputStream(temp, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING))) {
+			Path temp = filePath.resolveSibling(filePath.getFileName()
+														.toString() + ".tmp");
+			try (DataOutputStream out = new DataOutputStream(
+					Files.newOutputStream(temp, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING))) {
 				out.write(FF_MAGIC);
 				out.writeInt(FF_VERSION);
 				out.writeByte(compression.code);

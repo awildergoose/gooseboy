@@ -4,11 +4,14 @@ import awildgoose.gooseboy.ConfigManager;
 import awildgoose.gooseboy.Gooseboy;
 import awildgoose.gooseboy.RawImage;
 import awildgoose.gooseboy.Wasm;
+import com.dylibso.chicory.runtime.Instance;
 import com.dylibso.chicory.wasm.ChicoryException;
 import com.google.gson.*;
+import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -65,25 +68,8 @@ public class CrateLoader {
 				.resolve("crates");
 	}
 
-	private static @Nullable Path resolvePath(String relPath) {
-		var first = getGooseboyCratesPath()
-				.resolve(relPath);
-		if (Files.exists(first)) {
-			return first;
-		}
-
-		var home = getHomeGooseboyCratesFolder();
-		if (home != null)
-			return home.resolve(relPath);
-		return null;
-	}
-
-	public static CrateMeta loadCrate(String relPath) throws IOException, JsonSyntaxException {
-		var path = resolvePath(relPath);
-		if (path == null) {
-			throw new RuntimeException("Failed to find crate: " + relPath);
-		}
-		var file = path.toFile();
+	public static CrateMeta loadCrate(Path path) throws IOException, JsonSyntaxException {
+		File file = path.toFile();
 		CrateMeta meta;
 
 		try (ZipFile zipFile = new ZipFile(file)) {
@@ -125,9 +111,11 @@ public class CrateLoader {
 		return meta;
 	}
 
-	public static GooseboyCrate makeCrate(String filename) throws IOException, ChicoryException, CrateLoaderException {
-		CrateMeta meta = CrateLoader.loadCrate(filename);
-		var permissions = ConfigManager.getEffectivePermissions(filename)
+	public static GooseboyCrate makeCrate(Path path) throws IOException, ChicoryException, CrateLoaderException {
+		String filename = path.getFileName()
+				.toString();
+		CrateMeta meta = CrateLoader.loadCrate(path);
+		List<GooseboyCrate.Permission> permissions = ConfigManager.getEffectivePermissions(filename)
 				.stream()
 				.filter(Objects::nonNull)
 				.toList();
@@ -140,19 +128,20 @@ public class CrateLoader {
 			throw new CrateLoaderException("Missing permissions", missing.toString());
 		}
 
-		var wasm = meta.binary;
+		byte[] wasm = meta.binary;
 
 		// TODO do we really need these to be separate values?
-		var memoryLimits = ConfigManager.getMemoryLimits(filename);
+		Pair<Integer, Integer> memoryLimits = ConfigManager.getMemoryLimits(filename);
 		int initialMemory = memoryLimits.getLeft();
 		int maxMemory = memoryLimits.getRight();
-		var instance = Wasm.createInstance(wasm, initialMemory, maxMemory);
+		Instance instance = Wasm.createInstance(wasm, initialMemory, maxMemory);
 
 		return new GooseboyCrate(instance, filename, meta);
 	}
 
 	public static class CrateLoaderException extends Exception {
-		public String title, body;
+		public final String title;
+		public final String body;
 
 		public CrateLoaderException(String title, String body) {
 			super();

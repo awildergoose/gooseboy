@@ -7,9 +7,12 @@ import com.dylibso.chicory.annotations.WasmExport;
 import com.dylibso.chicory.runtime.HostFunction;
 import com.dylibso.chicory.runtime.Instance;
 
+import java.util.Optional;
+
 @HostModule("system")
 public final class GameSystem {
-	public GameSystem() {}
+	public GameSystem() {
+	}
 
 	@WasmExport
 	public long get_time_nanos() {
@@ -18,7 +21,7 @@ public final class GameSystem {
 
 	@WasmExport
 	public int has_permission(Instance instance, int permission) {
-		var permissionEnum = GooseboyCrate.Permission.intToEnum(permission);
+		Optional<GooseboyCrate.Permission> permissionEnum = GooseboyCrate.Permission.intToEnum(permission);
 		return permissionEnum.filter(value -> Gooseboy.getCrate(instance).permissions.contains(value))
 				.map(value -> 1)
 				.orElse(0);

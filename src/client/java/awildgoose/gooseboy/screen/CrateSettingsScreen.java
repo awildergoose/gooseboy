@@ -54,7 +54,7 @@ public class CrateSettingsScreen extends Screen {
 		if (this.minecraft != null) this.minecraft.setScreen(this.parent);
 		ConfigManager.setCratePermissions(this.crateName, this.list.permissions);
 
-		var memoryLimits = this.list.memoryLimits;
+		Pair<Integer, Integer> memoryLimits = this.list.memoryLimits;
 
 		// if max < min
 		if (memoryLimits.getRight() < memoryLimits.getLeft()) {

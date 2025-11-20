@@ -3,8 +3,10 @@ package awildgoose.gooseboy;
 import awildgoose.gooseboy.mixin.client.MouseHandlerAccessor;
 import awildgoose.gooseboy.screen.CenteredCrateScreen;
 import com.mojang.blaze3d.platform.InputConstants;
+import com.mojang.blaze3d.platform.Window;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.MouseHandler;
 import net.minecraft.client.input.InputQuirks;
 import org.lwjgl.glfw.GLFW;
 
@@ -54,7 +56,7 @@ public class WasmInputManager {
 
 	private static int mapMouseToFramebuffer(boolean xAxis) {
 		Minecraft mc = Minecraft.getInstance();
-		var window = mc.getWindow();
+		Window window = mc.getWindow();
 
 		int guiW = window.getGuiScaledWidth();
 		int guiH = window.getGuiScaledHeight();
@@ -98,21 +100,21 @@ public class WasmInputManager {
 	}
 
 	public static void grabMouse() {
-		var minecraft = Minecraft.getInstance();
-		var mouseHandler = minecraft.mouseHandler;
+		Minecraft minecraft = Minecraft.getInstance();
+		MouseHandler mouseHandler = minecraft.mouseHandler;
 		if (minecraft.isWindowActive()) {
 			//noinspection ReferenceToMixin
-			var accessor = (MouseHandlerAccessor)mouseHandler;
+			MouseHandlerAccessor accessor = (MouseHandlerAccessor) mouseHandler;
 			if (!accessor.gooseboy$isMouseGrabbed()) {
 				if (InputQuirks.RESTORE_KEY_STATE_AFTER_MOUSE_GRAB) {
 					KeyMapping.setAll();
 				}
 
 				accessor.gooseboy$setMouseGrabbed(true);
-				var xPos = minecraft
+				int xPos = minecraft
 						.getWindow()
 						.getScreenWidth() / 2;
-				var yPos = minecraft
+				int yPos = minecraft
 						.getWindow()
 						.getScreenHeight() / 2;
 				accessor.gooseboy$setXPos(xPos);

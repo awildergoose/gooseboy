@@ -14,7 +14,7 @@ public class DontTurnPlayerIfInCrateMixin {
 	@Inject(at = @At("HEAD"), method = "turnPlayer", cancellable = true)
 	private void turnPlayer(double d, CallbackInfo ci) {
 		//noinspection ReferenceToMixin
-		var mouseHandler = (MouseHandlerAccessor)Minecraft.getInstance().mouseHandler;
+		MouseHandlerAccessor mouseHandler = (MouseHandlerAccessor) Minecraft.getInstance().mouseHandler;
 		WasmInputManager.LAST_ACCUMULATED_MOUSE_X = mouseHandler.gooseboy$getAccumulatedDX();
 		WasmInputManager.LAST_ACCUMULATED_MOUSE_Y = mouseHandler.gooseboy$getAccumulatedDY();
 
