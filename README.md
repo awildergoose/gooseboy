@@ -8,7 +8,7 @@
 
 This mod allows you to run [WebAssembly](https://webassembly.org/) scripts inside Minecraft on the client safely, allowing the creation of games, programs, and whatever your heart desires.
 
-> Disclaimer: Scripts are called crates in Gooseboy
+> Note: Scripts are called crates in Gooseboy
 
 ## Features
 - Run games and applications inside Minecraft with minimal performance impact
@@ -19,16 +19,15 @@ This mod allows you to run [WebAssembly](https://webassembly.org/) scripts insid
 ## Permissions
 Every crate by default has very minimal permissions to only the console and the mouse, you can change the permissions for each crate by opening the settings of the crate.
 The full list of permissions are as follows:
+
 - **CONSOLE**: Allows the crate to log messages to the console.
 - **AUDIO**: Allows the crate to play sounds and/or music, with any audio.
 - **INPUT_KEYBOARD**: Allows the crate to know if you pressed a key.
 - **INPUT_MOUSE**: Allows the crate to know if you clicked with your mouse.
 - **INPUT_MOUSE_POS**: Allows the crate to know the position of your mouse, adjusted to the region of the screen.
 - **INPUT_GRAB_MOUSE**: Allows the crate to hide the mouse and lock it to the center
-- **STORAGE_READ**: Allows the crate to read from that crate's 512 KBs of storage.
-- **STORAGE_WRITE**: Allows the crate to write to its 512 KBs of storage.
-- **EXTENDED_MEMORY**: Allocates 64 MB of memory to the crate instead of the regular 8 MB
-- **EXTENDED_EXTENDED_MEMORY**: Allocates 512 MB of memory to the crate (overrides the 64 MB)
+- **STORAGE_READ**: Allows the crate to read from that crate's storage.
+- **STORAGE_WRITE**: Allows the crate to write to its storage.
 
 ### Security
 Crates are run using the Java [Chicory](https://chicory.dev/) WASM runtime.
@@ -42,22 +41,30 @@ For security, crates can't:
 - use your internet or communicate with any server
 - run java code
 
-If you’ve found a crate that can bypass these restrictions, please report it via [GitHub](https://github.com/awildergoose/).
+If you’ve found a crate that can bypass these restrictions, please report it
+via [GitHub](https://github.com/awildergoose/).
 
 ## How-to open the crates menu
-Go in-game, and press `M`. (you can change the keybind in the Controls options if you'd like to!)
 
-## Where to find crates
-You can find the official example crates [here](https://github.com/awildergoose/gooseboy-rs/releases/tag/1.1.0)
+Go in-game, and press `M`. (you can change the keybinding in the Controls options if you'd like to!)
+
+## Where-to find crates
+
+You can find the official example crates [here](https://github.com/awildergoose/gooseboy-rs/releases/tag/1.2.0)
 
 ## How-to add a crate
-You can add crates by moving them to the crates folder. You can open the crates folder from the menu by pressing the "Open crates folder location" button at the bottom.
+
+You can add crates by moving them to the crates folder. You can open the crates folder from the menu by pressing the "
+Open crates folder location" button at the bottom.
 
 ## How-to create crates
+
 You can make crates in any language that compiles to WebAssembly (WASI is unsupported due to security concerns).
-The recommended language to use is [Rust](https://rust-lang.org/), and so the [standard library](https://github.com/awildergoose/gooseboy-rs) is made in Rust as well.
+The recommended language to use is [Rust](https://rust-lang.org/), and so
+the [standard library](https://github.com/awildergoose/gooseboy-rs) is made in Rust as well.
 
 An example crate is as follows:
+
 ```rs
 #![no_main]
 
@@ -100,4 +107,8 @@ fn update(nano_time: i64) {
 ```
 
 ## Contributing
-Want to help improve Gooseboy? Contributions are welcome! You can find the standard library [here](https://github.com/awildergoose/gooseboy-rs) and the Java mod [here](https://github.com/awildergoose/gooseboy)!
+
+Want to help improve Gooseboy? Contributions are welcome! You can find the standard
+library [here](https://github.com/awildergoose/gooseboy-rs) and the
+CLI [here](https://github.com/awildergoose/cargo-gooseboy) and the Java
+mod [here](https://github.com/awildergoose/gooseboy)!
