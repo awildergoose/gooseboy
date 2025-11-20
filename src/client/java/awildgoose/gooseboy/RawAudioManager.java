@@ -17,11 +17,12 @@ public class RawAudioManager {
 
 	private static long AUDIO_ID;
 
-	// TODO make these configurable
+	// TODO make these configurable per-crate
 	private static final int MAX_AUDIO_SIZE = 10 * 1024 * 1024; // 10 MB
 	private static final int MAX_CONCURRENT_SOUNDS = 32;
 	private static final int SAMPLE_RATE = 44100;
 
+	// TODO new signature: play(byte[] pcm, int sampleRate, int format);
 	public static long play(byte[] pcm) {
 		if (pcm == null || pcm.length > MAX_AUDIO_SIZE) return -1;
 		if (pcm.length % 2 != 0) return -1;
@@ -68,7 +69,7 @@ public class RawAudioManager {
 		active.clear();
 	}
 
-	// TODO make the limiters configurable
+	// TODO make the limiters configurable per-crate
 	public static void setVolume(long id, float volume) {
 		for (PlayingSound ps : active) {
 			if (ps.id == id) {

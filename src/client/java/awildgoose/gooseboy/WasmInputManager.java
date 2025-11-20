@@ -12,7 +12,7 @@ import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.Queue;
 
-// TODO this needs a major refactor
+// TODO this needs a MAJOR refactor
 public class WasmInputManager {
 	private static final boolean[] keys = new boolean[GLFW.GLFW_KEY_LAST + 1];
 	private static final Queue<Integer> keyQueue = new ArrayDeque<>();
