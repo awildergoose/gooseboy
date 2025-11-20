@@ -143,8 +143,9 @@ public class CenteredCrateScreen extends Screen {
 		} else if (!failed) {
 			assert minecraft != null;
 
-			Gooseboy.ccb.doErrorMessage("Crate aborted during update",
-							"Check the console for more information.");
+			Gooseboy.ccb.doTranslatedErrorMessage(
+					"ui.gooseboy.crate_update_failed.title",
+					"ui.gooseboy.crate_update_failed.body");
 			failed = true;
 		}
 	}

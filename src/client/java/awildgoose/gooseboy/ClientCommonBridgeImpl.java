@@ -8,10 +8,22 @@ import net.minecraft.network.chat.Component;
 public class ClientCommonBridgeImpl implements ClientCommonBridge {
 	@Override
 	public void doErrorMessage(String title, String body) {
-		SystemToast.add(Minecraft.getInstance().getToastManager(), SystemToast.SystemToastId.CHUNK_LOAD_FAILURE,
-			Component.literal(title), Component.literal(body)
+		SystemToast.add(Minecraft.getInstance()
+								.getToastManager(), SystemToast.SystemToastId.CHUNK_LOAD_FAILURE,
+						Component.literal(title), Component.literal(body)
 		);
 		Gooseboy.LOGGER.error("%s: %s".formatted(title, body));
+	}
+
+	@Override
+	public void doTranslatedErrorMessage(String title, String body, Object... o) {
+		Component titleC = Component.translatable(title);
+		Component bodyC = Component.translatable(body, o);
+
+		SystemToast.add(Minecraft.getInstance()
+								.getToastManager(), SystemToast.SystemToastId.CHUNK_LOAD_FAILURE, titleC, bodyC);
+
+		Gooseboy.LOGGER.error("%s: %s".formatted(titleC.getString(), bodyC.getString()));
 	}
 
 	@Override

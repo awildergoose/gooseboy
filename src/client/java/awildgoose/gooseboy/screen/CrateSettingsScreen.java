@@ -60,8 +60,9 @@ public class CrateSettingsScreen extends Screen {
 		if (memoryLimits.getRight() < memoryLimits.getLeft()) {
 			// set it to (max, max), I have no idea why, but left is max here
 			memoryLimits = Pair.of(memoryLimits.getLeft(), memoryLimits.getLeft());
-			Gooseboy.ccb.doErrorMessage("Memory limits updated", "Maximum memory was less than initial memory, now " +
-					"both values are max");
+			Gooseboy.ccb.doTranslatedErrorMessage(
+					"ui.gooseboy.memory_limits_updated.title",
+					"ui.gooseboy.memory_limits_updated.body");
 		}
 
 		ConfigManager.setCrateMemoryLimits(this.crateName, memoryLimits);

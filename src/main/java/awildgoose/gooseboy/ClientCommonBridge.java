@@ -6,14 +6,23 @@ public interface ClientCommonBridge {
 	// misc
 	void doErrorMessage(String title, String body);
 
+	void doTranslatedErrorMessage(String title, String body, Object... o);
+
 	// input
 	int getKeyCode();
+
 	boolean isKeyDown(int key);
+
 	boolean isMouseButtonDown(int button);
+
 	int getMouseXInFramebuffer();
+
 	int getMouseYInFramebuffer();
+
 	void grabMouse();
+
 	void releaseMouse();
+
 	double getMouseAccumulatedDX();
 	double getMouseAccumulatedDY();
 	boolean isMouseGrabbed();
