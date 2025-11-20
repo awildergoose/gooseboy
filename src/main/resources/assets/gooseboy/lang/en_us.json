@@ -15,6 +15,7 @@
   "ui.gooseboy.memory_limits_updated.title": "Memory limits updated",
   "ui.gooseboy.memory_limits_updated.body": "Maximum memory was less than initial memory, now both values are max",
   "ui.gooseboy.open_crates_folder": "Open crates folder location",
+  "ui.gooseboy.refresh": "Refresh",
   "ui.gooseboy.settings.title": "%s - Settings",
   "ui.gooseboy.settings.allocated": "Allocated storage: %s",
   "ui.gooseboy.settings.initial_memory": "Initial memory in KBs",

@@ -5,12 +5,13 @@ import awildgoose.gooseboy.crate.CrateLoader;
 import awildgoose.gooseboy.screen.widgets.CrateSelectionList;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.components.*;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.ObjectSelectionList;
+import net.minecraft.client.gui.components.StringWidget;
 import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
 import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -66,11 +67,6 @@ public class CrateListScreen extends Screen {
 															  .spacing(4));
 		header.addChild(new StringWidget(this.title, this.font), (l) -> l.alignHorizontallyCenter()
 				.alignVerticallyMiddle());
-		header.addChild(new ImageButton(0, 0, 15, 15, new WidgetSprites(
-				ResourceLocation.fromNamespaceAndPath(Gooseboy.MOD_ID, "widget/reload_button"),
-				ResourceLocation.fromNamespaceAndPath(Gooseboy.MOD_ID, "widget/reload_button_highlighted")
-		), (f) -> this.reloadList(true)), (l) -> l.alignHorizontallyRight()
-				.alignVerticallyMiddle());
 
 		LinearLayout footer = this.layout.addToFooter(LinearLayout.horizontal()
 															  .spacing(4));
@@ -82,8 +78,16 @@ public class CrateListScreen extends Screen {
 														  "crates")))
 								.build(), (v) -> v.alignHorizontallyCenter()
 				.paddingTop(-5));
-		footer.addChild(Button.builder(Component.translatable("gui.ok"), (b) -> this.onClose()).build(),
-								(v) -> v.alignHorizontallyCenter().paddingTop(-5));
+		footer.addChild(Button.builder(
+						Component.translatable("ui.gooseboy.refresh"),
+						(b) -> this.reloadList(true))
+								.build(), (v) -> v.alignHorizontallyCenter()
+				.paddingTop(-5));
+		footer.addChild(
+				Button.builder(Component.translatable("gui.ok"), (b) -> this.onClose())
+						.build(),
+				(v) -> v.alignHorizontallyCenter()
+						.paddingTop(-5));
 		this.layout.visitWidgets(this::addRenderableWidget);
 		this.repositionElements();
 	}
