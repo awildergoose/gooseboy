@@ -20,12 +20,16 @@ public class GooseboyClient implements ClientModInitializer {
 	@Override
 	public void onInitializeClient() {
 		Gooseboy.ccb = new ClientCommonBridgeImpl();
-		ClientTickEvents.END_WORLD_TICK.register(w -> {
+		ClientTickEvents.END_CLIENT_TICK.register(client -> {
+			RawAudioManager.tick();
+
+			if (client.player == null) return;
+
 			if (keyOpenWasm.isDown())
 				Minecraft.getInstance()
-					.setScreen(new CrateListScreen());
+						.setScreen(new CrateListScreen());
 		});
-		ClientTickEvents.END_CLIENT_TICK.register(c -> RawAudioManager.tick());
+		// TODO is this really a good idea..
 		WorldRenderEvents.END_MAIN.register(
 				ResourceLocation.fromNamespaceAndPath(Gooseboy.MOD_ID, "input_updater"),
 				(context) -> WasmInputManager.update());

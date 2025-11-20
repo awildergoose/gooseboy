@@ -15,7 +15,7 @@ import java.util.Optional;
 import static awildgoose.gooseboy.Gooseboy.FRAMEBUFFER_HEIGHT;
 import static awildgoose.gooseboy.Gooseboy.FRAMEBUFFER_WIDTH;
 
-public class GooseboyCrate {
+public class GooseboyCrate implements AutoCloseable {
 	public final Instance instance;
 	private int fbPtr;
 	public int fbSize;
