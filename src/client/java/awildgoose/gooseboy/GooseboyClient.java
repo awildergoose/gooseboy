@@ -3,6 +3,7 @@ package awildgoose.gooseboy;
 import awildgoose.gooseboy.screen.CrateListScreen;
 import com.mojang.blaze3d.pipeline.BlendFunction;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
+import com.mojang.blaze3d.platform.DepthTestFunction;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormat;
@@ -23,6 +24,8 @@ public class GooseboyClient implements ClientModInitializer {
 					.withSampler("Sampler0")
 					.withBlend(BlendFunction.OVERLAY)
 					.withCull(false)
+					.withDepthWrite(false)
+					.withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST)
 					.withVertexFormat(DefaultVertexFormat.POSITION_TEX, VertexFormat.Mode.QUADS)
 					.build()
 	);

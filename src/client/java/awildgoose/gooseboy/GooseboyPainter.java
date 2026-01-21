@@ -1,12 +1,11 @@
 package awildgoose.gooseboy;
 
 import awildgoose.gooseboy.crate.GooseboyCrate;
-import awildgoose.gooseboy.gpu.GuiGooseboyRenderState;
+import awildgoose.gooseboy.gpu.Gooseboy3DRenderer;
 import awildgoose.gooseboy.gpu.VertexStack;
 import com.mojang.blaze3d.platform.NativeImage;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.render.TextureSetup;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.resources.ResourceLocation;
 import org.joml.Vector2f;
@@ -25,7 +24,7 @@ public class GooseboyPainter implements AutoCloseable {
 	private ByteBuffer tmpBuf;
 	private boolean failed = false;
 	private long lastRenderNano = 0L;
-	private final GuiGooseboyRenderState gpuRenderState;
+	private final Gooseboy3DRenderer renderer3D;
 
 	public GooseboyPainter(GooseboyCrate crate) {
 		this.crate = crate;
@@ -35,10 +34,11 @@ public class GooseboyPainter implements AutoCloseable {
 		this.framebufferTexture = withLocation(
 				"crate_framebuffer_" + sanitizePath(crate.name)
 		);
-		this.gpuRenderState = new GuiGooseboyRenderState(GooseboyClient.GOOSE_GPU_PIPELINE, TextureSetup.noTexture(),
-														 null, 0, 0);
+		this.renderer3D = new Gooseboy3DRenderer();
+	}
 
-		pushCube(this.gpuRenderState.stack, 0f, 0f, 0f, 16f, 16f, 16f);
+	public void render3D(int x, int y) {
+		this.renderer3D.render(x, y);
 	}
 
 	public static void pushCube(
@@ -124,21 +124,11 @@ public class GooseboyPainter implements AutoCloseable {
 		long now = System.nanoTime();
 		updateTextureIfNeeded(now);
 
-//		guiGraphics.pose()
-//				.pushMatrix();
-//		PoseStack pose = new PoseStack();
-//		pose.pushPose();
-
 //		guiGraphics.scissorStack.push(ScreenRectangle.of(
 //				ScreenAxis.HORIZONTAL,
 //				x, y,
 //				w, h
 //		));
-//		GlStateManager._enableDepthTest();
-//		GlStateManager._depthFunc(GlConst.toGl(RenderPipelines.SOLID.getDepthTestFunction()));
-
-		this.gpuRenderState.setBounds(x, y, guiGraphics.scissorStack.peek());
-		guiGraphics.guiRenderState.submitGuiElement(this.gpuRenderState);
 
 //		RenderSystem.setShaderTexture(0, texture.getTextureView());
 //		guiGraphics.blit(
@@ -152,13 +142,7 @@ public class GooseboyPainter implements AutoCloseable {
 //				h
 //		);
 
-//		GlStateManager._depthFunc(GlConst.toGl(RenderPipelines.GUI.getDepthTestFunction()));
-//		GlStateManager._disableDepthTest();
-
 //		guiGraphics.scissorStack.pop();
-//		pose.pushPose();
-//		guiGraphics.pose()
-//				.popMatrix();
 	}
 
 	private void updateTextureIfNeeded(long now) {

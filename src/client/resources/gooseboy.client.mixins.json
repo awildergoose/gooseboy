@@ -1,12 +1,13 @@
 {
-	"required": true,
-	"package": "awildgoose.gooseboy.mixin.client",
-	"compatibilityLevel": "JAVA_21",
-	"client": [
-		"MouseHandlerAccessor",
-		"DontTurnPlayerIfInCrateMixin"
-	],
-	"injectors": {
-		"defaultRequire": 1
-	}
+  "required": true,
+  "package": "awildgoose.gooseboy.mixin.client",
+  "compatibilityLevel": "JAVA_21",
+  "client": [
+    "DontTurnPlayerIfInCrateMixin",
+    "GameRendererMixin",
+    "MouseHandlerAccessor"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
 }

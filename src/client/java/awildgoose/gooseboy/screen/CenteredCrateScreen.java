@@ -19,7 +19,7 @@ public class CenteredCrateScreen extends Screen {
 	private static final int GUI_PADDING = 20;
 	private static final int INSET_PIXELS = 5;
 
-	private final GooseboyPainter painter;
+	public final GooseboyPainter painter;
 
 	public CenteredCrateScreen(GooseboyCrate crate) {
 		super(Component.literal(crate.name));
@@ -69,9 +69,9 @@ public class CenteredCrateScreen extends Screen {
 		);
 	}
 
-	private record Layout(double scale, int bgWidth, int bgHeight, int bgX, int bgY, int fbDestWidth, int fbDestHeight,
-						  int inset, int fbX, int fbY) {
-		static Layout forSize(int guiWidth, int guiHeight) {
+	public record Layout(double scale, int bgWidth, int bgHeight, int bgX, int bgY, int fbDestWidth, int fbDestHeight,
+						 int inset, int fbX, int fbY) {
+		public static Layout forSize(int guiWidth, int guiHeight) {
 			double availableW = Math.max(1, guiWidth - GUI_PADDING);
 			double availableH = Math.max(1, guiHeight - GUI_PADDING);
 			double scale = Math.min(availableW / (double) IMAGE_WIDTH, availableH / (double) IMAGE_HEIGHT);
