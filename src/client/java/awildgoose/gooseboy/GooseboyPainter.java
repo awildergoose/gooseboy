@@ -1,10 +1,14 @@
 package awildgoose.gooseboy;
 
 import awildgoose.gooseboy.crate.GooseboyCrate;
+import awildgoose.gooseboy.gpu.GuiGooseboyRenderState;
 import com.mojang.blaze3d.platform.NativeImage;
-import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.navigation.ScreenAxis;
+import net.minecraft.client.gui.navigation.ScreenRectangle;
+import net.minecraft.client.gui.render.TextureSetup;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.resources.ResourceLocation;
@@ -65,17 +69,44 @@ public class GooseboyPainter implements AutoCloseable {
 		long now = System.nanoTime();
 		updateTextureIfNeeded(now);
 
-		RenderSystem.setShaderTexture(0, texture.getTextureView());
-		guiGraphics.blit(
-				RenderPipelines.GUI_TEXTURED,
-				this.framebufferTexture,
+		guiGraphics.pose()
+				.pushMatrix();
+		PoseStack pose = new PoseStack();
+		pose.pushPose();
+
+		guiGraphics.scissorStack.push(ScreenRectangle.of(
+				ScreenAxis.HORIZONTAL,
 				x, y,
-				0, 0,
-				w,
-				h,
-				w,
-				h
-		);
+				w, h
+		));
+//		GlStateManager._enableDepthTest();
+//		GlStateManager._depthFunc(GlConst.toGl(RenderPipelines.SOLID.getDepthTestFunction()));
+
+		guiGraphics.guiRenderState.submitGuiElement(new GuiGooseboyRenderState(
+				RenderPipelines.SOLID, TextureSetup.noTexture(),
+				pose, guiGraphics.scissorStack.peek(),
+				x, y
+		));
+
+//		RenderSystem.setShaderTexture(0, texture.getTextureView());
+//		guiGraphics.blit(
+//				RenderPipelines.GUI_TEXTURED,
+//				this.framebufferTexture,
+//				x, y,
+//				0, 0,
+//				w,
+//				h,
+//				w,
+//				h
+//		);
+
+//		GlStateManager._depthFunc(GlConst.toGl(RenderPipelines.GUI.getDepthTestFunction()));
+//		GlStateManager._disableDepthTest();
+
+		guiGraphics.scissorStack.pop();
+		pose.pushPose();
+		guiGraphics.pose()
+				.popMatrix();
 	}
 
 	private void updateTextureIfNeeded(long now) {
