@@ -36,14 +36,16 @@ import static net.minecraft.client.renderer.WorldBorderRenderer.FORCEFIELD_LOCAT
 public final class GuiGooseboyRenderState implements GuiElementRenderState {
 	private final RenderPipeline pipeline;
 	private final TextureSetup textureSetup;
-	private final PoseStack pose;
-	private final @Nullable ScreenRectangle scissorArea;
-	private final @Nullable ScreenRectangle bounds;
+	private PoseStack pose;
+	private @Nullable ScreenRectangle scissorArea;
+	private @Nullable ScreenRectangle bounds;
 	private final RenderSystem.AutoStorageIndexBuffer indices = RenderSystem.getSequentialBuffer(
 			VertexFormat.Mode.QUADS);
 	public VertexStack stack;
+
 	public GuiGooseboyRenderState(
-			RenderPipeline pipeline, TextureSetup textureSetup, PoseStack pose,
+			RenderPipeline pipeline, TextureSetup textureSetup,
+			@Nullable PoseStack pose,
 			@Nullable ScreenRectangle scissorArea,
 			@Nullable ScreenRectangle bounds
 	) {
@@ -52,12 +54,13 @@ public final class GuiGooseboyRenderState implements GuiElementRenderState {
 		this.pose = pose;
 		this.scissorArea = scissorArea;
 		this.bounds = bounds;
+		this.stack = new VertexStack();
 	}
 
 	public GuiGooseboyRenderState(
 			RenderPipeline pipeline,
 			TextureSetup textureSetup,
-			PoseStack pose,
+			@Nullable PoseStack pose,
 			@Nullable ScreenRectangle scissorArea,
 			int x,
 			int y
@@ -69,7 +72,6 @@ public final class GuiGooseboyRenderState implements GuiElementRenderState {
 				scissorArea,
 				getBounds(x, y, scissorArea)
 		);
-		this.stack = new VertexStack();
 	}
 
 	@Nullable
@@ -83,47 +85,51 @@ public final class GuiGooseboyRenderState implements GuiElementRenderState {
 		this.pose.pushPose();
 		PoseStack.Pose pose = this.pose.last();
 		GpuBuffer buffer = this.stack.intoGpuBuffer(pose);
-		RenderTarget renderTarget = Minecraft.getInstance()
-				.getMainRenderTarget();
-		GpuBufferSlice gpuBufferSlice = RenderSystem.getDynamicUniforms()
-				.writeTransform(
-						// TODO
-						RenderSystem.getModelViewMatrix(),
-						new Vector4f(1f, 1f, 1f, 1f),
-						new Vector3f(),
-						new Matrix4f(),
-						0.0F
-				);
-		TextureManager textureManager = Minecraft.getInstance()
-				.getTextureManager();
-		AbstractTexture abstractTexture = textureManager.getTexture(FORCEFIELD_LOCATION);
-		abstractTexture.setUseMipmaps(false);
 
-		try (RenderPass renderPass = RenderSystem.getDevice()
-				.createCommandEncoder()
-				.createRenderPass(() -> "Gooseboy GooseGPU", renderTarget.getColorTextureView(),
-								  OptionalInt.empty(), renderTarget.getDepthTextureView(), OptionalDouble.empty())) {
-			renderPass.setPipeline(GooseboyClient.GOOSE_GPU_PIPELINE);
-			RenderSystem.bindDefaultUniforms(renderPass);
-			renderPass.setUniform("DynamicTransforms", gpuBufferSlice);
-			renderPass.setIndexBuffer(this.indices.getBuffer(6), this.indices.type());
-			renderPass.bindSampler("Sampler0", abstractTexture.getTextureView());
-			renderPass.setVertexBuffer(0, buffer);
-			ArrayList<RenderPass.Draw<GuiGooseboyRenderState>> draws = new ArrayList<>();
+		if (buffer != null) {
+			RenderTarget renderTarget = Minecraft.getInstance()
+					.getMainRenderTarget();
+			GpuBufferSlice gpuBufferSlice = RenderSystem.getDynamicUniforms()
+					.writeTransform(
+							RenderSystem.getModelViewMatrix(),
+							new Vector4f(1f, 1f, 1f, 1f),
+							new Vector3f(),
+							new Matrix4f(),
+							0.0F
+					);
+			TextureManager textureManager = Minecraft.getInstance()
+					.getTextureManager();
+			// TODO
+			AbstractTexture abstractTexture = textureManager.getTexture(FORCEFIELD_LOCATION);
+			abstractTexture.setUseMipmaps(false);
 
-			int quadCount = stack.size() / 4;
-			for (int i = 0; i < quadCount; i++) {
-				draws.add(new RenderPass.Draw<>(
-						0,
-						buffer,
-						indices.getBuffer(6),
-						indices.type(),
-						i * 6,
-						6
-				));
+			try (RenderPass renderPass = RenderSystem.getDevice()
+					.createCommandEncoder()
+					.createRenderPass(() -> "Gooseboy GooseGPU", renderTarget.getColorTextureView(),
+									  OptionalInt.empty(), renderTarget.getDepthTextureView(),
+									  OptionalDouble.empty())) {
+				renderPass.setPipeline(GooseboyClient.GOOSE_GPU_PIPELINE);
+				RenderSystem.bindDefaultUniforms(renderPass);
+				renderPass.setUniform("DynamicTransforms", gpuBufferSlice);
+				renderPass.setIndexBuffer(this.indices.getBuffer(6), this.indices.type());
+				renderPass.bindSampler("Sampler0", abstractTexture.getTextureView());
+				renderPass.setVertexBuffer(0, buffer);
+				ArrayList<RenderPass.Draw<GuiGooseboyRenderState>> draws = new ArrayList<>();
+
+				int quadCount = stack.size() / 4;
+				for (int i = 0; i < quadCount; i++) {
+					draws.add(new RenderPass.Draw<>(
+							0,
+							buffer,
+							indices.getBuffer(6),
+							indices.type(),
+							i * 6,
+							6
+					));
+				}
+
+				renderPass.drawMultipleIndexed(draws, null, null, Collections.emptyList(), this);
 			}
-
-			renderPass.drawMultipleIndexed(draws, null, null, Collections.emptyList(), this);
 		}
 
 		this.pose.popPose();
@@ -147,5 +153,14 @@ public final class GuiGooseboyRenderState implements GuiElementRenderState {
 	@Override
 	public @Nullable ScreenRectangle bounds() {
 		return bounds;
+	}
+
+	public void setPose(PoseStack pose) {
+		this.pose = pose;
+	}
+
+	public void setBounds(int x, int y, @Nullable ScreenRectangle peek) {
+		this.scissorArea = peek;
+		this.bounds = getBounds(x, y, scissorArea);
 	}
 }

@@ -9,7 +9,6 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.navigation.ScreenAxis;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.render.TextureSetup;
-import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.resources.ResourceLocation;
 import org.lwjgl.system.MemoryUtil;
@@ -26,6 +25,7 @@ public class GooseboyPainter implements AutoCloseable {
 	private ByteBuffer tmpBuf;
 	private boolean failed = false;
 	private long lastRenderNano = 0L;
+	private final GuiGooseboyRenderState gpuRenderState;
 
 	public GooseboyPainter(GooseboyCrate crate) {
 		this.crate = crate;
@@ -35,6 +35,8 @@ public class GooseboyPainter implements AutoCloseable {
 		this.framebufferTexture = withLocation(
 				"crate_framebuffer_" + sanitizePath(crate.name)
 		);
+		this.gpuRenderState = new GuiGooseboyRenderState(GooseboyClient.GOOSE_GPU_PIPELINE, TextureSetup.noTexture(),
+														 null, null, 0, 0);
 	}
 
 	private static String sanitizePath(String s) {
@@ -81,11 +83,9 @@ public class GooseboyPainter implements AutoCloseable {
 //		GlStateManager._enableDepthTest();
 //		GlStateManager._depthFunc(GlConst.toGl(RenderPipelines.SOLID.getDepthTestFunction()));
 
-		guiGraphics.guiRenderState.submitGuiElement(new GuiGooseboyRenderState(
-				RenderPipelines.SOLID, TextureSetup.noTexture(),
-				pose, guiGraphics.scissorStack.peek(),
-				x, y
-		));
+		this.gpuRenderState.setPose(pose);
+		this.gpuRenderState.setBounds(x, y, guiGraphics.scissorStack.peek());
+		guiGraphics.guiRenderState.submitGuiElement(this.gpuRenderState);
 
 //		RenderSystem.setShaderTexture(0, texture.getTextureView());
 //		guiGraphics.blit(

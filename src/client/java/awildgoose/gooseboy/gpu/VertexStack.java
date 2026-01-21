@@ -3,6 +3,7 @@ package awildgoose.gooseboy.gpu;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
+import org.jetbrains.annotations.Nullable;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 
@@ -34,9 +35,14 @@ public final class VertexStack {
 					.setUv(vertex.uv.x, vertex.uv.y);
 	}
 
-	public GpuBuffer intoGpuBuffer(PoseStack.Pose pose) {
+	public @Nullable GpuBuffer intoGpuBuffer(PoseStack.Pose pose) {
 		final VertexFormat VERTEX_FORMAT = DefaultVertexFormat.POSITION_TEX;
 		int len = VERTEX_FORMAT.getVertexSize() * this.vertices.size();
+
+		if (len == 0) {
+			// no vertices
+			return null;
+		}
 
 		if (gpuBuffer == null || gpuBuffer.size() < len) {
 			if (gpuBuffer != null) gpuBuffer.close();
@@ -46,11 +52,6 @@ public final class VertexStack {
 							GpuBuffer.USAGE_VERTEX | GpuBuffer.USAGE_COPY_DST,
 							len
 					);
-		}
-
-		if (len == 0) {
-			// no vertices
-			return gpuBuffer;
 		}
 
 		try (ByteBufferBuilder byteBuffer = ByteBufferBuilder.exactlySized(len)) {
