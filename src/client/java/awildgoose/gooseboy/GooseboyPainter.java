@@ -4,11 +4,8 @@ import awildgoose.gooseboy.crate.GooseboyCrate;
 import awildgoose.gooseboy.gpu.GuiGooseboyRenderState;
 import awildgoose.gooseboy.gpu.VertexStack;
 import com.mojang.blaze3d.platform.NativeImage;
-import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.navigation.ScreenAxis;
-import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.render.TextureSetup;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.resources.ResourceLocation;
@@ -39,7 +36,7 @@ public class GooseboyPainter implements AutoCloseable {
 				"crate_framebuffer_" + sanitizePath(crate.name)
 		);
 		this.gpuRenderState = new GuiGooseboyRenderState(GooseboyClient.GOOSE_GPU_PIPELINE, TextureSetup.noTexture(),
-														 null, null, 0, 0);
+														 null, 0, 0);
 
 		pushCube(this.gpuRenderState.stack, 0f, 0f, 0f, 16f, 16f, 16f);
 	}
@@ -127,20 +124,19 @@ public class GooseboyPainter implements AutoCloseable {
 		long now = System.nanoTime();
 		updateTextureIfNeeded(now);
 
-		guiGraphics.pose()
-				.pushMatrix();
-		PoseStack pose = new PoseStack();
-		pose.pushPose();
+//		guiGraphics.pose()
+//				.pushMatrix();
+//		PoseStack pose = new PoseStack();
+//		pose.pushPose();
 
-		guiGraphics.scissorStack.push(ScreenRectangle.of(
-				ScreenAxis.HORIZONTAL,
-				x, y,
-				w, h
-		));
+//		guiGraphics.scissorStack.push(ScreenRectangle.of(
+//				ScreenAxis.HORIZONTAL,
+//				x, y,
+//				w, h
+//		));
 //		GlStateManager._enableDepthTest();
 //		GlStateManager._depthFunc(GlConst.toGl(RenderPipelines.SOLID.getDepthTestFunction()));
 
-		this.gpuRenderState.setPose(pose);
 		this.gpuRenderState.setBounds(x, y, guiGraphics.scissorStack.peek());
 		guiGraphics.guiRenderState.submitGuiElement(this.gpuRenderState);
 
@@ -159,10 +155,10 @@ public class GooseboyPainter implements AutoCloseable {
 //		GlStateManager._depthFunc(GlConst.toGl(RenderPipelines.GUI.getDepthTestFunction()));
 //		GlStateManager._disableDepthTest();
 
-		guiGraphics.scissorStack.pop();
-		pose.pushPose();
-		guiGraphics.pose()
-				.popMatrix();
+//		guiGraphics.scissorStack.pop();
+//		pose.pushPose();
+//		guiGraphics.pose()
+//				.popMatrix();
 	}
 
 	private void updateTextureIfNeeded(long now) {

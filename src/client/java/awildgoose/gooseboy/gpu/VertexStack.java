@@ -35,7 +35,13 @@ public final class VertexStack {
 					.setUv(vertex.uv.x, vertex.uv.y);
 	}
 
-	public @Nullable GpuBuffer intoGpuBuffer(PoseStack.Pose pose) {
+	public void buildRaw(VertexConsumer consumer) {
+		for (Vertex vertex : vertices)
+			consumer.addVertex(vertex.pos)
+					.setUv(vertex.uv.x, vertex.uv.y);
+	}
+
+	public @Nullable GpuBuffer intoGpuBuffer() {
 		final VertexFormat VERTEX_FORMAT = DefaultVertexFormat.POSITION_TEX;
 		int len = VERTEX_FORMAT.getVertexSize() * this.vertices.size();
 
@@ -56,7 +62,7 @@ public final class VertexStack {
 
 		try (ByteBufferBuilder byteBuffer = ByteBufferBuilder.exactlySized(len)) {
 			BufferBuilder buffer = new BufferBuilder(byteBuffer, VertexFormat.Mode.QUADS, VERTEX_FORMAT);
-			this.build(pose, buffer);
+			this.buildRaw(buffer);
 
 			try (MeshData meshData = buffer.buildOrThrow()) {
 				RenderSystem.getDevice()

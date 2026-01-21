@@ -57,7 +57,7 @@ public class CenteredCrateScreen extends Screen {
 
 	@Override
 	public void renderBackground(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
-		super.renderBackground(guiGraphics, mouseX, mouseY, partialTicks);
+//		super.renderBackground(guiGraphics, mouseX, mouseY, partialTicks);
 
 		Layout layout = Layout.forSize(this.width, this.height);
 		guiGraphics.blit(

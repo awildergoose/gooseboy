@@ -4,18 +4,17 @@ import awildgoose.gooseboy.Gooseboy;
 import awildgoose.gooseboy.GooseboyClient;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
+import com.mojang.blaze3d.opengl.GlStateManager;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.GpuTextureView;
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.Util;
-import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.render.TextureSetup;
@@ -39,7 +38,6 @@ import static net.minecraft.client.renderer.WorldBorderRenderer.FORCEFIELD_LOCAT
 public final class GuiGooseboyRenderState implements GuiElementRenderState {
 	private final RenderPipeline pipeline;
 	private final TextureSetup textureSetup;
-	private PoseStack pose;
 	private @Nullable ScreenRectangle scissorArea;
 	private @Nullable ScreenRectangle bounds;
 	private final RenderSystem.AutoStorageIndexBuffer indices = RenderSystem.getSequentialBuffer(
@@ -48,13 +46,11 @@ public final class GuiGooseboyRenderState implements GuiElementRenderState {
 
 	public GuiGooseboyRenderState(
 			RenderPipeline pipeline, TextureSetup textureSetup,
-			@Nullable PoseStack pose,
 			@Nullable ScreenRectangle scissorArea,
 			@Nullable ScreenRectangle bounds
 	) {
 		this.pipeline = pipeline;
 		this.textureSetup = textureSetup;
-		this.pose = pose;
 		this.scissorArea = scissorArea;
 		this.bounds = bounds;
 		this.stack = new VertexStack();
@@ -63,7 +59,6 @@ public final class GuiGooseboyRenderState implements GuiElementRenderState {
 	public GuiGooseboyRenderState(
 			RenderPipeline pipeline,
 			TextureSetup textureSetup,
-			@Nullable PoseStack pose,
 			@Nullable ScreenRectangle scissorArea,
 			int x,
 			int y
@@ -71,7 +66,6 @@ public final class GuiGooseboyRenderState implements GuiElementRenderState {
 		this(
 				pipeline,
 				textureSetup,
-				pose,
 				scissorArea,
 				getBounds(x, y, scissorArea)
 		);
@@ -85,18 +79,13 @@ public final class GuiGooseboyRenderState implements GuiElementRenderState {
 
 	@Override
 	public void buildVertices(VertexConsumer vertexConsumer) {
-		Camera camera = Minecraft.getInstance().gameRenderer.getMainCamera();
+		GlStateManager._disableDepthTest();
 		Matrix4fStack matrix4fStack = RenderSystem.getModelViewStack();
 		matrix4fStack.pushMatrix();
-		matrix4fStack.translate(0, 0, -1);
-		matrix4fStack.rotateX(camera.getXRot() * (float) (Math.PI / 180.0));
-		matrix4fStack.rotateY(camera.getYRot() * (float) (Math.PI / 180.0));
-		float f = 0.01F * Minecraft.getInstance()
-				.getWindow()
-				.getGuiScale();
-		matrix4fStack.scale(-f, f, -f);
+		matrix4fStack.translate(0, 0, -1000);
+		matrix4fStack.translate(this.bounds.left(), 30, 0);
 
-		GpuBuffer buffer = this.stack.intoGpuBuffer(pose.last());
+		GpuBuffer buffer = this.stack.intoGpuBuffer();
 
 		if (buffer != null && this.bounds != null) {
 			TextureManager textureManager = Minecraft.getInstance()
@@ -121,6 +110,7 @@ public final class GuiGooseboyRenderState implements GuiElementRenderState {
 
 			Profiler.get()
 					.push("GooseGPU");
+
 			try (RenderPass renderPass = RenderSystem.getDevice()
 					.createCommandEncoder()
 					.createRenderPass(() -> "Gooseboy GooseGPU", gpuTextureView,
@@ -132,7 +122,8 @@ public final class GuiGooseboyRenderState implements GuiElementRenderState {
 				renderPass.setIndexBuffer(gpuBuffer, this.indices.type());
 				renderPass.bindSampler("Sampler0", abstractTexture.getTextureView());
 				renderPass.setVertexBuffer(0, buffer);
-				renderPass.drawIndexed(0, 0, 18, 1);
+
+				renderPass.drawIndexed(0, 0, (stack.size() / 4) * 6, 1);
 			}
 
 			Profiler.get()
@@ -160,10 +151,6 @@ public final class GuiGooseboyRenderState implements GuiElementRenderState {
 	@Override
 	public @Nullable ScreenRectangle bounds() {
 		return bounds;
-	}
-
-	public void setPose(PoseStack pose) {
-		this.pose = pose;
 	}
 
 	public void setBounds(int x, int y, @Nullable ScreenRectangle peek) {
