@@ -25,6 +25,8 @@ import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
 
@@ -108,6 +110,21 @@ public final class GuiGooseboyRenderState implements GuiElementRenderState {
 			renderPass.setIndexBuffer(this.indices.getBuffer(6), this.indices.type());
 			renderPass.bindSampler("Sampler0", abstractTexture.getTextureView());
 			renderPass.setVertexBuffer(0, buffer);
+			ArrayList<RenderPass.Draw<GuiGooseboyRenderState>> draws = new ArrayList<>();
+
+			int quadCount = stack.size() / 4;
+			for (int i = 0; i < quadCount; i++) {
+				draws.add(new RenderPass.Draw<>(
+						0,
+						buffer,
+						indices.getBuffer(6),
+						indices.type(),
+						i * 6,
+						6
+				));
+			}
+
+			renderPass.drawMultipleIndexed(draws, null, null, Collections.emptyList(), this);
 		}
 
 		this.pose.popPose();

@@ -15,6 +15,10 @@ public final class VertexStack {
 	public VertexStack() {
 	}
 
+	public int size() {
+		return this.vertices.size();
+	}
+
 	public VertexStack push(Vertex vertex) {
 		this.vertices.add(vertex);
 		return this;
