@@ -1,18 +1,16 @@
 package awildgoose.gooseboy.gpu;
 
-
+import awildgoose.gooseboy.Gooseboy;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.systems.GpuDevice;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.textures.TextureFormat;
-import com.mojang.logging.LogUtils;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.Dumpable;
 import net.minecraft.resources.ResourceLocation;
-import org.slf4j.Logger;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -20,7 +18,6 @@ import java.util.function.Supplier;
 
 @Environment(EnvType.CLIENT)
 public class UnnamedDynamicTexture extends AbstractTexture implements Dumpable {
-	private static final Logger LOGGER = LogUtils.getLogger();
 	private NativeImage pixels;
 
 	public UnnamedDynamicTexture() {
@@ -49,7 +46,7 @@ public class UnnamedDynamicTexture extends AbstractTexture implements Dumpable {
 					.createCommandEncoder()
 					.writeToTexture(this.texture, this.pixels);
 		} else {
-			LOGGER.warn(
+			Gooseboy.LOGGER.warn(
 					"Trying to upload disposed texture {}", this.getTexture()
 							.getLabel());
 		}
@@ -57,14 +54,6 @@ public class UnnamedDynamicTexture extends AbstractTexture implements Dumpable {
 
 	public NativeImage getPixels() {
 		return this.pixels;
-	}
-
-	public void setPixels(NativeImage nativeImage) {
-		if (this.pixels != null) {
-			this.pixels.close();
-		}
-
-		this.pixels = nativeImage;
 	}
 
 	@Override

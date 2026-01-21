@@ -8,25 +8,28 @@ import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.minecraft.Util;
+import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.render.TextureSetup;
 import net.minecraft.client.gui.render.state.GuiElementRenderState;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.TextureManager;
+import net.minecraft.util.profiling.Profiler;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
+import org.joml.Matrix4fStack;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
 
@@ -82,57 +85,61 @@ public final class GuiGooseboyRenderState implements GuiElementRenderState {
 
 	@Override
 	public void buildVertices(VertexConsumer vertexConsumer) {
-		this.pose.pushPose();
-		PoseStack.Pose pose = this.pose.last();
-		GpuBuffer buffer = this.stack.intoGpuBuffer(pose);
+		Camera camera = Minecraft.getInstance().gameRenderer.getMainCamera();
+		Matrix4fStack matrix4fStack = RenderSystem.getModelViewStack();
+		matrix4fStack.pushMatrix();
+		matrix4fStack.translate(0, 0, -1);
+		matrix4fStack.rotateX(camera.getXRot() * (float) (Math.PI / 180.0));
+		matrix4fStack.rotateY(camera.getYRot() * (float) (Math.PI / 180.0));
+		float f = 0.01F * Minecraft.getInstance()
+				.getWindow()
+				.getGuiScale();
+		matrix4fStack.scale(-f, f, -f);
 
-		if (buffer != null) {
+		GpuBuffer buffer = this.stack.intoGpuBuffer(pose.last());
+
+		if (buffer != null && this.bounds != null) {
+			TextureManager textureManager = Minecraft.getInstance()
+					.getTextureManager();
+			AbstractTexture abstractTexture = textureManager.getTexture(FORCEFIELD_LOCATION);
+			abstractTexture.setUseMipmaps(false);
 			RenderTarget renderTarget = Minecraft.getInstance()
 					.getMainRenderTarget();
+			GpuTextureView gpuTextureView = renderTarget.getColorTextureView();
+			GpuTextureView gpuTextureView2 = renderTarget.getDepthTextureView();
+
+			float l = (float) (Util.getMillis() % 3000L) / 3000.0F;
+			GpuBuffer gpuBuffer = this.indices.getBuffer(6);
 			GpuBufferSlice gpuBufferSlice = RenderSystem.getDynamicUniforms()
 					.writeTransform(
 							RenderSystem.getModelViewMatrix(),
-							new Vector4f(1f, 1f, 1f, 1f),
-							new Vector3f(),
-							new Matrix4f(),
+							new Vector4f(1f, 0f, 0f, 1f),
+							new Vector3f(0f, 0f, 0f),
+							new Matrix4f().translation(l, l, 0.0F),
 							0.0F
 					);
-			TextureManager textureManager = Minecraft.getInstance()
-					.getTextureManager();
-			// TODO
-			AbstractTexture abstractTexture = textureManager.getTexture(FORCEFIELD_LOCATION);
-			abstractTexture.setUseMipmaps(false);
 
+			Profiler.get()
+					.push("GooseGPU");
 			try (RenderPass renderPass = RenderSystem.getDevice()
 					.createCommandEncoder()
-					.createRenderPass(() -> "Gooseboy GooseGPU", renderTarget.getColorTextureView(),
-									  OptionalInt.empty(), renderTarget.getDepthTextureView(),
+					.createRenderPass(() -> "Gooseboy GooseGPU", gpuTextureView,
+									  OptionalInt.empty(), gpuTextureView2,
 									  OptionalDouble.empty())) {
 				renderPass.setPipeline(GooseboyClient.GOOSE_GPU_PIPELINE);
 				RenderSystem.bindDefaultUniforms(renderPass);
 				renderPass.setUniform("DynamicTransforms", gpuBufferSlice);
-				renderPass.setIndexBuffer(this.indices.getBuffer(6), this.indices.type());
+				renderPass.setIndexBuffer(gpuBuffer, this.indices.type());
 				renderPass.bindSampler("Sampler0", abstractTexture.getTextureView());
 				renderPass.setVertexBuffer(0, buffer);
-				ArrayList<RenderPass.Draw<GuiGooseboyRenderState>> draws = new ArrayList<>();
-
-				int quadCount = stack.size() / 4;
-				for (int i = 0; i < quadCount; i++) {
-					draws.add(new RenderPass.Draw<>(
-							0,
-							buffer,
-							indices.getBuffer(6),
-							indices.type(),
-							i * 6,
-							6
-					));
-				}
-
-				renderPass.drawMultipleIndexed(draws, null, null, Collections.emptyList(), this);
+				renderPass.drawIndexed(0, 0, 18, 1);
 			}
+
+			Profiler.get()
+					.pop();
 		}
 
-		this.pose.popPose();
+		matrix4fStack.popMatrix();
 	}
 
 	@Override
