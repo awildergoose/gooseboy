@@ -15,8 +15,7 @@ import static awildgoose.gooseboy.Gooseboy.FRAMEBUFFER_WIDTH;
 public class CenteredCrateScreen extends Screen {
 	public static final int IMAGE_WIDTH = 330;
 	public static final int IMAGE_HEIGHT = 214;
-	private static final ResourceLocation SCREEN_UI_LOCATION = ResourceLocation.fromNamespaceAndPath(
-			Gooseboy.MOD_ID, "textures/gui/wasm.png");
+	private static final ResourceLocation SCREEN_UI_LOCATION = Gooseboy.withLocation("textures/gui/wasm.png");
 	private static final int GUI_PADDING = 20;
 	private static final int INSET_PIXELS = 5;
 

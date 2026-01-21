@@ -61,8 +61,7 @@ public class CrateSelectionList extends ObjectSelectionList<CrateSelectionList.E
 	}
 
 	public static class Entry extends ObjectSelectionList.Entry<CrateSelectionList.Entry> {
-		private static final ResourceLocation WASM_ICON = ResourceLocation.fromNamespaceAndPath(
-				Gooseboy.MOD_ID, "textures/gui/wasm_icon.png");
+		private static final ResourceLocation WASM_ICON = Gooseboy.withLocation("textures/gui/wasm_icon.png");
 		private final StringWidget text;
 		private final ImageButton runButton;
 		private final ImageButton settingsButton;
@@ -76,8 +75,8 @@ public class CrateSelectionList extends ObjectSelectionList<CrateSelectionList.E
 			this.text.setMaxWidth(i);
 
 			this.runButton = new ImageButton(0, 0, 15, 15, new WidgetSprites(
-					ResourceLocation.fromNamespaceAndPath(Gooseboy.MOD_ID, "widget/run_button"),
-					ResourceLocation.fromNamespaceAndPath(Gooseboy.MOD_ID, "widget/run_button_highlighted")
+					Gooseboy.withLocation("widget/run_button"),
+					Gooseboy.withLocation("widget/run_button_highlighted")
 			), (b) -> {
 				// run
 				WasmInputManager.reset();
@@ -108,8 +107,8 @@ public class CrateSelectionList extends ObjectSelectionList<CrateSelectionList.E
 			});
 
 			this.settingsButton = new ImageButton(0, 0, 15, 15, new WidgetSprites(
-					ResourceLocation.fromNamespaceAndPath(Gooseboy.MOD_ID, "widget/settings_button"),
-					ResourceLocation.fromNamespaceAndPath(Gooseboy.MOD_ID, "widget/settings_button_highlighted")
+					Gooseboy.withLocation("widget/settings_button"),
+					Gooseboy.withLocation("widget/settings_button_highlighted")
 			), (b) -> {
 				// settings
 				minecraft.setScreen(new CrateSettingsScreen(parent, text));

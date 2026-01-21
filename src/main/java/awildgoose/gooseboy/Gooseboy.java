@@ -5,9 +5,10 @@ import awildgoose.gooseboy.crate.GooseboyCrate;
 import com.dylibso.chicory.runtime.Instance;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.resources.ResourceLocation;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -44,14 +45,20 @@ public class Gooseboy implements ModInitializer {
 		return runningCrates.get(instance).getLeft();
 	}
 	public static CrateMeta getCrateMeta(Instance instance) {
-		return runningCrates.get(instance).getRight();
+		return runningCrates.get(instance)
+				.getRight();
 	}
 
 	public static void addCrate(GooseboyCrate crate, CrateMeta meta) {
 		runningCrates.put(crate.instance, Pair.of(crate, meta));
 	}
+
 	public static void removeCrate(GooseboyCrate crate) {
 		runningCrates.remove(crate.instance);
+	}
+
+	public static ResourceLocation withLocation(String path) {
+		return ResourceLocation.fromNamespaceAndPath(Gooseboy.MOD_ID, path);
 	}
 
 	@Override

@@ -16,8 +16,7 @@ import org.lwjgl.system.MemoryUtil;
 
 import java.nio.ByteBuffer;
 
-import static awildgoose.gooseboy.Gooseboy.FRAMEBUFFER_HEIGHT;
-import static awildgoose.gooseboy.Gooseboy.FRAMEBUFFER_WIDTH;
+import static awildgoose.gooseboy.Gooseboy.*;
 
 public class GooseboyPainter implements AutoCloseable {
 	private final GooseboyCrate crate;
@@ -33,8 +32,8 @@ public class GooseboyPainter implements AutoCloseable {
 		// Should we *really* use the frame limit (VSync, I think) option here?
 		this.frameIntervalNano = 1_000_000_000L / Minecraft.getInstance().options.framerateLimit()
 				.get();
-		this.framebufferTexture = ResourceLocation.fromNamespaceAndPath(
-				Gooseboy.MOD_ID, "crate_framebuffer_" + sanitizePath(crate.name)
+		this.framebufferTexture = withLocation(
+				"crate_framebuffer_" + sanitizePath(crate.name)
 		);
 	}
 

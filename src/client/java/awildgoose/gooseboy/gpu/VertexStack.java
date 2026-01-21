@@ -48,6 +48,11 @@ public final class VertexStack {
 					);
 		}
 
+		if (len == 0) {
+			// no vertices
+			return gpuBuffer;
+		}
+
 		try (ByteBufferBuilder byteBuffer = ByteBufferBuilder.exactlySized(len)) {
 			BufferBuilder buffer = new BufferBuilder(byteBuffer, VertexFormat.Mode.QUADS, VERTEX_FORMAT);
 			this.build(pose, buffer);

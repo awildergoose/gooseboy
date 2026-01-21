@@ -1,6 +1,7 @@
 package awildgoose.gooseboy.gpu;
 
 import awildgoose.gooseboy.Gooseboy;
+import awildgoose.gooseboy.GooseboyClient;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
@@ -16,7 +17,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.render.TextureSetup;
 import net.minecraft.client.gui.render.state.GuiElementRenderState;
-import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.TextureManager;
 import org.jetbrains.annotations.NotNull;
@@ -89,7 +89,7 @@ public final class GuiGooseboyRenderState implements GuiElementRenderState {
 				.writeTransform(
 						// TODO
 						RenderSystem.getModelViewMatrix(),
-						new Vector4f(),
+						new Vector4f(1f, 1f, 1f, 1f),
 						new Vector3f(),
 						new Matrix4f(),
 						0.0F
@@ -103,8 +103,7 @@ public final class GuiGooseboyRenderState implements GuiElementRenderState {
 				.createCommandEncoder()
 				.createRenderPass(() -> "Gooseboy GooseGPU", renderTarget.getColorTextureView(),
 								  OptionalInt.empty(), renderTarget.getDepthTextureView(), OptionalDouble.empty())) {
-			// TODO custom pipeline
-			renderPass.setPipeline(RenderPipelines.WORLD_BORDER);
+			renderPass.setPipeline(GooseboyClient.GOOSE_GPU_PIPELINE);
 			RenderSystem.bindDefaultUniforms(renderPass);
 			renderPass.setUniform("DynamicTransforms", gpuBufferSlice);
 			renderPass.setIndexBuffer(this.indices.getBuffer(6), this.indices.type());
