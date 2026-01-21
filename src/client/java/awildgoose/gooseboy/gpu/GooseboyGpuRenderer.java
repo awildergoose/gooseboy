@@ -20,6 +20,7 @@ import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.WorldBorderRenderer;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.TextureManager;
+import net.minecraft.util.Mth;
 import org.joml.*;
 
 import java.util.OptionalDouble;
@@ -53,7 +54,8 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 	public void render() {
 		Matrix4fStack matrix4fStack = RenderSystem.getModelViewStack();
 		matrix4fStack.pushMatrix();
-		matrix4fStack.translate(8, 8, -50);
+		float f = (float) (1.0 + Mth.sin(Util.getMillis()));
+//		matrix4fStack.transform(f, f, f);
 
 		GpuBuffer buffer = this.vertexStack.intoGpuBuffer();
 
@@ -69,9 +71,9 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 			GpuBuffer indexBuffer = this.indices.getBuffer(6);
 			GpuBufferSlice transformSlice = RenderSystem.getDynamicUniforms()
 					.writeTransform(
-							RenderSystem.getModelViewMatrix(),
+							matrix4fStack,
 							new Vector4f(1f, 1f, 1f, 1f),
-							new Vector3f(0f, 0f, 0f),
+							new Vector3f(f, f, f),
 							new Matrix4f().translation(time, time, 0.0F),
 							0.0F
 					);
