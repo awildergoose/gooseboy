@@ -26,8 +26,7 @@ public class GameRendererMixin {
 	private void gooseboy$renderBeforeGui(DeltaTracker deltaTracker, boolean bl, CallbackInfo ci) {
 		Screen screen = Minecraft.getInstance().screen;
 		if (screen instanceof CenteredCrateScreen crateScreen) {
-			CenteredCrateScreen.Layout layout = CenteredCrateScreen.Layout.forSize(screen.width, screen.height);
-			crateScreen.painter.render3D(layout.fbX(), layout.fbY());
+			crateScreen.painter.renderGpu();
 		}
 	}
 }

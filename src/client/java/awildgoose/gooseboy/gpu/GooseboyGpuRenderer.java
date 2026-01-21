@@ -4,7 +4,7 @@ import awildgoose.gooseboy.GooseboyClient;
 import awildgoose.gooseboy.GooseboyPainter;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
-import com.mojang.blaze3d.pipeline.RenderTarget;
+import com.mojang.blaze3d.pipeline.TextureTarget;
 import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.GpuTextureView;
@@ -13,42 +13,53 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.render.TextureSetup;
+import net.minecraft.client.gui.render.state.BlitRenderState;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.WorldBorderRenderer;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.TextureManager;
-import org.joml.Matrix4f;
-import org.joml.Matrix4fStack;
-import org.joml.Vector3f;
-import org.joml.Vector4f;
+import org.joml.*;
 
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
 
+import static awildgoose.gooseboy.Gooseboy.FRAMEBUFFER_HEIGHT;
+import static awildgoose.gooseboy.Gooseboy.FRAMEBUFFER_WIDTH;
+
 @Environment(EnvType.CLIENT)
-public class Gooseboy3DRenderer {
+public class GooseboyGpuRenderer implements AutoCloseable {
 	private final VertexStack vertexStack;
 	private final RenderSystem.AutoStorageIndexBuffer indices;
-	private GpuBuffer vertexBuffer;
+	private final TextureTarget renderTarget;
 
-	public Gooseboy3DRenderer() {
+	public GooseboyGpuRenderer() {
 		this.vertexStack = new VertexStack();
 		this.indices = RenderSystem.getSequentialBuffer(VertexFormat.Mode.QUADS);
-		GooseboyPainter.pushCube(this.vertexStack, 0f, 0f, 0f, 16f, 16f, 16f);
+		this.renderTarget = new TextureTarget(
+				"gooseboy_goosegpu_framebuffer",
+				FRAMEBUFFER_WIDTH,
+				FRAMEBUFFER_HEIGHT,
+				true
+		);
+
+		GooseboyPainter.pushCube(
+				this.vertexStack,
+				0f, 0f, 0f,
+				16f, 16f, 16f);
 	}
 
-	public void render(int screenX, int screenY) {
+	public void render() {
 		Matrix4fStack matrix4fStack = RenderSystem.getModelViewStack();
 		matrix4fStack.pushMatrix();
-
-		matrix4fStack.translate(screenX, screenY, 0);
+		matrix4fStack.translate(8, 8, -50);
 
 		GpuBuffer buffer = this.vertexStack.intoGpuBuffer();
 
 		if (buffer != null) {
-			RenderTarget renderTarget = Minecraft.getInstance()
-					.getMainRenderTarget();
-			GpuTextureView colorView = renderTarget.getColorTextureView();
-			GpuTextureView depthView = renderTarget.getDepthTextureView();
+			GpuTextureView colorView = this.renderTarget.getColorTextureView();
+			GpuTextureView depthView = this.renderTarget.getDepthTextureView();
 
 			TextureManager textureManager = Minecraft.getInstance()
 					.getTextureManager();
@@ -68,11 +79,11 @@ public class Gooseboy3DRenderer {
 			try (RenderPass renderPass = RenderSystem.getDevice()
 					.createCommandEncoder()
 					.createRenderPass(
-							() -> "Gooseboy 3D",
+							() -> "Gooseboy GooseGPU",
 							colorView,
 							OptionalInt.empty(),
 							depthView,
-							OptionalDouble.empty()
+							OptionalDouble.of(1.0)
 					)) {
 				renderPass.setPipeline(GooseboyClient.GOOSE_GPU_PIPELINE);
 				RenderSystem.bindDefaultUniforms(renderPass);
@@ -86,5 +97,28 @@ public class Gooseboy3DRenderer {
 		}
 
 		matrix4fStack.popMatrix();
+	}
+
+	public void blitToScreen(GuiGraphics guiGraphics, int x, int y, int width, int height) {
+		GpuTextureView textureView = this.renderTarget.getColorTextureView();
+
+		BlitRenderState blitState = new BlitRenderState(
+				RenderPipelines.GUI_TEXTURED,
+				TextureSetup.singleTexture(textureView),
+				new Matrix3x2f(),
+				x, y, x + width, y + height,
+				0.0f, 1.0f, 0.0f, 1.0f,
+				0xFFFFFFFF,
+				guiGraphics.scissorStack.peek()
+		);
+
+		guiGraphics.guiRenderState.submitGuiElement(blitState);
+	}
+
+	@Override
+	public void close() {
+		if (this.renderTarget != null) {
+			this.renderTarget.destroyBuffers();
+		}
 	}
 }

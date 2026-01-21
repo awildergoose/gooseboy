@@ -1,7 +1,7 @@
 package awildgoose.gooseboy;
 
 import awildgoose.gooseboy.crate.GooseboyCrate;
-import awildgoose.gooseboy.gpu.Gooseboy3DRenderer;
+import awildgoose.gooseboy.gpu.GooseboyGpuRenderer;
 import awildgoose.gooseboy.gpu.VertexStack;
 import com.mojang.blaze3d.platform.NativeImage;
 import net.minecraft.client.Minecraft;
@@ -24,7 +24,7 @@ public class GooseboyPainter implements AutoCloseable {
 	private ByteBuffer tmpBuf;
 	private boolean failed = false;
 	private long lastRenderNano = 0L;
-	private final Gooseboy3DRenderer renderer3D;
+	private final GooseboyGpuRenderer gpuRenderer;
 
 	public GooseboyPainter(GooseboyCrate crate) {
 		this.crate = crate;
@@ -34,11 +34,11 @@ public class GooseboyPainter implements AutoCloseable {
 		this.framebufferTexture = withLocation(
 				"crate_framebuffer_" + sanitizePath(crate.name)
 		);
-		this.renderer3D = new Gooseboy3DRenderer();
+		this.gpuRenderer = new GooseboyGpuRenderer();
 	}
 
-	public void render3D(int x, int y) {
-		this.renderer3D.render(x, y);
+	public void renderGpu() {
+		this.gpuRenderer.render();
 	}
 
 	public static void pushCube(
@@ -130,6 +130,7 @@ public class GooseboyPainter implements AutoCloseable {
 //				w, h
 //		));
 
+		this.gpuRenderer.blitToScreen(guiGraphics, x, y, w, h);
 //		RenderSystem.setShaderTexture(0, texture.getTextureView());
 //		guiGraphics.blit(
 //				RenderPipelines.GUI_TEXTURED,
