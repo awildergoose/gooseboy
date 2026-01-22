@@ -16,4 +16,9 @@ public class GooseboyGpuRenderConsumer implements GooseboyGpuCommands.RenderCons
 	public void vertex(float x, float y, float z, float u, float v) {
 		this.renderer.globalVertexStack.push(new VertexStack.Vertex(x, y, z, u, v));
 	}
+
+	@Override
+	public void texture(TextureRegistry.TextureRef texture) {
+		this.renderer.boundTexture = texture.texture;
+	}
 }

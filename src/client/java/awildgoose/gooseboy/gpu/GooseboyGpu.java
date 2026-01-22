@@ -45,6 +45,10 @@ public class GooseboyGpu {
 		int readInt(int offset);
 
 		float readFloat(int offset);
+
+		byte readByte(int offset);
+
+		byte[] readBytes(int offset, int len);
 	}
 
 	public record QueuedCommand(GpuCommand command, byte[] payload) {

@@ -27,11 +27,13 @@ public class GooseboyGpuMemoryReader implements GooseboyGpu.MemoryReadOffsetCons
 		return Float.intBitsToFloat(readInt(offset));
 	}
 
+	@Override
 	public byte readByte(int offset) {
 		if (memory != null) return memory.read(baseOffset + offset);
 		return bytes[baseOffset + offset];
 	}
 
+	@Override
 	public byte[] readBytes(int offset, int len) {
 		if (memory != null) return memory.readBytes(baseOffset + offset, len);
 		byte[] result = new byte[len];

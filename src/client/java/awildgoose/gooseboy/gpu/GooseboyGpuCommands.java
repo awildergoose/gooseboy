@@ -8,7 +8,7 @@ public class GooseboyGpuCommands {
 	public static void runCommand(GooseboyGpu.GpuCommand command, GooseboyGpu.MemoryReadOffsetConsumer read,
 								  RenderConsumer render) {
 		switch (command) {
-			case Push, Pop, RegisterTexture, BindTexture -> {
+			case Push, Pop -> {
 				// TODO
 			}
 			case PushRecord -> recordings.add(MeshRegistry.createMesh());
@@ -33,6 +33,14 @@ public class GooseboyGpuCommands {
 							));
 				}
 			}
+			case RegisterTexture -> {
+				int ptr = read.readInt(0);
+				int width = read.readInt(4);
+				int height = read.readInt(8);
+				TextureRegistry.TextureRef texture = TextureRegistry.createTexture(width, height);
+				texture.set(read, ptr, width * height * 4);
+			}
+			case BindTexture -> render.texture(TextureRegistry.getTexture(read.readInt(0)));
 		}
 	}
 
@@ -40,5 +48,7 @@ public class GooseboyGpuCommands {
 		void mesh(MeshRegistry.MeshRef mesh);
 
 		void vertex(float x, float y, float z, float u, float v);
+
+		void texture(TextureRegistry.TextureRef texture);
 	}
 }

@@ -43,6 +43,7 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 	private final CachedPerspectiveProjectionMatrixBuffer projectionMatrixBuffer = new CachedPerspectiveProjectionMatrixBuffer(
 			"gooseboy_goosegpu", camera.near, camera.far);
 	public VertexStack globalVertexStack = new VertexStack();
+	public AbstractTexture boundTexture;
 	public ArrayList<GooseboyGpu.QueuedCommand> queuedCommands = new ArrayList<>();
 
 	public GooseboyGpuRenderer() {
@@ -95,9 +96,14 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 			GpuTextureView colorView = this.renderTarget.getColorTextureView();
 			GpuTextureView depthView = this.renderTarget.getDepthTextureView();
 
-			TextureManager textureManager = Minecraft.getInstance()
-					.getTextureManager();
-			AbstractTexture texture = textureManager.getTexture(WorldBorderRenderer.FORCEFIELD_LOCATION);
+			AbstractTexture texture = boundTexture;
+
+			if (boundTexture == null) {
+				TextureManager textureManager = Minecraft.getInstance()
+						.getTextureManager();
+				texture = textureManager.getTexture(WorldBorderRenderer.FORCEFIELD_LOCATION);
+				boundTexture = texture;
+			}
 
 			int quadCount = vertexStack.size() / 4;
 			int indexCount = quadCount * 6;

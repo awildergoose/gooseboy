@@ -2,6 +2,7 @@ package awildgoose.gooseboy;
 
 import awildgoose.gooseboy.crate.GooseboyCrate;
 import awildgoose.gooseboy.gpu.GooseboyGpuRenderer;
+import com.dylibso.chicory.runtime.ExportFunction;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
@@ -35,6 +36,16 @@ public class GooseboyPainter implements AutoCloseable {
 		);
 		this.gpuRenderer = new GooseboyGpuRenderer();
 		GooseboyClient.rendererByInstance.put(crate.instance, this.gpuRenderer);
+
+		try {
+			ExportFunction gpuMain = crate.instance.export("gpu_main");
+			if (gpuMain != null)
+				gpuMain.apply();
+		} catch (Throwable ie) {
+			crate.close();
+			crate.isOk = false;
+			ie.printStackTrace();
+		}
 	}
 
 	public void renderGpu() {
@@ -57,6 +68,8 @@ public class GooseboyPainter implements AutoCloseable {
 	}
 
 	public void close() {
+		this.gpuRenderer.close();
+		//noinspection resource
 		GooseboyClient.rendererByInstance.remove(crate.instance);
 		if (this.tmpBuf != null) {
 			MemoryUtil.memFree(this.tmpBuf);

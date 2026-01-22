@@ -20,14 +20,8 @@ import java.util.function.Supplier;
 public class UnnamedDynamicTexture extends AbstractTexture implements Dumpable {
 	private NativeImage pixels;
 
-	public UnnamedDynamicTexture() {
-		this.pixels = new NativeImage(0, 0, false);
-		this.createTexture();
-		this.upload();
-	}
-
-	public UnnamedDynamicTexture(NativeImage nativeImage) {
-		this.pixels = nativeImage;
+	public UnnamedDynamicTexture(int width, int height) {
+		this.pixels = new NativeImage(width, height, false);
 		this.createTexture();
 		this.upload();
 	}
