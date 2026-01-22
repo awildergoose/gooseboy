@@ -3,6 +3,7 @@ package awildgoose.gooseboy.gpu;
 import awildgoose.gooseboy.GooseboyClient;
 import awildgoose.gooseboy.GooseboyPainter;
 import awildgoose.gooseboy.WasmInputManager;
+import com.mojang.blaze3d.ProjectionType;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.pipeline.TextureTarget;
@@ -17,6 +18,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.render.TextureSetup;
 import net.minecraft.client.gui.render.state.BlitRenderState;
+import net.minecraft.client.renderer.CachedPerspectiveProjectionMatrixBuffer;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.WorldBorderRenderer;
 import net.minecraft.client.renderer.texture.AbstractTexture;
@@ -35,7 +37,9 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 	private final VertexStack vertexStack;
 	private final RenderSystem.AutoStorageIndexBuffer indices;
 	private final TextureTarget renderTarget;
-	private final GooseboyGpuCamera camera;
+	private final GooseboyGpuCamera camera = new GooseboyGpuCamera();
+	private final CachedPerspectiveProjectionMatrixBuffer projectionMatrixBuffer = new CachedPerspectiveProjectionMatrixBuffer(
+			"goosegpu", camera.near, camera.far);
 
 	public GooseboyGpuRenderer() {
 		this.vertexStack = new VertexStack();
@@ -46,8 +50,7 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 				FRAMEBUFFER_HEIGHT,
 				true
 		);
-		this.camera = new GooseboyGpuCamera();
-		this.camera.setCameraPos(0f, 0f, 40f);
+		this.camera.setPosition(0f, 0f, 40f);
 
 		GooseboyPainter.pushCube(
 				this.vertexStack,
@@ -85,6 +88,7 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 			camera.moveUp(-speed);
 		}
 
+		RenderSystem.backupProjectionMatrix();
 		Matrix4fStack matrix4fStack = RenderSystem.getModelViewStack();
 		matrix4fStack.pushMatrix();
 
@@ -101,6 +105,11 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 			int quadCount = vertexStack.size() / 4;
 			int indexCount = quadCount * 6;
 			GpuBuffer indexBuffer = this.indices.getBuffer(indexCount);
+			RenderSystem.setProjectionMatrix(this.projectionMatrixBuffer.getBuffer(
+					this.renderTarget.width,
+					this.renderTarget.height,
+					this.camera.fovDegrees
+			), ProjectionType.PERSPECTIVE);
 			GpuBufferSlice transformSlice = this.camera.createTransformSlice();
 
 			try (RenderPass renderPass = RenderSystem.getDevice()
@@ -124,6 +133,7 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 		}
 
 		matrix4fStack.popMatrix();
+		RenderSystem.restoreProjectionMatrix();
 	}
 
 	public void blitToScreen(GuiGraphics guiGraphics, int x, int y, int width, int height) {
@@ -145,8 +155,7 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 
 	@Override
 	public void close() {
-		if (this.renderTarget != null) {
-			this.renderTarget.destroyBuffers();
-		}
+		this.renderTarget.destroyBuffers();
+		this.projectionMatrixBuffer.close();
 	}
 }

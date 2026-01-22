@@ -7,23 +7,14 @@ in vec3 Position;
 in vec2 UV0;
 
 out vec2 texCoord0;
+out vec4 debugClipPos;
+out vec3 debugWorldPos;
 
-//void main() {
-//    vec3 pos = Position + ModelOffset;
-//    gl_Position = ProjMat * ModelViewMat * vec4(pos, 1.0);
-
-//    texCoord0 = (TextureMat * vec4(UV0, 0.0, 1.0)).xy;
-//}
-//void main() {
-//    vec2 quadPos = UV0 * 2.0 - 1.0;
-//    quadPos *= 0.2;
-//    vec2 screenPos = vec2(0.0, 0.0);
-
-//    gl_Position = vec4(quadPos + screenPos, -0.9, 1.0);
-//    texCoord0 = UV0;
-//}
 void main() {
     vec3 pos = Position + ModelOffset;
+    debugWorldPos = pos;
     gl_Position = ProjMat * ModelViewMat * vec4(pos, 1.0);
+
+    debugClipPos = gl_Position;
     texCoord0 = (TextureMat * vec4(UV0, 0.0, 1.0)).xy;
 }
