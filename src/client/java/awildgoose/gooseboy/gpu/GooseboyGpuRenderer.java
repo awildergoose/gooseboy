@@ -11,7 +11,6 @@ import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.render.TextureSetup;
@@ -20,7 +19,8 @@ import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.WorldBorderRenderer;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.TextureManager;
-import org.joml.*;
+import org.joml.Matrix3x2f;
+import org.joml.Matrix4fStack;
 
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
@@ -33,6 +33,7 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 	private final VertexStack vertexStack;
 	private final RenderSystem.AutoStorageIndexBuffer indices;
 	private final TextureTarget renderTarget;
+	private final GooseboyGpuCamera camera;
 
 	public GooseboyGpuRenderer() {
 		this.vertexStack = new VertexStack();
@@ -43,6 +44,7 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 				FRAMEBUFFER_HEIGHT,
 				true
 		);
+		this.camera = new GooseboyGpuCamera();
 
 		GooseboyPainter.pushCube(
 				this.vertexStack,
@@ -67,16 +69,10 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 			int quadCount = vertexStack.size() / 4;
 			int indexCount = quadCount * 6;
 			GpuBuffer indexBuffer = this.indices.getBuffer(indexCount);
-
-			GpuBufferSlice transformSlice = RenderSystem.getDynamicUniforms()
-					.writeTransform(
-							new Matrix4f()
-									.setTranslation(0.0f, Util.getMillis() % 100.0f, -11001.0F),
-							new Vector4f(1.0F, 1.0F, 1.0F, 1.0F),
-							new Vector3f(),
-							new Matrix4f(),
-							0.0F
-					);
+			GpuBufferSlice transformSlice = this.camera.createTransformSlice();
+			this.camera.setYaw((float) Math.toRadians((float) Minecraft.getInstance().mouseHandler.xpos()));
+			this.camera.setPitch((float) Math.toRadians((float) Minecraft.getInstance().mouseHandler.ypos()));
+			this.camera.setCameraPos(-50.0f, -50.0f, 0.0f);
 
 			if (depthView != null && colorView != null) RenderSystem.getDevice()
 					.createCommandEncoder()
