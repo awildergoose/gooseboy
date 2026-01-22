@@ -43,7 +43,7 @@ public class GooseboyGpuCamera {
 	}
 
 	public void setYaw(float yawRadians) {
-		this.rotation.x = yawRadians;
+		this.rotation.x = (float) Math.IEEEremainder(yawRadians, Math.PI * 2.0);
 	}
 
 	public float getPitch() {
@@ -51,7 +51,8 @@ public class GooseboyGpuCamera {
 	}
 
 	public void setPitch(float pitchRadians) {
-		this.rotation.y = pitchRadians;
+		final float MAX_PITCH = (float) Math.toRadians(89.0);
+		this.rotation.y = Math.max(-MAX_PITCH, Math.min(MAX_PITCH, pitchRadians));
 	}
 
 	public void setFovDegrees(float fovDegrees) {
@@ -64,6 +65,24 @@ public class GooseboyGpuCamera {
 		ensureFarPlane();
 	}
 
+	public void moveForward(float amount) {
+		float yaw = this.rotation.x;
+
+		cameraPos.x += (float) Math.sin(yaw) * amount;
+		cameraPos.z -= (float) Math.cos(yaw) * amount;
+	}
+
+	public void moveRight(float amount) {
+		float yaw = this.rotation.x;
+
+		cameraPos.x += (float) Math.cos(yaw) * amount;
+		cameraPos.z += (float) Math.sin(yaw) * amount;
+	}
+
+	public void moveUp(float amount) {
+		cameraPos.y += amount;
+	}
+
 	public GpuBufferSlice createTransformSlice() {
 		return createTransformSlice(new Matrix4f().identity());
 	}
@@ -71,22 +90,25 @@ public class GooseboyGpuCamera {
 	public GpuBufferSlice createTransformSlice(Matrix4f model) {
 		Matrix4f view = new Matrix4f()
 				.translate(0.0f, 0.0f, GUI_Z_OFFSET)
-				.rotateX(this.getPitch())
-				.rotateY(this.getYaw())
+				.rotateY(rotation.x)
+				.rotateX(-rotation.y)
 				.translate(-cameraPos.x, -cameraPos.y, -cameraPos.z);
 		Matrix4f modelView = new Matrix4f(view).mul(model);
 		Matrix4f projection = new Matrix4f()
 				.perspective(
-						(float) Math.toRadians(this.fovDegrees),
-						this.aspect(),
-						this.near,
-						this.far
+						(float) Math.toRadians(fovDegrees),
+						aspect(),
+						near,
+						far
 				);
 
-		Vector4f color = new Vector4f(1.0f, 1.0f, 1.0f, 1.0f);
-		Vector3f dummyVec = new Vector3f();
-
 		return RenderSystem.getDynamicUniforms()
-				.writeTransform(modelView, color, dummyVec, projection, 0.0f);
+				.writeTransform(
+						modelView,
+						new Vector4f(1, 1, 1, 1),
+						new Vector3f(),
+						projection,
+						0.0f
+				);
 	}
 }

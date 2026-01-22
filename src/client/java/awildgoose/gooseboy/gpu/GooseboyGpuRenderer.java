@@ -2,9 +2,11 @@ package awildgoose.gooseboy.gpu;
 
 import awildgoose.gooseboy.GooseboyClient;
 import awildgoose.gooseboy.GooseboyPainter;
+import awildgoose.gooseboy.WasmInputManager;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.pipeline.TextureTarget;
+import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.GpuTextureView;
@@ -45,6 +47,7 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 				true
 		);
 		this.camera = new GooseboyGpuCamera();
+		this.camera.setCameraPos(-200.0f, -200.0f, 0.0f);
 
 		GooseboyPainter.pushCube(
 				this.vertexStack,
@@ -53,6 +56,34 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 	}
 
 	public void render() {
+		WasmInputManager.grabMouse();
+
+		double f = 0.02;
+		camera.setYaw((float) (camera.getYaw() - (WasmInputManager.LAST_ACCUMULATED_MOUSE_X * f)));
+		camera.setPitch((float) (camera.getPitch() - (WasmInputManager.LAST_ACCUMULATED_MOUSE_Y * f)));
+
+		float speed = 0.5f;
+
+		if (WasmInputManager.isKeyDown(InputConstants.KEY_W)) {
+			camera.moveForward(speed);
+		}
+		if (WasmInputManager.isKeyDown(InputConstants.KEY_S)) {
+			camera.moveForward(-speed);
+		}
+		if (WasmInputManager.isKeyDown(InputConstants.KEY_A)) {
+			camera.moveRight(-speed);
+		}
+		if (WasmInputManager.isKeyDown(InputConstants.KEY_D)) {
+			camera.moveRight(speed);
+		}
+
+		if (WasmInputManager.isKeyDown(InputConstants.KEY_SPACE)) {
+			camera.moveUp(speed);
+		}
+		if (WasmInputManager.isKeyDown(InputConstants.KEY_LSHIFT)) {
+			camera.moveUp(-speed);
+		}
+
 		Matrix4fStack matrix4fStack = RenderSystem.getModelViewStack();
 		matrix4fStack.pushMatrix();
 
@@ -70,23 +101,15 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 			int indexCount = quadCount * 6;
 			GpuBuffer indexBuffer = this.indices.getBuffer(indexCount);
 			GpuBufferSlice transformSlice = this.camera.createTransformSlice();
-			this.camera.setYaw((float) Math.toRadians((float) Minecraft.getInstance().mouseHandler.xpos()));
-			this.camera.setPitch((float) Math.toRadians((float) Minecraft.getInstance().mouseHandler.ypos()));
-			this.camera.setCameraPos(-50.0f, -50.0f, 0.0f);
-
-			if (depthView != null && colorView != null) RenderSystem.getDevice()
-					.createCommandEncoder()
-					.clearColorAndDepthTextures(colorView.texture(), 0,
-												depthView.texture(), 1.0);
 
 			try (RenderPass renderPass = RenderSystem.getDevice()
 					.createCommandEncoder()
 					.createRenderPass(
 							() -> "Gooseboy GooseGPU",
 							colorView,
-							OptionalInt.empty(),
+							OptionalInt.of(0),
 							depthView,
-							OptionalDouble.empty()
+							OptionalDouble.of(1.0)
 					)) {
 				renderPass.setPipeline(GooseboyClient.GOOSE_GPU_PIPELINE);
 				RenderSystem.bindDefaultUniforms(renderPass);
@@ -113,7 +136,7 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 				0.0f, 1.0f,
 				1.0f, 0.0f,
 				0xFFFFFFFF,
-				guiGraphics.scissorStack.peek()
+				null
 		);
 
 		guiGraphics.guiRenderState.submitGuiElement(blitState);
