@@ -19,6 +19,6 @@ public class GooseboyGpuRenderConsumer implements GooseboyGpu.RenderConsumer {
 
 	@Override
 	public void texture(TextureRegistry.TextureRef texture) {
-		this.renderer.boundTexture = texture.texture;
+		this.renderer.boundTexture = texture == null ? null : texture.texture;
 	}
 }
