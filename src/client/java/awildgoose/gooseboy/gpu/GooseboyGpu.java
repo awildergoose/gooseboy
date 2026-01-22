@@ -49,6 +49,14 @@ public class GooseboyGpu {
 		byte[] readBytes(int offset, int len);
 	}
 
+	public interface MemoryWriteOffsetConsumer {
+		void writeInt(int offset, int value);
+
+		void writeFloat(int offset, float value);
+
+		void writeBytes(int offset, byte[] value);
+	}
+
 	public interface RenderConsumer {
 		void mesh(MeshRegistry.MeshRef mesh);
 

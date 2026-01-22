@@ -48,6 +48,22 @@ public final class Gpu {
 		}
 	}
 
+	@WasmExport
+	public int gpu_read(Instance instance, int offset, int ptr, int len) {
+		Memory memory = instance.memory();
+		GooseboyGpuRenderer gpu = GooseboyClient.rendererByInstance.get(instance);
+		if (gpu == null) return 0;
+
+		int toRead = Math.min(len, gpu.gpuMemory.capacity());
+		byte[] chunk = new byte[toRead];
+		gpu.gpuMemory.position(offset)
+				.get(chunk, 0, toRead)
+				.position(0);
+		memory.write(ptr, chunk);
+
+		return toRead;
+	}
+
 	public HostFunction[] toHostFunctions() {
 		return Gpu_ModuleFactory.toHostFunctions(this);
 	}

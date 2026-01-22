@@ -3,6 +3,7 @@ package awildgoose.gooseboy;
 import awildgoose.gooseboy.crate.GooseboyCrate;
 import awildgoose.gooseboy.gpu.GooseboyGpuRenderer;
 import com.dylibso.chicory.runtime.ExportFunction;
+import com.dylibso.chicory.wasm.InvalidException;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
@@ -42,6 +43,11 @@ public class GooseboyPainter implements AutoCloseable {
 			if (gpuMain != null)
 				gpuMain.apply();
 		} catch (Throwable ie) {
+			if (ie instanceof InvalidException) {
+				// doesn't exist, that's okay!
+				return;
+			}
+
 			crate.close();
 			crate.isOk = false;
 			ie.printStackTrace();

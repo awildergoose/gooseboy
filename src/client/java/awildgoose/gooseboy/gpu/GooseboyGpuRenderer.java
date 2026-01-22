@@ -28,6 +28,8 @@ import org.joml.Matrix3x2f;
 import org.joml.Matrix4fStack;
 import org.joml.Vector3f;
 
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
@@ -49,6 +51,8 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 	private final TextureRegistry textureRegistry = new TextureRegistry();
 	public VertexStack globalVertexStack = new VertexStack();
 	public AbstractTexture boundTexture = null;
+	public final ByteBuffer gpuMemory = ByteBuffer.allocateDirect(4192 * 4)
+			.order(ByteOrder.LITTLE_ENDIAN);
 
 	public GooseboyGpuRenderer() {
 		this.indices = RenderSystem.getSequentialBuffer(VertexFormat.Mode.TRIANGLES);
@@ -175,12 +179,14 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 		matrix4fStack.pushMatrix();
 
 		GooseboyGpuRenderConsumer renderConsumer = new GooseboyGpuRenderConsumer(this);
+		GooseboyGpuMemoryConsumer gpuMemoryConsumer = new GooseboyGpuMemoryConsumer(this.gpuMemory);
 
 		for (GooseboyGpu.QueuedCommand queued : queuedCommands) {
 			runCommand(
 					queued.command(),
 					queued.reader(),
-					renderConsumer
+					renderConsumer,
+					gpuMemoryConsumer
 			);
 		}
 
@@ -194,12 +200,16 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 	}
 
 	public void runCommand(GooseboyGpu.GpuCommand command, GooseboyGpu.MemoryReadOffsetConsumer read,
-						   GooseboyGpu.RenderConsumer render) {
+						   GooseboyGpu.RenderConsumer render, GooseboyGpu.MemoryWriteOffsetConsumer write) {
 		switch (command) {
 			case Push, Pop -> {
 				// TODO
 			}
-			case PushRecord -> recordings.add(meshRegistry.createMesh());
+			case PushRecord -> {
+				MeshRegistry.MeshRef mesh = meshRegistry.createMesh();
+				recordings.add(mesh);
+				write.writeInt(0, mesh.id());
+			}
 			case PopRecord -> recordings.removeLast();
 			case DrawRecorded -> render.mesh(meshRegistry.getMesh(read.readInt(0)));
 			case EmitVertex -> {
