@@ -1,5 +1,6 @@
 package awildgoose.gooseboy.gpu;
 
+import awildgoose.gooseboy.Gooseboy;
 import awildgoose.gooseboy.GooseboyClient;
 import com.mojang.blaze3d.ProjectionType;
 import com.mojang.blaze3d.buffers.GpuBuffer;
@@ -23,6 +24,7 @@ import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
 import org.joml.Matrix3x2f;
+import org.joml.Matrix4f;
 import org.joml.Matrix4fStack;
 
 import java.nio.ByteBuffer;
@@ -36,6 +38,8 @@ import static awildgoose.gooseboy.Gooseboy.FRAMEBUFFER_WIDTH;
 
 @Environment(EnvType.CLIENT)
 public class GooseboyGpuRenderer implements AutoCloseable {
+	private static final int GPU_MATRIX_STACK_MAX = 64;
+
 	public final GooseboyGpuCamera camera = new GooseboyGpuCamera();
 
 	private final RenderSystem.AutoStorageIndexBuffer indices;
@@ -52,6 +56,8 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 	public VertexStack globalVertexStack = new VertexStack();
 	public ArrayList<MeshRegistry.MeshRef> recordings = new ArrayList<>();
 	public AbstractTexture boundTexture = null;
+	private int gpuMatrixDepth = 0;
+	private int frameStartGpuMatrixDepth = 0;
 
 	public GooseboyGpuRenderer() {
 		this.indices = RenderSystem.getSequentialBuffer(VertexFormat.Mode.TRIANGLES);
@@ -88,7 +94,10 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 
 			int indexCount = vertexStack.size();
 			GpuBuffer indexBuffer = this.indices.getBuffer(indexCount);
-			GpuBufferSlice transformSlice = this.camera.createTransformSlice();
+			// TODO: use our own model view stack
+			Matrix4f model = new Matrix4f(RenderSystem.getModelViewStack());
+			GpuBufferSlice transformSlice =
+					this.camera.createTransformSlice(model, camera.getProjection());
 
 			try (RenderPass renderPass = RenderSystem.getDevice()
 					.createCommandEncoder()
@@ -144,8 +153,10 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 		ProfilerFiller profiler = Profiler.get();
 		profiler.push("GooseGPU");
 
-		Matrix4fStack matrixStack = RenderSystem.getModelViewStack();
-		matrixStack.pushMatrix();
+		frameStartGpuMatrixDepth = gpuMatrixDepth;
+
+		Matrix4fStack modelView = RenderSystem.getModelViewStack();
+		modelView.pushMatrix();
 
 		GooseboyGpuRenderConsumer renderConsumer = new GooseboyGpuRenderConsumer(this);
 		GooseboyGpuMemoryConsumer gpuMemoryConsumer = new GooseboyGpuMemoryConsumer(this.gpuMemory);
@@ -163,26 +174,39 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 		globalVertexStack.clear();
 		queuedCommands.clear();
 
-		matrixStack.popMatrix();
+		if (gpuMatrixDepth != frameStartGpuMatrixDepth) {
+			Gooseboy.LOGGER.warn("GooseGPU: matrix stack leak! start={} end={}", frameStartGpuMatrixDepth,
+								 gpuMatrixDepth);
+
+			int toPop = gpuMatrixDepth - frameStartGpuMatrixDepth;
+			for (int i = 0; i < toPop; ++i) {
+				modelView.popMatrix();
+			}
+			gpuMatrixDepth = frameStartGpuMatrixDepth;
+		}
+
+		modelView.popMatrix();
 
 		profiler.pop();
 	}
 
 	public void runCommand(GooseboyGpu.GpuCommand command, GooseboyGpu.MemoryReadOffsetConsumer read,
 						   GooseboyGpu.RenderConsumer render, GooseboyGpu.MemoryWriteOffsetConsumer write) {
+		Matrix4fStack modelView = RenderSystem.getModelViewStack();
+
 		switch (command) {
-			case Push, Pop -> {
-				// TODO
-			}
+			// Recording
 			case PushRecord -> {
 				MeshRegistry.MeshRef mesh = meshRegistry.createMesh();
 				recordings.add(mesh);
-				write.writeInt(0, mesh.id());
+				write.writeInt(GooseboyGpuMemoryConstants.GB_GPU_RECORD_ID, mesh.id());
 			}
 			case PopRecord -> recordings.removeLast();
 			case DrawRecorded -> render.mesh(meshRegistry.getMesh(read.readInt(0)));
+
+			// Emit
 			case EmitVertex -> {
-				MeshRegistry.MeshRef recording = recordings.getLast();
+				MeshRegistry.MeshRef recording = recordings.size() > 0 ? recordings.getLast() : null;
 				float x = read.readFloat(0);
 				float y = read.readFloat(4);
 				float z = read.readFloat(8);
@@ -200,13 +224,75 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 							));
 				}
 			}
+
+			// Textures
 			case RegisterTexture -> {
 				int width = read.readInt(0);
 				int height = read.readInt(4);
 				TextureRegistry.TextureRef texture = textureRegistry.createTexture(width, height);
 				texture.set(read, 8, width * height * 4);
+				write.writeInt(GooseboyGpuMemoryConstants.GB_GPU_TEXTURE_ID, texture.id);
 			}
 			case BindTexture -> render.texture(textureRegistry.getTexture(read.readInt(0)));
+
+			// Translations
+			case Push -> {
+				if (gpuMatrixDepth >= GPU_MATRIX_STACK_MAX) {
+					write.writeInt(GooseboyGpuMemoryConstants.GB_GPU_STATUS, -1);
+				} else {
+					modelView.pushMatrix();
+					gpuMatrixDepth++;
+					write.writeInt(GooseboyGpuMemoryConstants.GB_GPU_MATRIX_DEPTH, gpuMatrixDepth);
+				}
+			}
+			case Pop -> {
+				if (gpuMatrixDepth <= frameStartGpuMatrixDepth) {
+					Gooseboy.LOGGER.warn("GooseGPU: attempted pop below frame start");
+					write.writeInt(GooseboyGpuMemoryConstants.GB_GPU_STATUS, -1);
+				} else {
+					modelView.popMatrix();
+					gpuMatrixDepth--;
+					write.writeInt(GooseboyGpuMemoryConstants.GB_GPU_MATRIX_DEPTH, 0);
+				}
+			}
+			case Translate -> {
+				float tx = read.readFloat(0);
+				float ty = read.readFloat(4);
+				float tz = read.readFloat(8);
+				modelView.translate(tx, ty, tz);
+			}
+			case RotateAxis -> {
+				float ax = read.readFloat(0);
+				float ay = read.readFloat(4);
+				float az = read.readFloat(8);
+				float angle = read.readFloat(12);
+				modelView.rotate(angle, ax, ay, az);
+			}
+			case RotateEuler -> {
+				float yaw = read.readFloat(0);
+				float pitch = read.readFloat(4);
+				float roll = read.readFloat(8);
+				modelView.rotateXYZ(yaw, pitch, roll);
+			}
+			case Scale -> {
+				float sx = read.readFloat(0);
+				float sy = read.readFloat(4);
+				float sz = read.readFloat(8);
+				modelView.scale(sx, sy, sz);
+			}
+			case LoadMatrix -> {
+				float[] m = new float[16];
+				for (int i = 0; i < 16; i++) m[i] = read.readFloat(i * 4);
+				modelView.set(m);
+			}
+			case MulMatrix -> {
+				float[] m = new float[16];
+				for (int i = 0; i < 16; i++) m[i] = read.readFloat(i * 4);
+				Matrix4f mat = new Matrix4f();
+				mat.set(m);
+				modelView.mul(mat);
+			}
+			case Identity -> modelView.identity();
 		}
 	}
 }

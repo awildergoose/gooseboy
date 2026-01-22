@@ -1,5 +1,8 @@
 package awildgoose.gooseboy.gpu;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class GooseboyGpu {
 	public enum GpuCommand {
 		Push(0x00, 0x00),
@@ -9,7 +12,15 @@ public class GooseboyGpu {
 		DrawRecorded(0x04, 0x04), // u32 id
 		EmitVertex(0x05, 0x14), // f32 xyzuv[5]
 		BindTexture(0x06, 0x04), // u32 id
-		RegisterTexture(0x07, 0x08); // u32 w, u32 h, byte[] rgba
+		RegisterTexture(0x07, 0x08), // u32 w, u32 h, byte[] rgba
+
+		Translate(0x08, 12),
+		RotateAxis(0x09, 16),
+		RotateEuler(0x0A, 12),
+		Scale(0x0B, 12),
+		LoadMatrix(0x0C, 64),
+		MulMatrix(0x0D, 64),
+		Identity(0x0E, 0);
 
 		private final int id;
 		private final int len;
@@ -19,25 +30,26 @@ public class GooseboyGpu {
 			this.len = len;
 		}
 
-		public static GpuCommand findCommandById(int id) {
-			if (id == Push.id()) return Push;
-			if (id == Pop.id()) return Pop;
-			if (id == PushRecord.id()) return PushRecord;
-			if (id == PopRecord.id()) return PopRecord;
-			if (id == DrawRecorded.id()) return DrawRecorded;
-			if (id == EmitVertex.id()) return EmitVertex;
-			if (id == BindTexture.id()) return BindTexture;
-			if (id == RegisterTexture.id()) return RegisterTexture;
-
-			throw new RuntimeException("Unknown GPU command with id: " + id);
-		}
-
 		public int id() {
 			return id;
 		}
 
 		public int len() {
 			return len;
+		}
+
+		private static final Map<Integer, GpuCommand> ID_MAP = new HashMap<>();
+
+		static {
+			for (GpuCommand cmd : values()) {
+				ID_MAP.put(cmd.id(), cmd);
+			}
+		}
+
+		public static GpuCommand findCommandById(int id) {
+			GpuCommand cmd = ID_MAP.get(id);
+			if (cmd == null) throw new RuntimeException("Unknown GPU command with id: " + id);
+			return cmd;
 		}
 	}
 
