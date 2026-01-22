@@ -88,13 +88,19 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 			camera.moveUp(-speed);
 		}
 
-		RenderSystem.backupProjectionMatrix();
 		Matrix4fStack matrix4fStack = RenderSystem.getModelViewStack();
 		matrix4fStack.pushMatrix();
 
 		GpuBuffer buffer = this.vertexStack.intoGpuBuffer();
 
 		if (buffer != null) {
+			RenderSystem.backupProjectionMatrix();
+			RenderSystem.setProjectionMatrix(this.projectionMatrixBuffer.getBuffer(
+					this.renderTarget.width,
+					this.renderTarget.height,
+					this.camera.fovDegrees
+			), ProjectionType.PERSPECTIVE);
+
 			GpuTextureView colorView = this.renderTarget.getColorTextureView();
 			GpuTextureView depthView = this.renderTarget.getDepthTextureView();
 
@@ -105,11 +111,6 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 			int quadCount = vertexStack.size() / 4;
 			int indexCount = quadCount * 6;
 			GpuBuffer indexBuffer = this.indices.getBuffer(indexCount);
-			RenderSystem.setProjectionMatrix(this.projectionMatrixBuffer.getBuffer(
-					this.renderTarget.width,
-					this.renderTarget.height,
-					this.camera.fovDegrees
-			), ProjectionType.PERSPECTIVE);
 			GpuBufferSlice transformSlice = this.camera.createTransformSlice();
 
 			try (RenderPass renderPass = RenderSystem.getDevice()
@@ -130,10 +131,11 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 
 				renderPass.drawIndexed(0, 0, indexCount, 1);
 			}
+
+			RenderSystem.restoreProjectionMatrix();
 		}
 
 		matrix4fStack.popMatrix();
-		RenderSystem.restoreProjectionMatrix();
 	}
 
 	public void blitToScreen(GuiGraphics guiGraphics, int x, int y, int width, int height) {
