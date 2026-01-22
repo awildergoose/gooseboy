@@ -5,12 +5,13 @@
 uniform sampler2D Sampler0;
 
 in vec2 texCoord0;
-in vec4 debugClipPos;
-in vec3 debugWorldPos;
 
 out vec4 fragColor;
 
 void main() {
-    vec3 worldColor = (debugWorldPos + 16.0) / 32.0;
-    fragColor = vec4(worldColor, 1.0);
+    vec4 color = texture(Sampler0, texCoord0);
+    if (color.a == 0.0) {
+        discard;
+    }
+    fragColor = color * ColorModulator;
 }

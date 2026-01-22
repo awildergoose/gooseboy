@@ -2,14 +2,11 @@ package awildgoose.gooseboy;
 
 import awildgoose.gooseboy.crate.GooseboyCrate;
 import awildgoose.gooseboy.gpu.GooseboyGpuRenderer;
-import awildgoose.gooseboy.gpu.VertexStack;
 import com.mojang.blaze3d.platform.NativeImage;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.resources.ResourceLocation;
-import org.joml.Vector2f;
-import org.joml.Vector3f;
 import org.lwjgl.system.MemoryUtil;
 
 import java.nio.ByteBuffer;
@@ -39,58 +36,6 @@ public class GooseboyPainter implements AutoCloseable {
 
 	public void renderGpu() {
 		this.gpuRenderer.render();
-	}
-
-	public static void pushCube(
-			VertexStack stack,
-			float x0, float y0, float z0,
-			float x1, float y1, float z1
-	) {
-		// FRONT (+Z)
-		stack.push(v(x0, y0, z1, 0, 0));
-		stack.push(v(x0, y1, z1, 0, 1));
-		stack.push(v(x1, y1, z1, 1, 1));
-		stack.push(v(x1, y0, z1, 1, 0));
-
-		// BACK (-Z)
-		stack.push(v(x1, y0, z0, 0, 0));
-		stack.push(v(x1, y1, z0, 0, 1));
-		stack.push(v(x0, y1, z0, 1, 1));
-		stack.push(v(x0, y0, z0, 1, 0));
-
-		// LEFT (-X)
-		stack.push(v(x0, y0, z0, 0, 0));
-		stack.push(v(x0, y1, z0, 0, 1));
-		stack.push(v(x0, y1, z1, 1, 1));
-		stack.push(v(x0, y0, z1, 1, 0));
-
-		// RIGHT (+X)
-		stack.push(v(x1, y0, z1, 0, 0));
-		stack.push(v(x1, y1, z1, 0, 1));
-		stack.push(v(x1, y1, z0, 1, 1));
-		stack.push(v(x1, y0, z0, 1, 0));
-
-		// TOP (+Y)
-		stack.push(v(x0, y1, z1, 0, 0));
-		stack.push(v(x0, y1, z0, 0, 1));
-		stack.push(v(x1, y1, z0, 1, 1));
-		stack.push(v(x1, y1, z1, 1, 0));
-
-		// BOTTOM (-Y)
-		stack.push(v(x0, y0, z0, 0, 0));
-		stack.push(v(x0, y0, z1, 0, 1));
-		stack.push(v(x1, y0, z1, 1, 1));
-		stack.push(v(x1, y0, z0, 1, 0));
-	}
-
-	private static VertexStack.Vertex v(
-			float x, float y, float z,
-			float u, float v
-	) {
-		return new VertexStack.Vertex(
-				new Vector3f(x, y, z),
-				new Vector2f(u, v)
-		);
 	}
 
 	private static String sanitizePath(String s) {

@@ -22,10 +22,12 @@ public class GooseboyClient implements ClientModInitializer {
 					.withVertexShader(Gooseboy.withLocation("core/rendertype_goose_gpu"))
 					.withFragmentShader(Gooseboy.withLocation("core/rendertype_goose_gpu"))
 					.withSampler("Sampler0")
+					// remove these \/
 					.withBlend(BlendFunction.OVERLAY)
 					.withCull(false)
 					.withDepthWrite(false)
 					.withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST)
+					// remove these /\
 					.withVertexFormat(DefaultVertexFormat.POSITION_TEX, VertexFormat.Mode.QUADS)
 					.build()
 	);

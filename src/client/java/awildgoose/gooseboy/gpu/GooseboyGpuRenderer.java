@@ -1,7 +1,6 @@
 package awildgoose.gooseboy.gpu;
 
 import awildgoose.gooseboy.GooseboyClient;
-import awildgoose.gooseboy.GooseboyPainter;
 import awildgoose.gooseboy.WasmInputManager;
 import com.mojang.blaze3d.ProjectionType;
 import com.mojang.blaze3d.buffers.GpuBuffer;
@@ -54,12 +53,8 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 				true
 		);
 		this.camera.setPosition(0f, 0f, 40f);
-
-		GooseboyPainter.pushCube(
-				this.vertexStack,
-				-8f, -8f, -8f,
-				8f, 8f, 8f
-		);
+		ObjLoader.loadObj("teapot.obj", Minecraft.getInstance()
+				.getResourceManager(), vertexStack);
 	}
 
 	public void updateDebugCamera() {
