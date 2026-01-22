@@ -1,5 +1,7 @@
 package awildgoose.gooseboy.gpu;
 
+import org.jetbrains.annotations.Nullable;
+
 public class GooseboyGpuRenderConsumer implements GooseboyGpu.RenderConsumer {
 	private final GooseboyGpuRenderer renderer;
 
@@ -18,7 +20,7 @@ public class GooseboyGpuRenderConsumer implements GooseboyGpu.RenderConsumer {
 	}
 
 	@Override
-	public void texture(TextureRegistry.TextureRef texture) {
+	public void texture(@Nullable TextureRegistry.TextureRef texture) {
 		this.renderer.boundTexture = texture == null ? null : texture.texture;
 	}
 }

@@ -1,5 +1,7 @@
 package awildgoose.gooseboy.gpu;
 
+import org.jetbrains.annotations.Nullable;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -74,7 +76,7 @@ public class GooseboyGpu {
 
 		void vertex(float x, float y, float z, float u, float v);
 
-		void texture(TextureRegistry.TextureRef texture);
+		void texture(@Nullable TextureRegistry.TextureRef texture);
 	}
 
 	public static final class QueuedCommand {

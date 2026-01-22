@@ -23,6 +23,7 @@ import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
+import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix3x2f;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fStack;
@@ -70,7 +71,7 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 		);
 	}
 
-	public void renderVertexStack(VertexStack vertexStack) {
+	public void renderVertexStack(VertexStack vertexStack, @Nullable TextureRegistry.TextureRef overrideTexture) {
 		GpuBuffer buffer = vertexStack.intoGpuBuffer();
 
 		if (buffer != null) {
@@ -84,7 +85,7 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 			GpuTextureView colorView = this.renderTarget.getColorTextureView();
 			GpuTextureView depthView = this.renderTarget.getDepthTextureView();
 
-			AbstractTexture texture = boundTexture;
+			AbstractTexture texture = overrideTexture == null ? boundTexture : overrideTexture.texture;
 
 			if (boundTexture == null) {
 				TextureManager textureManager = Minecraft.getInstance()
@@ -122,7 +123,7 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 	}
 
 	public void renderMesh(MeshRegistry.MeshRef mesh) {
-		renderVertexStack(mesh.stack());
+		renderVertexStack(mesh.stack(), mesh.texture);
 	}
 
 	public void blitToScreen(GuiGraphics guiGraphics, int x, int y, int width, int height) {
@@ -169,7 +170,7 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 			);
 		}
 
-		renderVertexStack(globalVertexStack);
+		renderVertexStack(globalVertexStack, null);
 		globalVertexStack.clear();
 		queuedCommands.clear();
 
@@ -230,7 +231,16 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 				texture.set(read, 8, width * height * 4);
 				write.writeInt(GooseboyGpuMemoryConstants.GB_GPU_TEXTURE_ID, texture.id);
 			}
-			case BindTexture -> render.texture(textureRegistry.getTexture(read.readInt(0)));
+			case BindTexture -> {
+				MeshRegistry.MeshRef recording = recordings.size() > 0 ? recordings.getLast() : null;
+				int id = read.readInt(0);
+
+				if (recording == null) {
+					render.texture(textureRegistry.getTexture(id));
+				} else {
+					recording.texture = textureRegistry.getTexture(id);
+				}
+			}
 
 			// Translations
 			case Push -> {

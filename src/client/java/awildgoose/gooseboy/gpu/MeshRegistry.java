@@ -10,7 +10,7 @@ public class MeshRegistry {
 	private int lastMeshId = 0;
 
 	public MeshRef createMesh() {
-		MeshRef ref = new MeshRef(new VertexStack(), lastMeshId++);
+		MeshRef ref = new MeshRef(new VertexStack(), lastMeshId++, null);
 		meshes.add(ref);
 		return ref;
 	}
@@ -22,6 +22,23 @@ public class MeshRegistry {
 		return ref.orElse(null);
 	}
 
-	public record MeshRef(VertexStack stack, int id) {
+	public static final class MeshRef {
+		private final VertexStack stack;
+		private final int id;
+		public TextureRegistry.@Nullable TextureRef texture;
+
+		public MeshRef(VertexStack stack, int id, @Nullable TextureRegistry.TextureRef texture) {
+			this.stack = stack;
+			this.id = id;
+			this.texture = texture;
+		}
+
+		public VertexStack stack() {
+			return stack;
+		}
+
+		public int id() {
+			return id;
+		}
 	}
 }
