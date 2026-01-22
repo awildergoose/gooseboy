@@ -1,5 +1,6 @@
 package awildgoose.gooseboy.lib;
 
+import awildgoose.gooseboy.Gooseboy;
 import com.dylibso.chicory.runtime.HostFunction;
 import com.dylibso.chicory.runtime.ImportValues;
 
@@ -21,12 +22,12 @@ public class Registrar {
 		HostFunction[] storageHostFunctions = storage.toHostFunctions();
 		HostFunction[] systemHostFunctions = system.toHostFunctions();
 
-		return builder.addFunction(consoleHostFunctions)
-				.addFunction(framebufferHostFunctions)
-				.addFunction(memHostFunctions)
-				.addFunction(inputHostFunctions)
-				.addFunction(audioHostFunctions)
-				.addFunction(storageHostFunctions)
-				.addFunction(systemHostFunctions);
+		return Gooseboy.ccb.addGPUFunctions(builder.addFunction(consoleHostFunctions)
+													.addFunction(framebufferHostFunctions)
+													.addFunction(memHostFunctions)
+													.addFunction(inputHostFunctions)
+													.addFunction(audioHostFunctions)
+													.addFunction(storageHostFunctions)
+													.addFunction(systemHostFunctions));
 	}
 }

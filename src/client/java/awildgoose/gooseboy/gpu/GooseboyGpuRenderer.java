@@ -78,19 +78,8 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 		if (WasmInputManager.isKeyDown(InputConstants.KEY_LSHIFT)) camera.position.add(up.mul(-speed));
 	}
 
-	public void render() {
-		this.updateDebugCamera();
-
-		ProfilerFiller profiler = Profiler.get();
-		profiler.push("GooseGPU");
-
-		Matrix4fStack matrix4fStack = RenderSystem.getModelViewStack();
-		matrix4fStack.pushMatrix();
-
-		// here, we'll view the list of incoming GPU commands
-		// and interpret them!
-		VertexStack vertexStack = MeshRegistry.getStack(0);
-		if (vertexStack == null) return;
+	public void renderMesh(MeshRegistry.MeshRef mesh) {
+		VertexStack vertexStack = mesh.stack();
 		GpuBuffer buffer = vertexStack.intoGpuBuffer();
 
 		if (buffer != null) {
@@ -134,6 +123,22 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 
 			RenderSystem.restoreProjectionMatrix();
 		}
+	}
+
+	public void render() {
+		this.updateDebugCamera();
+
+		ProfilerFiller profiler = Profiler.get();
+		profiler.push("GooseGPU");
+
+		Matrix4fStack matrix4fStack = RenderSystem.getModelViewStack();
+		matrix4fStack.pushMatrix();
+
+		// here, we'll view the list of incoming GPU commands
+		// and interpret them!
+		MeshRegistry.MeshRef mesh = MeshRegistry.getMesh(0);
+		if (mesh == null) return;
+		renderMesh(mesh);
 
 		matrix4fStack.popMatrix();
 

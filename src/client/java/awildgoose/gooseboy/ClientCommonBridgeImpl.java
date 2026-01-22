@@ -1,6 +1,8 @@
 package awildgoose.gooseboy;
 
 import awildgoose.gooseboy.crate.GooseboyCrate;
+import awildgoose.gooseboy.lib.Gpu;
+import com.dylibso.chicory.runtime.ImportValues;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.network.chat.Component;
@@ -91,6 +93,13 @@ public class ClientCommonBridgeImpl implements ClientCommonBridge {
 				Component.translatable("ui.gooseboy.missing_permissions.title"),
 				Component.translatable("ui.gooseboy.missing_permissions.body", permission.name())
 		);
+	}
+
+	@Override
+	public ImportValues.Builder addGPUFunctions(ImportValues.Builder builder) {
+		Gpu gpu = new Gpu();
+
+		return builder.addFunction(gpu.toHostFunctions());
 	}
 
 	@Override

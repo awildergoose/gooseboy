@@ -1,6 +1,7 @@
 package awildgoose.gooseboy;
 
 import awildgoose.gooseboy.crate.GooseboyCrate;
+import com.dylibso.chicory.runtime.ImportValues;
 
 public interface ClientCommonBridge {
 	// misc
@@ -29,12 +30,21 @@ public interface ClientCommonBridge {
 
 	// audio
 	long playRawAudio(byte[] pcm);
+
 	void stopAudio(long id);
+
 	void stopAllAudio();
+
 	void setAudioVolume(long id, float volume);
+
 	void setAudioPitch(long id, float pitch);
+
 	boolean isAudioPlaying(long id);
 
 	void closeCrate(GooseboyCrate crate);
+
 	void warnPermission(GooseboyCrate.Permission permission);
+
+	// GPU
+	ImportValues.Builder addGPUFunctions(ImportValues.Builder builder);
 }

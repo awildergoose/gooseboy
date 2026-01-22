@@ -1,6 +1,8 @@
 package awildgoose.gooseboy;
 
+import awildgoose.gooseboy.gpu.GooseboyGpuRenderer;
 import awildgoose.gooseboy.screen.CrateListScreen;
+import com.dylibso.chicory.runtime.Instance;
 import com.mojang.blaze3d.pipeline.BlendFunction;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.platform.DepthTestFunction;
@@ -14,6 +16,8 @@ import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderEvents;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderPipelines;
+
+import java.util.HashMap;
 
 public class GooseboyClient implements ClientModInitializer {
 	public static final RenderPipeline GOOSE_GPU_PIPELINE = RenderPipelines.register(
@@ -36,6 +40,7 @@ public class GooseboyClient implements ClientModInitializer {
 	public final KeyMapping keyOpenWasm = new KeyMapping(
 			"key.open_wasm", InputConstants.KEY_M,
 			keyMappingCategory);
+	public static final HashMap<Instance, GooseboyGpuRenderer> rendererByInstance = new HashMap<>();
 
 	@Override
 	public void onInitializeClient() {

@@ -34,6 +34,7 @@ public class GooseboyPainter implements AutoCloseable {
 				"crate_framebuffer_" + sanitizePath(crate.name)
 		);
 		this.gpuRenderer = new GooseboyGpuRenderer();
+		GooseboyClient.rendererByInstance.put(crate.instance, this.gpuRenderer);
 	}
 
 	public void renderGpu() {
@@ -56,6 +57,7 @@ public class GooseboyPainter implements AutoCloseable {
 	}
 
 	public void close() {
+		GooseboyClient.rendererByInstance.remove(crate.instance);
 		if (this.tmpBuf != null) {
 			MemoryUtil.memFree(this.tmpBuf);
 			this.tmpBuf = null;

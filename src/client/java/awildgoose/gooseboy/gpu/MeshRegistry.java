@@ -18,12 +18,11 @@ public class MeshRegistry {
 		return ref;
 	}
 
-	public static @Nullable VertexStack getStack(int id) {
+	public static @Nullable MeshRef getMesh(int id) {
 		Optional<MeshRef> ref = meshes.stream()
 				.filter(f -> f.id == id)
 				.findFirst();
-		return ref.map(MeshRef::stack)
-				.orElse(null);
+		return ref.orElse(null);
 	}
 
 	public record MeshRef(VertexStack stack, int id) {
