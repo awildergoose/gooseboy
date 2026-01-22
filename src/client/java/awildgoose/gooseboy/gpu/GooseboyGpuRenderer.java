@@ -64,7 +64,7 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 
 		double f = 0.02;
 		camera.setYaw((float) (camera.getYaw() - (WasmInputManager.LAST_ACCUMULATED_MOUSE_X * f)));
-		camera.setPitch((float) (camera.getPitch() + (WasmInputManager.LAST_ACCUMULATED_MOUSE_Y * f)));
+		camera.setPitch((float) (camera.getPitch() - (WasmInputManager.LAST_ACCUMULATED_MOUSE_Y * f)));
 
 		float speed = 0.5f;
 

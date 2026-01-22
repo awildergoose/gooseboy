@@ -47,9 +47,9 @@ public class GooseboyGpuCamera {
 	public GpuBufferSlice createTransformSlice(Matrix4f model, Matrix4f projection) {
 		Matrix4f view = new Matrix4f()
 				.identity()
-				.translate(-getX(), -getY(), -getZ())
+				.rotateX(-getPitch())
 				.rotateY(-getYaw())
-				.rotateX(-getPitch());
+				.translate(-getX(), -getY(), -getZ());
 		Matrix4f modelView = new Matrix4f(view).mul(model);
 
 		return RenderSystem.getDynamicUniforms()
@@ -63,18 +63,42 @@ public class GooseboyGpuCamera {
 	}
 
 	//#region utils
-	public void moveForward(float amount) {
-		float yaw = this.rotation.x;
+	public Vector3f getForwardVector() {
+		float yaw = rotation.x;
+		float pitch = rotation.y;
 
-		position.x += (float) Math.sin(yaw) * amount;
-		position.z -= (float) Math.cos(yaw) * amount;
+		float cosPitch = (float) Math.cos(pitch);
+		float sinPitch = (float) Math.sin(pitch);
+		float cosYaw = (float) Math.cos(yaw);
+		float sinYaw = (float) Math.sin(yaw);
+
+		return new Vector3f(
+				-sinYaw * cosPitch,
+				sinPitch,
+				-cosYaw * cosPitch
+		);
+	}
+
+	public Vector3f getRightVector() {
+		float yaw = rotation.x;
+
+		return new Vector3f(
+				(float) Math.cos(yaw),
+				0,
+				(float) Math.sin(yaw)
+		);
+	}
+
+	public void moveForward(float amount) {
+		Vector3f forward = getForwardVector();
+		forward.mul(amount);
+		position.add(forward);
 	}
 
 	public void moveRight(float amount) {
-		float yaw = this.rotation.x;
-
-		position.x += (float) Math.cos(yaw) * amount;
-		position.z += (float) Math.sin(yaw) * amount;
+		Vector3f right = getRightVector();
+		right.mul(amount);
+		position.add(right);
 	}
 
 	public void moveUp(float amount) {
