@@ -51,7 +51,7 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 	public AbstractTexture boundTexture = null;
 
 	public GooseboyGpuRenderer() {
-		this.indices = RenderSystem.getSequentialBuffer(VertexFormat.Mode.QUADS);
+		this.indices = RenderSystem.getSequentialBuffer(VertexFormat.Mode.TRIANGLES);
 		this.renderTarget = new TextureTarget(
 				"gooseboy_goosegpu_framebuffer",
 				FRAMEBUFFER_WIDTH,
@@ -109,8 +109,8 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 				boundTexture = texture;
 			}
 
-			int quadCount = vertexStack.size() / 4;
-			int indexCount = quadCount * 6;
+			int triCount = vertexStack.size() / 3;
+			int indexCount = triCount * 3;
 			GpuBuffer indexBuffer = this.indices.getBuffer(indexCount);
 			GpuBufferSlice transformSlice = this.camera.createTransformSlice();
 

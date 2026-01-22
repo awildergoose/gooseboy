@@ -50,7 +50,7 @@ public final class VertexStack {
 		}
 
 		try (ByteBufferBuilder byteBuffer = ByteBufferBuilder.exactlySized(len)) {
-			BufferBuilder buffer = new BufferBuilder(byteBuffer, VertexFormat.Mode.QUADS, VERTEX_FORMAT);
+			BufferBuilder buffer = new BufferBuilder(byteBuffer, VertexFormat.Mode.TRIANGLES, VERTEX_FORMAT);
 			this.build(buffer);
 
 			try (MeshData meshData = buffer.buildOrThrow()) {

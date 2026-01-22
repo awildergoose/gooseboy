@@ -32,7 +32,7 @@ public class GooseboyClient implements ClientModInitializer {
 					.withDepthWrite(false)
 					.withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST)
 					// remove these /\
-					.withVertexFormat(DefaultVertexFormat.POSITION_TEX, VertexFormat.Mode.QUADS)
+					.withVertexFormat(DefaultVertexFormat.POSITION_TEX, VertexFormat.Mode.TRIANGLES)
 					.build()
 	);
 	private static final KeyMapping.Category keyMappingCategory = KeyMapping.Category.register(
