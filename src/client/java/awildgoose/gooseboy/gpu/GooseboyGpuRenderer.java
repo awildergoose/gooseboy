@@ -17,8 +17,8 @@ import net.minecraft.client.gui.render.TextureSetup;
 import net.minecraft.client.gui.render.state.BlitRenderState;
 import net.minecraft.client.renderer.CachedPerspectiveProjectionMatrixBuffer;
 import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.client.renderer.WorldBorderRenderer;
 import net.minecraft.client.renderer.texture.AbstractTexture;
+import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
@@ -43,13 +43,15 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 	private final CachedPerspectiveProjectionMatrixBuffer projectionMatrixBuffer = new CachedPerspectiveProjectionMatrixBuffer(
 			"gooseboy_goosegpu", camera.near, camera.far);
 
-	public ArrayList<GooseboyGpu.QueuedCommand> queuedCommands = new ArrayList<>();
 	private final MeshRegistry meshRegistry = new MeshRegistry();
 	private final TextureRegistry textureRegistry = new TextureRegistry();
-	public VertexStack globalVertexStack = new VertexStack();
-	public AbstractTexture boundTexture = null;
+
 	public final ByteBuffer gpuMemory = ByteBuffer.allocateDirect(4192 * 4)
 			.order(ByteOrder.LITTLE_ENDIAN);
+	public ArrayList<GooseboyGpu.QueuedCommand> queuedCommands = new ArrayList<>();
+	public VertexStack globalVertexStack = new VertexStack();
+	public ArrayList<MeshRegistry.MeshRef> recordings = new ArrayList<>();
+	public AbstractTexture boundTexture = null;
 
 	public GooseboyGpuRenderer() {
 		this.indices = RenderSystem.getSequentialBuffer(VertexFormat.Mode.TRIANGLES);
@@ -80,12 +82,11 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 			if (boundTexture == null) {
 				TextureManager textureManager = Minecraft.getInstance()
 						.getTextureManager();
-				texture = textureManager.getTexture(WorldBorderRenderer.FORCEFIELD_LOCATION);
+				texture = textureManager.getTexture(MissingTextureAtlasSprite.getLocation());
 				boundTexture = texture;
 			}
 
-			int triCount = vertexStack.size() / 3;
-			int indexCount = triCount * 3;
+			int indexCount = vertexStack.size();
 			GpuBuffer indexBuffer = this.indices.getBuffer(indexCount);
 			GpuBufferSlice transformSlice = this.camera.createTransformSlice();
 
@@ -115,7 +116,6 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 	public void renderMesh(MeshRegistry.MeshRef mesh) {
 		renderVertexStack(mesh.stack());
 	}
-	public ArrayList<MeshRegistry.MeshRef> recordings = new ArrayList<>();
 
 	public void blitToScreen(GuiGraphics guiGraphics, int x, int y, int width, int height) {
 		GpuTextureView textureView = this.renderTarget.getColorTextureView();
@@ -144,8 +144,8 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 		ProfilerFiller profiler = Profiler.get();
 		profiler.push("GooseGPU");
 
-		Matrix4fStack matrix4fStack = RenderSystem.getModelViewStack();
-		matrix4fStack.pushMatrix();
+		Matrix4fStack matrixStack = RenderSystem.getModelViewStack();
+		matrixStack.pushMatrix();
 
 		GooseboyGpuRenderConsumer renderConsumer = new GooseboyGpuRenderConsumer(this);
 		GooseboyGpuMemoryConsumer gpuMemoryConsumer = new GooseboyGpuMemoryConsumer(this.gpuMemory);
@@ -163,7 +163,7 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 		globalVertexStack.clear();
 		queuedCommands.clear();
 
-		matrix4fStack.popMatrix();
+		matrixStack.popMatrix();
 
 		profiler.pop();
 	}
