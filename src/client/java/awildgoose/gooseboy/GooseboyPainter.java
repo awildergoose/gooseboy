@@ -3,8 +3,10 @@ package awildgoose.gooseboy;
 import awildgoose.gooseboy.crate.GooseboyCrate;
 import awildgoose.gooseboy.gpu.GooseboyGpuRenderer;
 import com.mojang.blaze3d.platform.NativeImage;
+import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.resources.ResourceLocation;
 import org.lwjgl.system.MemoryUtil;
@@ -69,26 +71,18 @@ public class GooseboyPainter implements AutoCloseable {
 		long now = System.nanoTime();
 		updateTextureIfNeeded(now);
 
-//		guiGraphics.scissorStack.push(ScreenRectangle.of(
-//				ScreenAxis.HORIZONTAL,
-//				x, y,
-//				w, h
-//		));
-
 		this.gpuRenderer.blitToScreen(guiGraphics, x, y, w, h);
-//		RenderSystem.setShaderTexture(0, texture.getTextureView());
-//		guiGraphics.blit(
-//				RenderPipelines.GUI_TEXTURED,
-//				this.framebufferTexture,
-//				x, y,
-//				0, 0,
-//				w,
-//				h,
-//				w,
-//				h
-//		);
-
-//		guiGraphics.scissorStack.pop();
+		RenderSystem.setShaderTexture(0, texture.getTextureView());
+		guiGraphics.blit(
+				RenderPipelines.GUI_TEXTURED,
+				this.framebufferTexture,
+				x, y,
+				0, 0,
+				w,
+				h,
+				w,
+				h
+		);
 	}
 
 	private void updateTextureIfNeeded(long now) {
