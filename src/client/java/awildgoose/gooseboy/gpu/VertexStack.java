@@ -4,17 +4,12 @@ import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import org.jetbrains.annotations.Nullable;
-import org.lwjgl.system.MemoryUtil;
 
 public final class VertexStack {
 	private final VertexBuffer vertices = new VertexBuffer(0);
 	private GpuBuffer gpuBuffer;
 
 	public VertexStack() {
-	}
-
-	public long getPointer() {
-		return MemoryUtil.memAddress(this.vertices.getByteBuffer());
 	}
 
 	public int size() {

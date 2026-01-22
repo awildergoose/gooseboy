@@ -46,9 +46,7 @@ public class GooseboyGpuCommands {
 
 	public interface RenderConsumer {
 		void mesh(MeshRegistry.MeshRef mesh);
-
 		void vertex(float x, float y, float z, float u, float v);
-
 		void texture(TextureRegistry.TextureRef texture);
 	}
 }

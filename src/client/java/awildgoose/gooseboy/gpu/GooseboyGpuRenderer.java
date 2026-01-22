@@ -149,8 +149,11 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 		GooseboyGpuRenderConsumer renderConsumer = new GooseboyGpuRenderConsumer(this);
 
 		for (GooseboyGpu.QueuedCommand queued : queuedCommands) {
-			GooseboyGpuMemoryReader reader = new GooseboyGpuMemoryReader(queued.payload());
-			GooseboyGpuCommands.runCommand(queued.command(), reader, renderConsumer);
+			GooseboyGpuCommands.runCommand(
+					queued.command(),
+					queued.reader(),
+					renderConsumer
+			);
 		}
 
 		renderVertexStack(globalVertexStack);

@@ -1,10 +1,7 @@
 package awildgoose.gooseboy.gpu;
 
-import com.dylibso.chicory.runtime.Memory;
 import org.jetbrains.annotations.Nullable;
-import org.lwjgl.system.MemoryUtil;
 
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Optional;
 
@@ -26,12 +23,5 @@ public class MeshRegistry {
 	}
 
 	public record MeshRef(VertexStack stack, int id) {
-		public void set(Memory memory, int ptr, int len) {
-			ByteBuffer vertices = ByteBuffer.wrap(memory.readBytes(ptr, len));
-			MemoryUtil.memCopy(
-					MemoryUtil.memAddress(vertices),
-					this.stack.getPointer(),
-					len);
-		}
 	}
 }
