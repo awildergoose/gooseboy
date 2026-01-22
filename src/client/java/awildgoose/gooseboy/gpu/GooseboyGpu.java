@@ -19,6 +19,19 @@ public class GooseboyGpu {
 			this.len = len;
 		}
 
+		public static GpuCommand findCommandById(int id) {
+			if (id == Push.id()) return Push;
+			if (id == Pop.id()) return Pop;
+			if (id == PushRecord.id()) return PushRecord;
+			if (id == PopRecord.id()) return PopRecord;
+			if (id == DrawRecorded.id()) return DrawRecorded;
+			if (id == EmitVertex.id()) return EmitVertex;
+			if (id == BindTexture.id()) return BindTexture;
+			if (id == RegisterTexture.id()) return RegisterTexture;
+
+			throw new RuntimeException("Unknown GPU command with id: " + id);
+		}
+
 		public int id() {
 			return id;
 		}
@@ -28,36 +41,32 @@ public class GooseboyGpu {
 		}
 	}
 
-	public static GpuCommand findCommandById(int id) {
-		if (id == GpuCommand.Push.id()) return GpuCommand.Push;
-		if (id == GpuCommand.Pop.id()) return GpuCommand.Pop;
-		if (id == GpuCommand.PushRecord.id()) return GpuCommand.PushRecord;
-		if (id == GpuCommand.PopRecord.id()) return GpuCommand.PopRecord;
-		if (id == GpuCommand.DrawRecorded.id()) return GpuCommand.DrawRecorded;
-		if (id == GpuCommand.EmitVertex.id()) return GpuCommand.EmitVertex;
-		if (id == GpuCommand.BindTexture.id()) return GpuCommand.BindTexture;
-		if (id == GpuCommand.RegisterTexture.id()) return GpuCommand.RegisterTexture;
-
-		throw new RuntimeException("Unknown GPU command with id: " + id);
-	}
-
 	public interface MemoryReadOffsetConsumer {
 		int readInt(int offset);
+
 		float readFloat(int offset);
+
 		byte[] readBytes(int offset, int len);
 	}
 
+	public interface RenderConsumer {
+		void mesh(MeshRegistry.MeshRef mesh);
+
+		void vertex(float x, float y, float z, float u, float v);
+
+		void texture(TextureRegistry.TextureRef texture);
+	}
+
 	public static final class QueuedCommand {
-		private final GooseboyGpu.GpuCommand command;
+		private final GpuCommand command;
 		private final GooseboyGpuMemoryReader reader;
 
-		public QueuedCommand(GooseboyGpu.GpuCommand command,
-							 byte[] payload) {
+		public QueuedCommand(GpuCommand command, byte[] payload) {
 			this.command = command;
 			this.reader = new GooseboyGpuMemoryReader(payload);
 		}
 
-		public GooseboyGpu.GpuCommand command() {
+		public GpuCommand command() {
 			return command;
 		}
 

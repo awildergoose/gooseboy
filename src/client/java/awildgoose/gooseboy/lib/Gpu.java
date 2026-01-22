@@ -25,7 +25,7 @@ public final class Gpu {
 
 		while (offset < end) {
 			byte cmdId = memory.read(offset);
-			GooseboyGpu.GpuCommand cmd = GooseboyGpu.findCommandById(cmdId);
+			GooseboyGpu.GpuCommand cmd = GooseboyGpu.GpuCommand.findCommandById(cmdId);
 
 			int payloadLength = cmd.len();
 

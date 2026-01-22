@@ -6,16 +6,16 @@ import java.util.ArrayList;
 import java.util.Optional;
 
 public class MeshRegistry {
-	private static final ArrayList<MeshRef> meshes = new ArrayList<>();
-	private static int lastMeshId = 0;
+	private final ArrayList<MeshRef> meshes = new ArrayList<>();
+	private int lastMeshId = 0;
 
-	public static MeshRef createMesh() {
+	public MeshRef createMesh() {
 		MeshRef ref = new MeshRef(new VertexStack(), lastMeshId++);
 		meshes.add(ref);
 		return ref;
 	}
 
-	public static @Nullable MeshRef getMesh(int id) {
+	public @Nullable MeshRef getMesh(int id) {
 		Optional<MeshRef> ref = meshes.stream()
 				.filter(f -> f.id == id)
 				.findFirst();

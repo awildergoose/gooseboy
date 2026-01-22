@@ -17,8 +17,8 @@ public class VertexBuffer {
 		return vertexCount;
 	}
 
-	private void ensureCapacity(int additionalVertices) {
-		int required = (vertexCount + additionalVertices) * VERTEX_SIZE;
+	private void ensureCapacity() {
+		int required = (vertexCount + 1) * VERTEX_SIZE;
 		if (required > buffer.capacity()) {
 			int newCapacity = Math.max(required, buffer.capacity() * 2);
 			ByteBuffer newBuffer = ByteBuffer.allocateDirect(newCapacity)
@@ -30,7 +30,7 @@ public class VertexBuffer {
 	}
 
 	public void put(float x, float y, float z, float u, float v) {
-		ensureCapacity(1);
+		ensureCapacity();
 		buffer.putFloat(x);
 		buffer.putFloat(y);
 		buffer.putFloat(z);
@@ -42,10 +42,6 @@ public class VertexBuffer {
 	public void clear() {
 		buffer.clear();
 		vertexCount = 0;
-	}
-
-	public ByteBuffer getByteBuffer() {
-		return buffer;
 	}
 
 	public void forEachVertex(VertexIteratorConsumer consumer) {

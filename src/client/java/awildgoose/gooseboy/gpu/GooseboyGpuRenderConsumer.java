@@ -1,6 +1,6 @@
 package awildgoose.gooseboy.gpu;
 
-public class GooseboyGpuRenderConsumer implements GooseboyGpuCommands.RenderConsumer {
+public class GooseboyGpuRenderConsumer implements GooseboyGpu.RenderConsumer {
 	private final GooseboyGpuRenderer renderer;
 
 	public GooseboyGpuRenderConsumer(GooseboyGpuRenderer renderer) {

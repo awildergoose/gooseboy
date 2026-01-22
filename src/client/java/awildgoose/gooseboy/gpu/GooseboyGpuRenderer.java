@@ -37,14 +37,18 @@ import static awildgoose.gooseboy.Gooseboy.FRAMEBUFFER_WIDTH;
 
 @Environment(EnvType.CLIENT)
 public class GooseboyGpuRenderer implements AutoCloseable {
+	private final GooseboyGpuCamera camera = new GooseboyGpuCamera();
+
 	private final RenderSystem.AutoStorageIndexBuffer indices;
 	private final TextureTarget renderTarget;
-	private final GooseboyGpuCamera camera = new GooseboyGpuCamera();
 	private final CachedPerspectiveProjectionMatrixBuffer projectionMatrixBuffer = new CachedPerspectiveProjectionMatrixBuffer(
 			"gooseboy_goosegpu", camera.near, camera.far);
-	public VertexStack globalVertexStack = new VertexStack();
-	public AbstractTexture boundTexture;
+
 	public ArrayList<GooseboyGpu.QueuedCommand> queuedCommands = new ArrayList<>();
+	private final MeshRegistry meshRegistry = new MeshRegistry();
+	private final TextureRegistry textureRegistry = new TextureRegistry();
+	public VertexStack globalVertexStack = new VertexStack();
+	public AbstractTexture boundTexture = null;
 
 	public GooseboyGpuRenderer() {
 		this.indices = RenderSystem.getSequentialBuffer(VertexFormat.Mode.QUADS);
@@ -136,34 +140,7 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 	public void renderMesh(MeshRegistry.MeshRef mesh) {
 		renderVertexStack(mesh.stack());
 	}
-
-	public void render() {
-		this.updateDebugCamera();
-
-		ProfilerFiller profiler = Profiler.get();
-		profiler.push("GooseGPU");
-
-		Matrix4fStack matrix4fStack = RenderSystem.getModelViewStack();
-		matrix4fStack.pushMatrix();
-
-		GooseboyGpuRenderConsumer renderConsumer = new GooseboyGpuRenderConsumer(this);
-
-		for (GooseboyGpu.QueuedCommand queued : queuedCommands) {
-			GooseboyGpuCommands.runCommand(
-					queued.command(),
-					queued.reader(),
-					renderConsumer
-			);
-		}
-
-		renderVertexStack(globalVertexStack);
-		globalVertexStack.clear();
-		queuedCommands.clear();
-
-		matrix4fStack.popMatrix();
-
-		profiler.pop();
-	}
+	public ArrayList<MeshRegistry.MeshRef> recordings = new ArrayList<>();
 
 	public void blitToScreen(GuiGraphics guiGraphics, int x, int y, int width, int height) {
 		GpuTextureView textureView = this.renderTarget.getColorTextureView();
@@ -186,5 +163,71 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 	public void close() {
 		this.renderTarget.destroyBuffers();
 		this.projectionMatrixBuffer.close();
+	}
+
+	public void render() {
+		this.updateDebugCamera();
+
+		ProfilerFiller profiler = Profiler.get();
+		profiler.push("GooseGPU");
+
+		Matrix4fStack matrix4fStack = RenderSystem.getModelViewStack();
+		matrix4fStack.pushMatrix();
+
+		GooseboyGpuRenderConsumer renderConsumer = new GooseboyGpuRenderConsumer(this);
+
+		for (GooseboyGpu.QueuedCommand queued : queuedCommands) {
+			runCommand(
+					queued.command(),
+					queued.reader(),
+					renderConsumer
+			);
+		}
+
+		renderVertexStack(globalVertexStack);
+		globalVertexStack.clear();
+		queuedCommands.clear();
+
+		matrix4fStack.popMatrix();
+
+		profiler.pop();
+	}
+
+	public void runCommand(GooseboyGpu.GpuCommand command, GooseboyGpu.MemoryReadOffsetConsumer read,
+						   GooseboyGpu.RenderConsumer render) {
+		switch (command) {
+			case Push, Pop -> {
+				// TODO
+			}
+			case PushRecord -> recordings.add(meshRegistry.createMesh());
+			case PopRecord -> recordings.removeLast();
+			case DrawRecorded -> render.mesh(meshRegistry.getMesh(read.readInt(0)));
+			case EmitVertex -> {
+				MeshRegistry.MeshRef recording = recordings.getLast();
+				float x = read.readFloat(0);
+				float y = read.readFloat(4);
+				float z = read.readFloat(8);
+				float u = read.readFloat(12);
+				float v = read.readFloat(16);
+
+				if (recording == null) {
+					// immediate-mode
+					render.vertex(x, y, z, u, v);
+				} else {
+					// recommended instanced mode
+					recording.stack()
+							.push(new VertexStack.Vertex(
+									x, y, z, u, v
+							));
+				}
+			}
+			case RegisterTexture -> {
+				int width = read.readInt(0);
+				int height = read.readInt(4);
+				TextureRegistry.TextureRef texture = textureRegistry.createTexture(width, height);
+				texture.set(read, 8, width * height * 4);
+			}
+			case BindTexture -> render.texture(textureRegistry.getTexture(read.readInt(0)));
+		}
 	}
 }

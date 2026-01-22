@@ -8,16 +8,16 @@ import java.util.ArrayList;
 import java.util.Optional;
 
 public class TextureRegistry {
-	private static final ArrayList<TextureRef> textures = new ArrayList<>();
-	private static int lastTextureId = 0;
+	private final ArrayList<TextureRef> textures = new ArrayList<>();
+	private int lastTextureId = 0;
 
-	public static TextureRef createTexture(int width, int height) {
+	public TextureRef createTexture(int width, int height) {
 		TextureRef ref = new TextureRef(new UnnamedDynamicTexture(width, height), lastTextureId++);
 		textures.add(ref);
 		return ref;
 	}
 
-	public static @Nullable TextureRef getTexture(int id) {
+	public @Nullable TextureRef getTexture(int id) {
 		Optional<TextureRef> ref = textures.stream()
 				.filter(f -> f.id == id)
 				.findFirst();
