@@ -80,13 +80,11 @@ public class GooseboyGpuCamera {
 	}
 
 	public Vector3f getRightVector() {
-		float yaw = rotation.x;
+		Vector3f forward = getForwardVector();
+		Vector3f up = new Vector3f(0, 1, 0);
 
-		return new Vector3f(
-				(float) Math.cos(yaw),
-				0,
-				(float) Math.sin(yaw)
-		);
+		return forward.cross(up, new Vector3f())
+				.normalize();
 	}
 
 	public void moveForward(float amount) {

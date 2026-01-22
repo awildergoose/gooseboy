@@ -23,6 +23,8 @@ import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.WorldBorderRenderer;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.TextureManager;
+import net.minecraft.util.profiling.Profiler;
+import net.minecraft.util.profiling.ProfilerFiller;
 import org.joml.Matrix3x2f;
 import org.joml.Matrix4fStack;
 
@@ -39,7 +41,7 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 	private final TextureTarget renderTarget;
 	private final GooseboyGpuCamera camera = new GooseboyGpuCamera();
 	private final CachedPerspectiveProjectionMatrixBuffer projectionMatrixBuffer = new CachedPerspectiveProjectionMatrixBuffer(
-			"goosegpu", camera.near, camera.far);
+			"gooseboy_goosegpu", camera.near, camera.far);
 
 	public GooseboyGpuRenderer() {
 		this.vertexStack = new VertexStack();
@@ -87,6 +89,9 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 		if (WasmInputManager.isKeyDown(InputConstants.KEY_LSHIFT)) {
 			camera.moveUp(-speed);
 		}
+
+		ProfilerFiller profiler = Profiler.get();
+		profiler.push("GooseGPU");
 
 		Matrix4fStack matrix4fStack = RenderSystem.getModelViewStack();
 		matrix4fStack.pushMatrix();
@@ -136,6 +141,8 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 		}
 
 		matrix4fStack.popMatrix();
+
+		profiler.pop();
 	}
 
 	public void blitToScreen(GuiGraphics guiGraphics, int x, int y, int width, int height) {
