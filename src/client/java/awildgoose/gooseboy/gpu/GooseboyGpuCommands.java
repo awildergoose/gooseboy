@@ -3,11 +3,12 @@ package awildgoose.gooseboy.gpu;
 import java.util.ArrayList;
 
 public class GooseboyGpuCommands {
-	public ArrayList<MeshRegistry.MeshRef> recordings;
+	public static ArrayList<MeshRegistry.MeshRef> recordings = new ArrayList<>();
 
-	public void runCommand(GooseboyGpu.GpuCommand command, GooseboyGpu.MemoryReadOffsetConsumer read, RenderConsumer render) {
+	public static void runCommand(GooseboyGpu.GpuCommand command, GooseboyGpu.MemoryReadOffsetConsumer read,
+								  RenderConsumer render) {
 		switch (command) {
-			case Push, Pop -> {
+			case Push, Pop, RegisterTexture, BindTexture -> {
 				// TODO
 			}
 			case PushRecord -> recordings.add(MeshRegistry.createMesh());
@@ -33,12 +34,6 @@ public class GooseboyGpuCommands {
 									x, y, z, u, v
 							));
 				}
-			}
-			case BindTexture -> {
-
-			}
-			case RegisterTexture -> {
-
 			}
 		}
 	}

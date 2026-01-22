@@ -28,6 +28,7 @@ import org.joml.Matrix3x2f;
 import org.joml.Matrix4fStack;
 import org.joml.Vector3f;
 
+import java.util.ArrayList;
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
 
@@ -41,6 +42,7 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 	private final GooseboyGpuCamera camera = new GooseboyGpuCamera();
 	private final CachedPerspectiveProjectionMatrixBuffer projectionMatrixBuffer = new CachedPerspectiveProjectionMatrixBuffer(
 			"gooseboy_goosegpu", camera.near, camera.far);
+	public ArrayList<GooseboyGpu.QueuedCommand> queuedCommands = new ArrayList<>();
 
 	public GooseboyGpuRenderer() {
 		this.indices = RenderSystem.getSequentialBuffer(VertexFormat.Mode.QUADS);
@@ -51,9 +53,9 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 				true
 		);
 		this.camera.setPosition(0f, 0f, 40f);
-		ObjLoader.loadObj("teapot.obj", Minecraft.getInstance()
-				.getResourceManager(), MeshRegistry.createMesh()
-								  .stack());
+//		ObjLoader.loadObj("teapot.obj", Minecraft.getInstance()
+//				.getResourceManager(), MeshRegistry.createMesh()
+//								  .stack());
 	}
 
 	public void updateDebugCamera() {
@@ -134,11 +136,14 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 		Matrix4fStack matrix4fStack = RenderSystem.getModelViewStack();
 		matrix4fStack.pushMatrix();
 
-		// here, we'll view the list of incoming GPU commands
-		// and interpret them!
-		MeshRegistry.MeshRef mesh = MeshRegistry.getMesh(0);
-		if (mesh == null) return;
-		renderMesh(mesh);
+		GooseboyGpuRenderConsumer renderConsumer = new GooseboyGpuRenderConsumer(this);
+
+		for (GooseboyGpu.QueuedCommand queued : queuedCommands) {
+			GooseboyGpuMemoryReader reader = new GooseboyGpuMemoryReader(queued.payload());
+			GooseboyGpuCommands.runCommand(queued.command(), reader, renderConsumer);
+		}
+
+		queuedCommands.clear();
 
 		matrix4fStack.popMatrix();
 

@@ -1,24 +1,6 @@
 package awildgoose.gooseboy.gpu;
 
-import java.util.ArrayList;
-
 public class GooseboyGpu {
-	public static ArrayList<GpuCommand> queuedCommands = new ArrayList<>();
-	public static GooseboyGpuCommands commandRunner = new GooseboyGpuCommands();
-
-	public static GpuCommand findCommandById(int id) {
-		if (id == GpuCommand.Push.id()) return GpuCommand.Push;
-		if (id == GpuCommand.Pop.id()) return GpuCommand.Pop;
-		if (id == GpuCommand.PushRecord.id()) return GpuCommand.PushRecord;
-		if (id == GpuCommand.PopRecord.id()) return GpuCommand.PopRecord;
-		if (id == GpuCommand.DrawRecorded.id()) return GpuCommand.DrawRecorded;
-		if (id == GpuCommand.EmitVertex.id()) return GpuCommand.EmitVertex;
-		if (id == GpuCommand.BindTexture.id()) return GpuCommand.BindTexture;
-		if (id == GpuCommand.RegisterTexture.id()) return GpuCommand.RegisterTexture;
-
-		throw new RuntimeException("Unknown GPU command with id: " + id);
-	}
-
 	public enum GpuCommand {
 		Push(0x00, 0x00),
 		Pop(0x01, 0x00),
@@ -46,9 +28,25 @@ public class GooseboyGpu {
 		}
 	}
 
+	public static GpuCommand findCommandById(int id) {
+		if (id == GpuCommand.Push.id()) return GpuCommand.Push;
+		if (id == GpuCommand.Pop.id()) return GpuCommand.Pop;
+		if (id == GpuCommand.PushRecord.id()) return GpuCommand.PushRecord;
+		if (id == GpuCommand.PopRecord.id()) return GpuCommand.PopRecord;
+		if (id == GpuCommand.DrawRecorded.id()) return GpuCommand.DrawRecorded;
+		if (id == GpuCommand.EmitVertex.id()) return GpuCommand.EmitVertex;
+		if (id == GpuCommand.BindTexture.id()) return GpuCommand.BindTexture;
+		if (id == GpuCommand.RegisterTexture.id()) return GpuCommand.RegisterTexture;
+
+		throw new RuntimeException("Unknown GPU command with id: " + id);
+	}
+
 	public interface MemoryReadOffsetConsumer {
 		int readInt(int offset);
 
 		float readFloat(int offset);
+	}
+
+	public record QueuedCommand(GpuCommand command, byte[] payload) {
 	}
 }

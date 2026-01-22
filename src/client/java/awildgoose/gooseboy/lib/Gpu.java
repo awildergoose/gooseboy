@@ -2,8 +2,7 @@ package awildgoose.gooseboy.lib;
 
 import awildgoose.gooseboy.GooseboyClient;
 import awildgoose.gooseboy.gpu.GooseboyGpu;
-import awildgoose.gooseboy.gpu.GooseboyGpuMemoryReader;
-import awildgoose.gooseboy.gpu.GooseboyGpuRenderConsumer;
+import awildgoose.gooseboy.gpu.GooseboyGpuRenderer;
 import com.dylibso.chicory.annotations.HostModule;
 import com.dylibso.chicory.annotations.WasmExport;
 import com.dylibso.chicory.runtime.HostFunction;
@@ -16,22 +15,23 @@ public final class Gpu {
 	}
 
 	@WasmExport
-	public void submit_gpu_commands(Instance instance, int ptr, int len) {
+	public void submit_gpu_commands(Instance instance, int ptr, int count) {
 		int offset = ptr;
+		int end = ptr + count;
 
 		Memory memory = instance.memory();
-		GooseboyGpuRenderConsumer renderConsumer = new GooseboyGpuRenderConsumer(
-				GooseboyClient.rendererByInstance.get(instance)
-		);
+		GooseboyGpuRenderer gpu = GooseboyClient.rendererByInstance.get(instance);
 
-		while (offset < len) {
+		while (offset < end) {
 			byte cmdId = memory.read(offset);
 			GooseboyGpu.GpuCommand cmd = GooseboyGpu.findCommandById(cmdId);
 
-			GooseboyGpuMemoryReader reader = new GooseboyGpuMemoryReader(memory, offset);
-			GooseboyGpu.commandRunner.runCommand(cmd, reader, renderConsumer);
+			int payloadLength = cmd.len();
+			byte[] payload = memory.readBytes(offset + 1, payloadLength);
 
-			offset += 1 + cmd.len();
+			gpu.queuedCommands.add(new GooseboyGpu.QueuedCommand(cmd, payload));
+
+			offset += 1 + payloadLength;
 		}
 	}
 
