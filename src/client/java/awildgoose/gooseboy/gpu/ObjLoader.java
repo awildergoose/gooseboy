@@ -54,7 +54,7 @@ public class ObjLoader {
 
 							Vector3f pos = positions.get(posIndex);
 							Vector2f uv = texCoords.isEmpty() ? new Vector2f(0, 0) : texCoords.get(uvIndex);
-							stack.push(new VertexStack.Vertex(new Vector3f(pos), new Vector2f(uv)));
+							stack.push(new VertexStack.Vertex(pos.x, pos.y, pos.z, uv.x, uv.y));
 						}
 					}
 				}
@@ -101,8 +101,8 @@ public class ObjLoader {
 			float u, float v
 	) {
 		return new VertexStack.Vertex(
-				new Vector3f(x, y, z),
-				new Vector2f(u, v)
+				x, y, z,
+				u, v
 		);
 	}
 }

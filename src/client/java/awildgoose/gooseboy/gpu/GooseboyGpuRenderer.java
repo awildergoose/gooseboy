@@ -36,7 +36,6 @@ import static awildgoose.gooseboy.Gooseboy.FRAMEBUFFER_WIDTH;
 
 @Environment(EnvType.CLIENT)
 public class GooseboyGpuRenderer implements AutoCloseable {
-	private final VertexStack vertexStack;
 	private final RenderSystem.AutoStorageIndexBuffer indices;
 	private final TextureTarget renderTarget;
 	private final GooseboyGpuCamera camera = new GooseboyGpuCamera();
@@ -44,7 +43,6 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 			"gooseboy_goosegpu", camera.near, camera.far);
 
 	public GooseboyGpuRenderer() {
-		this.vertexStack = new VertexStack();
 		this.indices = RenderSystem.getSequentialBuffer(VertexFormat.Mode.QUADS);
 		this.renderTarget = new TextureTarget(
 				"gooseboy_goosegpu_framebuffer",
@@ -54,7 +52,8 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 		);
 		this.camera.setPosition(0f, 0f, 40f);
 		ObjLoader.loadObj("teapot.obj", Minecraft.getInstance()
-				.getResourceManager(), vertexStack);
+				.getResourceManager(), MeshRegistry.createMesh()
+								  .stack());
 	}
 
 	public void updateDebugCamera() {
@@ -88,7 +87,11 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 		Matrix4fStack matrix4fStack = RenderSystem.getModelViewStack();
 		matrix4fStack.pushMatrix();
 
-		GpuBuffer buffer = this.vertexStack.intoGpuBuffer();
+		// here, we'll view the list of incoming GPU commands
+		// and interpret them!
+		VertexStack vertexStack = MeshRegistry.getStack(0);
+		if (vertexStack == null) return;
+		GpuBuffer buffer = vertexStack.intoGpuBuffer();
 
 		if (buffer != null) {
 			RenderSystem.backupProjectionMatrix();

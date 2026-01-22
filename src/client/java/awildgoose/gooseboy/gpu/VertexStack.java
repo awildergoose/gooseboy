@@ -4,16 +4,17 @@ import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import org.jetbrains.annotations.Nullable;
-import org.joml.Vector2f;
-import org.joml.Vector3f;
-
-import java.util.ArrayList;
+import org.lwjgl.system.MemoryUtil;
 
 public final class VertexStack {
-	private final ArrayList<Vertex> vertices = new ArrayList<>();
+	private final VertexBuffer vertices = new VertexBuffer(0);
 	private GpuBuffer gpuBuffer;
 
 	public VertexStack() {
+	}
+
+	public long getPointer() {
+		return MemoryUtil.memAddress(this.vertices.getByteBuffer());
 	}
 
 	public int size() {
@@ -21,24 +22,17 @@ public final class VertexStack {
 	}
 
 	public VertexStack push(Vertex vertex) {
-		this.vertices.add(vertex);
+		this.vertices.put(vertex.x, vertex.y, vertex.z, vertex.u, vertex.v);
 		return this;
 	}
 
-	public void flush() {
+	public void clear() {
 		this.vertices.clear();
 	}
 
-	public void build(PoseStack.Pose pose, VertexConsumer consumer) {
-		for (Vertex vertex : this.vertices)
-			consumer.addVertex(pose, vertex.pos)
-					.setUv(vertex.uv.x, vertex.uv.y);
-	}
-
-	public void buildRaw(VertexConsumer consumer) {
-		for (Vertex vertex : vertices)
-			consumer.addVertex(vertex.pos)
-					.setUv(vertex.uv.x, vertex.uv.y);
+	public void build(VertexConsumer consumer) {
+		this.vertices.forEachVertex((x, y, z, u, v) -> consumer.addVertex(x, y, z)
+				.setUv(u, v));
 	}
 
 	public @Nullable GpuBuffer intoGpuBuffer() {
@@ -62,7 +56,7 @@ public final class VertexStack {
 
 		try (ByteBufferBuilder byteBuffer = ByteBufferBuilder.exactlySized(len)) {
 			BufferBuilder buffer = new BufferBuilder(byteBuffer, VertexFormat.Mode.QUADS, VERTEX_FORMAT);
-			this.buildRaw(buffer);
+			this.build(buffer);
 
 			try (MeshData meshData = buffer.buildOrThrow()) {
 				RenderSystem.getDevice()
@@ -75,6 +69,6 @@ public final class VertexStack {
 		return gpuBuffer;
 	}
 
-	public record Vertex(Vector3f pos, Vector2f uv) {
+	public record Vertex(float x, float y, float z, float u, float v) {
 	}
 }
