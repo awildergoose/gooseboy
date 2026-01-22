@@ -47,12 +47,13 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 				true
 		);
 		this.camera = new GooseboyGpuCamera();
-		this.camera.setCameraPos(-200.0f, -200.0f, 0.0f);
+		this.camera.setCameraPos(0f, 0f, 40f);
 
 		GooseboyPainter.pushCube(
 				this.vertexStack,
-				0f, 0f, 0f,
-				16f, 16f, 16f);
+				-8f, -8f, -8f,
+				8f, 8f, 8f
+		);
 	}
 
 	public void render() {
@@ -60,7 +61,7 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 
 		double f = 0.02;
 		camera.setYaw((float) (camera.getYaw() - (WasmInputManager.LAST_ACCUMULATED_MOUSE_X * f)));
-		camera.setPitch((float) (camera.getPitch() - (WasmInputManager.LAST_ACCUMULATED_MOUSE_Y * f)));
+		camera.setPitch((float) (camera.getPitch() + (WasmInputManager.LAST_ACCUMULATED_MOUSE_Y * f)));
 
 		float speed = 0.5f;
 

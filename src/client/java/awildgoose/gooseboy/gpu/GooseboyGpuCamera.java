@@ -11,11 +11,11 @@ import org.joml.Vector4f;
 public class GooseboyGpuCamera {
 	private static final float GUI_Z_OFFSET = -11000.0f;
 
-	private final Vector3f cameraPos = new Vector3f();
-	private final Vector2f rotation = new Vector2f();
+	public Vector3f cameraPos = new Vector3f();
+	public Vector2f rotation = new Vector2f();
 	private final int framebufferWidth;
 	private final int framebufferHeight;
-	private float fovDegrees = 70.0f;
+	public float fovDegrees = 70.0f;
 	private float near = 0.1f;
 	private float far = 20000.0f;
 
@@ -38,6 +38,34 @@ public class GooseboyGpuCamera {
 		this.cameraPos.set(x, y, z);
 	}
 
+	public void setYawPitch(float yaw, float pitch) {
+		this.rotation.set(yaw, pitch);
+	}
+
+	public Vector2f getYawPitch() {
+		return this.rotation;
+	}
+
+	public float getX() {
+		return this.cameraPos.x;
+	}
+
+	public float getY() {
+		return this.cameraPos.y;
+	}
+
+	public float getZ() {
+		return this.cameraPos.z;
+	}
+
+	public Vector3f getCameraPos() {
+		return this.cameraPos;
+	}
+
+	public void setCameraPos(Vector3f pos) {
+		this.cameraPos.set(pos);
+	}
+
 	public float getYaw() {
 		return this.rotation.x;
 	}
@@ -55,14 +83,18 @@ public class GooseboyGpuCamera {
 		this.rotation.y = Math.max(-MAX_PITCH, Math.min(MAX_PITCH, pitchRadians));
 	}
 
-	public void setFovDegrees(float fovDegrees) {
-		this.fovDegrees = fovDegrees;
-	}
-
 	public void setNearFar(float near, float far) {
 		this.near = near;
 		this.far = far;
 		ensureFarPlane();
+	}
+
+	public float getFar() {
+		return far;
+	}
+
+	public float getNear() {
+		return near;
 	}
 
 	public void moveForward(float amount) {
@@ -89,10 +121,10 @@ public class GooseboyGpuCamera {
 
 	public GpuBufferSlice createTransformSlice(Matrix4f model) {
 		Matrix4f view = new Matrix4f()
-				.translate(0.0f, 0.0f, GUI_Z_OFFSET)
 				.rotateY(rotation.x)
 				.rotateX(-rotation.y)
-				.translate(-cameraPos.x, -cameraPos.y, -cameraPos.z);
+				.translate(-cameraPos.x, -cameraPos.y, -cameraPos.z)
+				.translate(0.0f, 0.0f, GUI_Z_OFFSET);
 		Matrix4f modelView = new Matrix4f(view).mul(model);
 		Matrix4f projection = new Matrix4f()
 				.perspective(
