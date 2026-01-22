@@ -55,9 +55,9 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 				true
 		);
 		this.camera.setPosition(0f, 0f, 40f);
-//		ObjLoader.loadObj("teapot.obj", Minecraft.getInstance()
-//				.getResourceManager(), MeshRegistry.createMesh()
-//								  .stack());
+/*		ObjLoader.loadObj("teapot.obj", Minecraft.getInstance()
+				.getResourceManager(), MeshRegistry.createMesh()
+								  .stack()); */
 	}
 
 	public void updateDebugCamera() {
@@ -157,7 +157,7 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 		}
 
 		renderVertexStack(globalVertexStack);
-
+		globalVertexStack.clear();
 		queuedCommands.clear();
 
 		matrix4fStack.popMatrix();

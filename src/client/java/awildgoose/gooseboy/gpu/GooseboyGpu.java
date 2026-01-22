@@ -1,7 +1,5 @@
 package awildgoose.gooseboy.gpu;
 
-import com.dylibso.chicory.runtime.Memory;
-
 public class GooseboyGpu {
 	public enum GpuCommand {
 		Push(0x00, 0x00),
@@ -11,7 +9,7 @@ public class GooseboyGpu {
 		DrawRecorded(0x04, 0x04), // u32 id
 		EmitVertex(0x05, 0x14), // f32 xyzuv[5]
 		BindTexture(0x06, 0x04), // u32 id
-		RegisterTexture(0x07, 0xC); // u32 ptr, u32 w, u32 h
+		RegisterTexture(0x07, 0x08); // u32 w, u32 h, byte[] rgba
 
 		private final int id;
 		private final int len;
@@ -45,14 +43,8 @@ public class GooseboyGpu {
 
 	public interface MemoryReadOffsetConsumer {
 		int readInt(int offset);
-
 		float readFloat(int offset);
-
-		byte readByte(int offset);
-
 		byte[] readBytes(int offset, int len);
-
-		byte[] readGlobalBytes(int ptr, int len);
 	}
 
 	public static final class QueuedCommand {
@@ -60,10 +52,9 @@ public class GooseboyGpu {
 		private final GooseboyGpuMemoryReader reader;
 
 		public QueuedCommand(GooseboyGpu.GpuCommand command,
-							 Memory memory,
-							 int payloadBase) {
+							 byte[] payload) {
 			this.command = command;
-			this.reader = new GooseboyGpuMemoryReader(memory, payloadBase);
+			this.reader = new GooseboyGpuMemoryReader(payload);
 		}
 
 		public GooseboyGpu.GpuCommand command() {

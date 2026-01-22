@@ -3,6 +3,7 @@ package awildgoose.gooseboy.gpu;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.system.MemoryUtil;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Optional;
 
@@ -33,15 +34,24 @@ public class TextureRegistry {
 		}
 
 		public void set(GooseboyGpu.MemoryReadOffsetConsumer memory, int ptr, int len) {
-			byte[] src = memory.readGlobalBytes(ptr, len);
-			MemoryUtil.memCopy(
-					MemoryUtil.memAddress(MemoryUtil.memAlloc(src.length)
-												  .put(src)
-												  .flip()),
-					this.texture.getPixels()
-							.getPointer(),
-					src.length
-			);
+			byte[] src = memory.readBytes(ptr, len);
+
+			ByteBuffer tmp = MemoryUtil.memAlloc(len);
+			try {
+				tmp.put(src)
+						.flip();
+
+				MemoryUtil.memCopy(
+						MemoryUtil.memAddress(tmp),
+						this.texture.getPixels()
+								.getPointer(),
+						len
+				);
+			} finally {
+				MemoryUtil.memFree(tmp);
+			}
+
+			this.texture.upload();
 		}
 	}
 }

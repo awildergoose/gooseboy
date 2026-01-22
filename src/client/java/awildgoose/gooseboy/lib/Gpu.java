@@ -29,8 +29,19 @@ public final class Gpu {
 
 			int payloadLength = cmd.len();
 
+			// TODO improve this
+			if (cmd.id() == GooseboyGpu.GpuCommand.RegisterTexture.id()) {
+				// width * height * 4
+				int width = memory.readInt(offset + 1);
+				int height = memory.readInt(offset + 1 + 4);
+
+				payloadLength += width * height * 4;
+			}
+
+			byte[] payload = memory.readBytes(offset + 1, payloadLength);
+
 			gpu.queuedCommands.add(
-					new GooseboyGpu.QueuedCommand(cmd, memory, offset + 1)
+					new GooseboyGpu.QueuedCommand(cmd, payload)
 			);
 
 			offset += 1 + payloadLength;

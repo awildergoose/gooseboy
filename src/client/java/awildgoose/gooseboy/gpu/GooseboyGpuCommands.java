@@ -34,11 +34,10 @@ public class GooseboyGpuCommands {
 				}
 			}
 			case RegisterTexture -> {
-				int ptr = read.readInt(0);
-				int width = read.readInt(4);
-				int height = read.readInt(8);
+				int width = read.readInt(0);
+				int height = read.readInt(4);
 				TextureRegistry.TextureRef texture = TextureRegistry.createTexture(width, height);
-				texture.set(read, ptr, width * height * 4);
+				texture.set(read, 8, width * height * 4);
 			}
 			case BindTexture -> render.texture(TextureRegistry.getTexture(read.readInt(0)));
 		}
