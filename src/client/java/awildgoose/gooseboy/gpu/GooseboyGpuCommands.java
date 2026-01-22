@@ -13,22 +13,20 @@ public class GooseboyGpuCommands {
 			}
 			case PushRecord -> recordings.add(MeshRegistry.createMesh());
 			case PopRecord -> recordings.removeLast();
-			case DrawRecorded -> {
-				int id = read.readInt(1);
-				render.mesh(MeshRegistry.getMesh(id));
-			}
+			case DrawRecorded -> render.mesh(MeshRegistry.getMesh(read.readInt(0)));
 			case EmitVertex -> {
 				MeshRegistry.MeshRef recording = recordings.getLast();
+				float x = read.readFloat(0);
+				float y = read.readFloat(4);
+				float z = read.readFloat(8);
+				float u = read.readFloat(12);
+				float v = read.readFloat(16);
 
 				if (recording == null) {
-					// TODO handle this properly
+					// immediate-mode
+					render.vertex(x, y, z, u, v);
 				} else {
-					float x = read.readFloat(1);
-					float y = read.readFloat(5);
-					float z = read.readFloat(9);
-					float u = read.readFloat(13);
-					float v = read.readFloat(17);
-
+					// recommended instanced mode
 					recording.stack()
 							.push(new VertexStack.Vertex(
 									x, y, z, u, v
@@ -40,5 +38,7 @@ public class GooseboyGpuCommands {
 
 	public interface RenderConsumer {
 		void mesh(MeshRegistry.MeshRef mesh);
+
+		void vertex(float x, float y, float z, float u, float v);
 	}
 }

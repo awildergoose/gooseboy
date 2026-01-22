@@ -1,5 +1,6 @@
 package awildgoose.gooseboy.lib;
 
+import awildgoose.gooseboy.Gooseboy;
 import awildgoose.gooseboy.GooseboyClient;
 import awildgoose.gooseboy.gpu.GooseboyGpu;
 import awildgoose.gooseboy.gpu.GooseboyGpuRenderer;
@@ -21,6 +22,10 @@ public final class Gpu {
 
 		Memory memory = instance.memory();
 		GooseboyGpuRenderer gpu = GooseboyClient.rendererByInstance.get(instance);
+		if (gpu == null) {
+			Gooseboy.LOGGER.warn("The GPU is not ready yet!");
+			return;
+		}
 
 		while (offset < end) {
 			byte cmdId = memory.read(offset);

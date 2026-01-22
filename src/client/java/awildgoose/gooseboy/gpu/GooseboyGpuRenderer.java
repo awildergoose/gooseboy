@@ -42,6 +42,7 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 	private final GooseboyGpuCamera camera = new GooseboyGpuCamera();
 	private final CachedPerspectiveProjectionMatrixBuffer projectionMatrixBuffer = new CachedPerspectiveProjectionMatrixBuffer(
 			"gooseboy_goosegpu", camera.near, camera.far);
+	public VertexStack globalVertexStack = new VertexStack();
 	public ArrayList<GooseboyGpu.QueuedCommand> queuedCommands = new ArrayList<>();
 
 	public GooseboyGpuRenderer() {
@@ -80,8 +81,7 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 		if (WasmInputManager.isKeyDown(InputConstants.KEY_LSHIFT)) camera.position.add(up.mul(-speed));
 	}
 
-	public void renderMesh(MeshRegistry.MeshRef mesh) {
-		VertexStack vertexStack = mesh.stack();
+	public void renderVertexStack(VertexStack vertexStack) {
 		GpuBuffer buffer = vertexStack.intoGpuBuffer();
 
 		if (buffer != null) {
@@ -127,6 +127,10 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 		}
 	}
 
+	public void renderMesh(MeshRegistry.MeshRef mesh) {
+		renderVertexStack(mesh.stack());
+	}
+
 	public void render() {
 		this.updateDebugCamera();
 
@@ -142,6 +146,8 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 			GooseboyGpuMemoryReader reader = new GooseboyGpuMemoryReader(queued.payload());
 			GooseboyGpuCommands.runCommand(queued.command(), reader, renderConsumer);
 		}
+
+		renderVertexStack(globalVertexStack);
 
 		queuedCommands.clear();
 

@@ -11,4 +11,9 @@ public class GooseboyGpuRenderConsumer implements GooseboyGpuCommands.RenderCons
 	public void mesh(MeshRegistry.MeshRef mesh) {
 		this.renderer.renderMesh(mesh);
 	}
+
+	@Override
+	public void vertex(float x, float y, float z, float u, float v) {
+		this.renderer.globalVertexStack.push(new VertexStack.Vertex(x, y, z, u, v));
+	}
 }
