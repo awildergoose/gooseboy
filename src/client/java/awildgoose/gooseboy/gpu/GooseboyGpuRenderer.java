@@ -27,6 +27,7 @@ import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
 import org.joml.Matrix3x2f;
 import org.joml.Matrix4fStack;
+import org.joml.Vector3f;
 
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
@@ -61,34 +62,30 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 		);
 	}
 
-	public void render() {
+	public void updateDebugCamera() {
 		WasmInputManager.grabMouse();
 
-		double f = 0.02;
+		double f = 0.008;
 		camera.setYaw((float) (camera.getYaw() - (WasmInputManager.LAST_ACCUMULATED_MOUSE_X * f)));
 		camera.setPitch((float) (camera.getPitch() - (WasmInputManager.LAST_ACCUMULATED_MOUSE_Y * f)));
 
 		float speed = 0.5f;
 
-		if (WasmInputManager.isKeyDown(InputConstants.KEY_W)) {
-			camera.moveForward(speed);
-		}
-		if (WasmInputManager.isKeyDown(InputConstants.KEY_S)) {
-			camera.moveForward(-speed);
-		}
-		if (WasmInputManager.isKeyDown(InputConstants.KEY_A)) {
-			camera.moveRight(-speed);
-		}
-		if (WasmInputManager.isKeyDown(InputConstants.KEY_D)) {
-			camera.moveRight(speed);
-		}
+		Vector3f forward = camera.getForwardVector();
+		Vector3f right = camera.getRightVector();
+		Vector3f up = new Vector3f(0, 1, 0);
 
-		if (WasmInputManager.isKeyDown(InputConstants.KEY_SPACE)) {
-			camera.moveUp(speed);
-		}
-		if (WasmInputManager.isKeyDown(InputConstants.KEY_LSHIFT)) {
-			camera.moveUp(-speed);
-		}
+		if (WasmInputManager.isKeyDown(InputConstants.KEY_W)) camera.position.add(forward.mul(speed));
+		if (WasmInputManager.isKeyDown(InputConstants.KEY_S)) camera.position.add(forward.mul(-speed));
+		if (WasmInputManager.isKeyDown(InputConstants.KEY_A)) camera.position.add(right.mul(-speed));
+		if (WasmInputManager.isKeyDown(InputConstants.KEY_D)) camera.position.add(right.mul(speed));
+
+		if (WasmInputManager.isKeyDown(InputConstants.KEY_SPACE)) camera.position.add(up.mul(speed));
+		if (WasmInputManager.isKeyDown(InputConstants.KEY_LSHIFT)) camera.position.add(up.mul(-speed));
+	}
+
+	public void render() {
+		this.updateDebugCamera();
 
 		ProfilerFiller profiler = Profiler.get();
 		profiler.push("GooseGPU");

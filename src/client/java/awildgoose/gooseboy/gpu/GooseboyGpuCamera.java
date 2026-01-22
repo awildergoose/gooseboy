@@ -10,8 +10,8 @@ import org.joml.Vector4f;
 
 @SuppressWarnings("unused")
 public class GooseboyGpuCamera {
-	private final Vector3f position = new Vector3f();
-	private final Vector2f rotation = new Vector2f();
+	public final Vector3f position = new Vector3f();
+	public final Vector2f rotation = new Vector2f();
 	private final int framebufferWidth;
 	private final int framebufferHeight;
 	public float fovDegrees = 70.0f;
@@ -85,22 +85,6 @@ public class GooseboyGpuCamera {
 
 		return forward.cross(up, new Vector3f())
 				.normalize();
-	}
-
-	public void moveForward(float amount) {
-		Vector3f forward = getForwardVector();
-		forward.mul(amount);
-		position.add(forward);
-	}
-
-	public void moveRight(float amount) {
-		Vector3f right = getRightVector();
-		right.mul(amount);
-		position.add(right);
-	}
-
-	public void moveUp(float amount) {
-		position.y += amount;
 	}
 
 	public void setPosition(float x, float y, float z) {
