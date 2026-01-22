@@ -54,6 +54,7 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 			.order(ByteOrder.LITTLE_ENDIAN);
 	public ArrayList<GooseboyGpu.QueuedCommand> queuedCommands = new ArrayList<>();
 	public VertexStack globalVertexStack = new VertexStack();
+	private final Matrix4fStack gpuModelStack = new Matrix4fStack(GPU_MATRIX_STACK_MAX);
 	public ArrayList<MeshRegistry.MeshRef> recordings = new ArrayList<>();
 	public AbstractTexture boundTexture = null;
 	private int gpuMatrixDepth = 0;
@@ -94,10 +95,8 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 
 			int indexCount = vertexStack.size();
 			GpuBuffer indexBuffer = this.indices.getBuffer(indexCount);
-			// TODO: use our own model view stack
-			Matrix4f model = new Matrix4f(RenderSystem.getModelViewStack());
 			GpuBufferSlice transformSlice =
-					this.camera.createTransformSlice(model, camera.getProjection());
+					this.camera.createTransformSlice(new Matrix4f(gpuModelStack), camera.getProjection());
 
 			try (RenderPass renderPass = RenderSystem.getDevice()
 					.createCommandEncoder()
@@ -180,7 +179,7 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 
 			int toPop = gpuMatrixDepth - frameStartGpuMatrixDepth;
 			for (int i = 0; i < toPop; ++i) {
-				modelView.popMatrix();
+				gpuModelStack.popMatrix();
 			}
 			gpuMatrixDepth = frameStartGpuMatrixDepth;
 		}
@@ -192,8 +191,6 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 
 	public void runCommand(GooseboyGpu.GpuCommand command, GooseboyGpu.MemoryReadOffsetConsumer read,
 						   GooseboyGpu.RenderConsumer render, GooseboyGpu.MemoryWriteOffsetConsumer write) {
-		Matrix4fStack modelView = RenderSystem.getModelViewStack();
-
 		switch (command) {
 			// Recording
 			case PushRecord -> {
@@ -240,7 +237,7 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 				if (gpuMatrixDepth >= GPU_MATRIX_STACK_MAX) {
 					write.writeInt(GooseboyGpuMemoryConstants.GB_GPU_STATUS, -1);
 				} else {
-					modelView.pushMatrix();
+					gpuModelStack.pushMatrix();
 					gpuMatrixDepth++;
 					write.writeInt(GooseboyGpuMemoryConstants.GB_GPU_MATRIX_DEPTH, gpuMatrixDepth);
 				}
@@ -250,7 +247,7 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 					Gooseboy.LOGGER.warn("GooseGPU: attempted pop below frame start");
 					write.writeInt(GooseboyGpuMemoryConstants.GB_GPU_STATUS, -1);
 				} else {
-					modelView.popMatrix();
+					gpuModelStack.popMatrix();
 					gpuMatrixDepth--;
 					write.writeInt(GooseboyGpuMemoryConstants.GB_GPU_MATRIX_DEPTH, 0);
 				}
@@ -259,40 +256,40 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 				float tx = read.readFloat(0);
 				float ty = read.readFloat(4);
 				float tz = read.readFloat(8);
-				modelView.translate(tx, ty, tz);
+				gpuModelStack.translate(tx, ty, tz);
 			}
 			case RotateAxis -> {
 				float ax = read.readFloat(0);
 				float ay = read.readFloat(4);
 				float az = read.readFloat(8);
 				float angle = read.readFloat(12);
-				modelView.rotate(angle, ax, ay, az);
+				gpuModelStack.rotate(angle, ax, ay, az);
 			}
 			case RotateEuler -> {
 				float yaw = read.readFloat(0);
 				float pitch = read.readFloat(4);
 				float roll = read.readFloat(8);
-				modelView.rotateXYZ(yaw, pitch, roll);
+				gpuModelStack.rotateXYZ(yaw, pitch, roll);
 			}
 			case Scale -> {
 				float sx = read.readFloat(0);
 				float sy = read.readFloat(4);
 				float sz = read.readFloat(8);
-				modelView.scale(sx, sy, sz);
+				gpuModelStack.scale(sx, sy, sz);
 			}
 			case LoadMatrix -> {
 				float[] m = new float[16];
 				for (int i = 0; i < 16; i++) m[i] = read.readFloat(i * 4);
-				modelView.set(m);
+				gpuModelStack.set(m);
 			}
 			case MulMatrix -> {
 				float[] m = new float[16];
 				for (int i = 0; i < 16; i++) m[i] = read.readFloat(i * 4);
 				Matrix4f mat = new Matrix4f();
 				mat.set(m);
-				modelView.mul(mat);
+				gpuModelStack.mul(mat);
 			}
-			case Identity -> modelView.identity();
+			case Identity -> gpuModelStack.identity();
 		}
 	}
 }
