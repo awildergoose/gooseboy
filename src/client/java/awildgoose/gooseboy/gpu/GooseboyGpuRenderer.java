@@ -1,12 +1,10 @@
 package awildgoose.gooseboy.gpu;
 
 import awildgoose.gooseboy.GooseboyClient;
-import awildgoose.gooseboy.WasmInputManager;
 import com.mojang.blaze3d.ProjectionType;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.pipeline.TextureTarget;
-import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.GpuTextureView;
@@ -26,7 +24,6 @@ import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
 import org.joml.Matrix3x2f;
 import org.joml.Matrix4fStack;
-import org.joml.Vector3f;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -39,7 +36,7 @@ import static awildgoose.gooseboy.Gooseboy.FRAMEBUFFER_WIDTH;
 
 @Environment(EnvType.CLIENT)
 public class GooseboyGpuRenderer implements AutoCloseable {
-	private final GooseboyGpuCamera camera = new GooseboyGpuCamera();
+	public final GooseboyGpuCamera camera = new GooseboyGpuCamera();
 
 	private final RenderSystem.AutoStorageIndexBuffer indices;
 	private final TextureTarget renderTarget;
@@ -62,32 +59,6 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 				FRAMEBUFFER_HEIGHT,
 				true
 		);
-		this.camera.setPosition(0f, 0f, 40f);
-/*		ObjLoader.loadObj("teapot.obj", Minecraft.getInstance()
-				.getResourceManager(), MeshRegistry.createMesh()
-								  .stack()); */
-	}
-
-	public void updateDebugCamera() {
-		WasmInputManager.grabMouse();
-
-		double f = 0.008;
-		camera.setYaw((float) (camera.getYaw() - (WasmInputManager.LAST_ACCUMULATED_MOUSE_X * f)));
-		camera.setPitch((float) (camera.getPitch() - (WasmInputManager.LAST_ACCUMULATED_MOUSE_Y * f)));
-
-		float speed = 0.5f;
-
-		Vector3f forward = camera.getForwardVector();
-		Vector3f right = camera.getRightVector();
-		Vector3f up = new Vector3f(0, 1, 0);
-
-		if (WasmInputManager.isKeyDown(InputConstants.KEY_W)) camera.position.add(forward.mul(speed));
-		if (WasmInputManager.isKeyDown(InputConstants.KEY_S)) camera.position.add(forward.mul(-speed));
-		if (WasmInputManager.isKeyDown(InputConstants.KEY_A)) camera.position.add(right.mul(-speed));
-		if (WasmInputManager.isKeyDown(InputConstants.KEY_D)) camera.position.add(right.mul(speed));
-
-		if (WasmInputManager.isKeyDown(InputConstants.KEY_SPACE)) camera.position.add(up.mul(speed));
-		if (WasmInputManager.isKeyDown(InputConstants.KEY_LSHIFT)) camera.position.add(up.mul(-speed));
 	}
 
 	public void renderVertexStack(VertexStack vertexStack) {
@@ -170,8 +141,6 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 	}
 
 	public void render() {
-		this.updateDebugCamera();
-
 		ProfilerFiller profiler = Profiler.get();
 		profiler.push("GooseGPU");
 

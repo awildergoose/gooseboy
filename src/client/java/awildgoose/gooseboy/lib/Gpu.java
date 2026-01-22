@@ -2,6 +2,7 @@ package awildgoose.gooseboy.lib;
 
 import awildgoose.gooseboy.GooseboyClient;
 import awildgoose.gooseboy.gpu.GooseboyGpu;
+import awildgoose.gooseboy.gpu.GooseboyGpuCamera;
 import awildgoose.gooseboy.gpu.GooseboyGpuRenderer;
 import com.dylibso.chicory.annotations.HostModule;
 import com.dylibso.chicory.annotations.WasmExport;
@@ -9,9 +10,35 @@ import com.dylibso.chicory.runtime.HostFunction;
 import com.dylibso.chicory.runtime.Instance;
 import com.dylibso.chicory.runtime.Memory;
 
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+
 @HostModule("gpu")
 public final class Gpu {
 	public Gpu() {
+	}
+
+	@WasmExport
+	public void get_camera_transform(Instance instance, int ptr) {
+		GooseboyGpuRenderer gpu = GooseboyClient.rendererByInstance.get(instance);
+		if (gpu == null) return;
+
+		GooseboyGpuCamera camera = gpu.camera;
+		float[] values = {camera.getX(), camera.getY(), camera.getZ(), camera.getYaw(), camera.getPitch()};
+		ByteBuffer transform = ByteBuffer.allocate(values.length * Float.BYTES)
+				.order(ByteOrder.LITTLE_ENDIAN);
+		for (float value : values)
+			transform.putFloat(value);
+		instance.memory()
+				.write(ptr, transform.array());
+	}
+
+	@WasmExport
+	public void set_camera_transform(Instance instance, float x, float y, float z, float yaw, float pitch) {
+		GooseboyGpuRenderer gpu = GooseboyClient.rendererByInstance.get(instance);
+		if (gpu == null) return;
+		gpu.camera.setPosition(x, y, z);
+		gpu.camera.rotation.set(yaw, pitch);
 	}
 
 	@WasmExport

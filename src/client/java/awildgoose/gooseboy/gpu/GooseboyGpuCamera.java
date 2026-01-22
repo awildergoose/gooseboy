@@ -11,7 +11,7 @@ import org.joml.Vector4f;
 @SuppressWarnings("unused")
 public class GooseboyGpuCamera {
 	public final Vector3f position = new Vector3f();
-	public final Vector2f rotation = new Vector2f();
+	public Vector2f rotation = new Vector2f();
 	private final int framebufferWidth;
 	private final int framebufferHeight;
 	public float fovDegrees = 70.0f;
@@ -63,30 +63,6 @@ public class GooseboyGpuCamera {
 	}
 
 	//#region utils
-	public Vector3f getForwardVector() {
-		float yaw = rotation.x;
-		float pitch = rotation.y;
-
-		float cosPitch = (float) Math.cos(pitch);
-		float sinPitch = (float) Math.sin(pitch);
-		float cosYaw = (float) Math.cos(yaw);
-		float sinYaw = (float) Math.sin(yaw);
-
-		return new Vector3f(
-				-sinYaw * cosPitch,
-				sinPitch,
-				-cosYaw * cosPitch
-		);
-	}
-
-	public Vector3f getRightVector() {
-		Vector3f forward = getForwardVector();
-		Vector3f up = new Vector3f(0, 1, 0);
-
-		return forward.cross(up, new Vector3f())
-				.normalize();
-	}
-
 	public void setPosition(float x, float y, float z) {
 		this.position.set(x, y, z);
 	}
