@@ -1,18 +1,10 @@
 package awildgoose.gooseboy.screen.renderer;
 
-import awildgoose.gooseboy.Gooseboy;
 import awildgoose.gooseboy.crate.GooseboyCrate;
 import awildgoose.gooseboy.screen.layout.CrateLayout;
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 
 public class CenteredCrateScreen extends CrateRendererScreen<CenteredCrateScreen.Layout> {
-	private static final ResourceLocation SCREEN_UI_LOCATION = Gooseboy.withLocation("textures/gui/wasm.png");
-	public static final int IMAGE_WIDTH = 330;
-	public static final int IMAGE_HEIGHT = 214;
-
 	public CenteredCrateScreen(GooseboyCrate crate) {
 		super(crate, Component.literal(crate.name));
 	}
@@ -25,26 +17,6 @@ public class CenteredCrateScreen extends CrateRendererScreen<CenteredCrateScreen
 	@Override
 	public boolean isInGameUi() {
 		return true;
-	}
-
-	@Override
-	public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
-		super.render(guiGraphics, mouseX, mouseY, partialTicks);
-		this.renderCrate(guiGraphics, this.getLayout());
-	}
-
-	@Override
-	public void renderBackground(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
-		super.renderBackground(guiGraphics, mouseX, mouseY, partialTicks);
-
-		Layout layout = this.getLayout();
-		guiGraphics.blit(
-				RenderPipelines.GUI_TEXTURED, SCREEN_UI_LOCATION,
-				layout.bgX, layout.bgY,
-				0, 0,
-				layout.bgWidth, layout.bgHeight,
-				layout.bgWidth, layout.bgHeight
-		);
 	}
 
 	@Override
