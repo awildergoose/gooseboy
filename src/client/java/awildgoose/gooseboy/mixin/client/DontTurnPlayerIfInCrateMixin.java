@@ -1,7 +1,7 @@
 package awildgoose.gooseboy.mixin.client;
 
 import awildgoose.gooseboy.WasmInputManager;
-import awildgoose.gooseboy.screen.renderer.CenteredCrateScreen;
+import awildgoose.gooseboy.screen.renderer.CrateRendererScreen;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.MouseHandler;
 import org.spongepowered.asm.mixin.Mixin;
@@ -18,7 +18,7 @@ public class DontTurnPlayerIfInCrateMixin {
 		WasmInputManager.LAST_ACCUMULATED_MOUSE_X = mouseHandler.gooseboy$getAccumulatedDX();
 		WasmInputManager.LAST_ACCUMULATED_MOUSE_Y = mouseHandler.gooseboy$getAccumulatedDY();
 
-		if (Minecraft.getInstance().screen instanceof CenteredCrateScreen) {
+		if (Minecraft.getInstance().screen instanceof CrateRendererScreen) {
 			ci.cancel();
 		}
 	}
