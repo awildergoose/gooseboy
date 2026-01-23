@@ -2,9 +2,7 @@ package awildgoose.gooseboy;
 
 import awildgoose.gooseboy.crate.GooseboyCrate;
 import awildgoose.gooseboy.screen.layout.CrateLayout;
-import awildgoose.gooseboy.screen.renderer.CenteredCrateScreen;
-import awildgoose.gooseboy.screen.renderer.CrateRendererScreen;
-import awildgoose.gooseboy.screen.renderer.TopRightCrateScreen;
+import awildgoose.gooseboy.screen.renderer.*;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.RenderPipelines;
 
@@ -42,6 +40,9 @@ public class MiniView implements AutoCloseable {
 
 	public enum LayoutType {
 		TOP_RIGHT(TopRightCrateScreen.Layout::forSize),
+		TOP_LEFT(TopLeftCrateScreen.Layout::forSize),
+		BOTTOM_RIGHT(BottomRightCrateScreen.Layout::forSize),
+		BOTTOM_LEFT(BottomLeftCrateScreen.Layout::forSize),
 		CENTERED(CenteredCrateScreen.Layout::forSize);
 
 		final CrateRendererScreen.LayoutSupplier<?> supplier;

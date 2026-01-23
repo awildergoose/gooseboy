@@ -167,7 +167,10 @@ public class CrateSelectionList extends ObjectSelectionList<CrateSelectionList.E
 					// change layout
 					MiniView miniview = GooseboyClient.miniviewsByInstance.get(poc.crate.instance);
 					miniview.layoutType = switch (miniview.layoutType) {
-						case TOP_RIGHT -> MiniView.LayoutType.CENTERED;
+						case TOP_RIGHT -> MiniView.LayoutType.BOTTOM_RIGHT;
+						case TOP_LEFT -> MiniView.LayoutType.CENTERED;
+						case BOTTOM_RIGHT -> MiniView.LayoutType.BOTTOM_LEFT;
+						case BOTTOM_LEFT -> MiniView.LayoutType.TOP_LEFT;
 						case CENTERED -> MiniView.LayoutType.TOP_RIGHT;
 					};
 
