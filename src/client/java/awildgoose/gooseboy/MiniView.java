@@ -2,27 +2,30 @@ package awildgoose.gooseboy;
 
 import awildgoose.gooseboy.crate.GooseboyCrate;
 import awildgoose.gooseboy.screen.layout.CrateLayout;
+import awildgoose.gooseboy.screen.renderer.CenteredCrateScreen;
+import awildgoose.gooseboy.screen.renderer.CrateRendererScreen;
+import awildgoose.gooseboy.screen.renderer.TopRightCrateScreen;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.RenderPipelines;
 
 import static awildgoose.gooseboy.screen.renderer.CrateRendererScreen.SCREEN_UI_LOCATION;
 
 public class MiniView implements AutoCloseable {
+	public LayoutType layoutType;
+
 	public final int fbWidth;
 	public final int fbHeight;
 	public GooseboyPainter painter;
-
 	public MiniView(GooseboyCrate crate) {
 		painter = new GooseboyPainter(crate);
 		fbWidth = crate.fbWidth;
 		fbHeight = crate.fbHeight;
+		layoutType = LayoutType.TOP_RIGHT;
 	}
 
-	public void init() {
-		this.painter.initDrawing();
-	}
-
-	public void render(GuiGraphics guiGraphics, CrateLayout layout) {
+	public void render(GuiGraphics guiGraphics) {
+		CrateLayout layout = layoutType.supplier.apply(guiGraphics.guiWidth(), guiGraphics.guiHeight(), fbWidth,
+													   fbHeight);
 		guiGraphics.blit(
 				RenderPipelines.GUI_TEXTURED, SCREEN_UI_LOCATION,
 				layout.bgX, layout.bgY,
@@ -31,6 +34,21 @@ public class MiniView implements AutoCloseable {
 				layout.bgWidth, layout.bgHeight
 		);
 		this.painter.render(guiGraphics, layout.fbX, layout.fbY, layout.fbDestWidth, layout.fbDestHeight);
+	}
+
+	public void init() {
+		this.painter.initDrawing();
+	}
+
+	public enum LayoutType {
+		TOP_RIGHT(TopRightCrateScreen.Layout::forSize),
+		CENTERED(CenteredCrateScreen.Layout::forSize);
+
+		final CrateRendererScreen.LayoutSupplier<?> supplier;
+
+		LayoutType(CrateRendererScreen.LayoutSupplier<?> supplier) {
+			this.supplier = supplier;
+		}
 	}
 
 	@Override

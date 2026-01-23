@@ -72,6 +72,11 @@ public abstract class CrateRendererScreen<L extends CrateLayout> extends Screen 
 
 	public abstract L getLayout();
 
+	@FunctionalInterface
+	public interface LayoutSupplier<L extends CrateLayout> {
+		L apply(int guiWidth, int guiHeight, int fbWidth, int fbHeight);
+	}
+
 	public void renderCrate(GuiGraphics guiGraphics, CrateLayout layout) {
 		this.painter.render(guiGraphics, layout.fbX, layout.fbY, layout.fbDestWidth, layout.fbDestHeight);
 	}

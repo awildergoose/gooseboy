@@ -2,7 +2,6 @@ package awildgoose.gooseboy;
 
 import awildgoose.gooseboy.gpu.render.GooseboyGpuRenderer;
 import awildgoose.gooseboy.screen.CrateListScreen;
-import awildgoose.gooseboy.screen.renderer.TopRightCrateScreen;
 import com.dylibso.chicory.runtime.Instance;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.platform.InputConstants;
@@ -55,24 +54,21 @@ public class GooseboyClient implements ClientModInitializer {
 				(context) -> WasmInputManager.update());
 		KeyBindingHelper.registerKeyBinding(keyOpenWasm);
 
-		HudElementRegistry.addLast(Gooseboy.withLocation("miniview"), (context, tickCounter) -> {
-			Gooseboy.getCrates()
-					.forEach((instance, cratePair) -> {
-						if (cratePair.getLeft().isMiniView) {
-							MiniView miniview;
-							if (miniviewsByInstance.containsKey(instance)) {
-								miniview = miniviewsByInstance.get(instance);
-							} else {
-								miniview = new MiniView(cratePair.getLeft());
-								miniview.init();
-								miniviewsByInstance.put(instance, miniview);
-							}
+		HudElementRegistry.addLast(Gooseboy.withLocation("miniview"), (context, tickCounter) -> Gooseboy.getCrates()
+				.forEach((instance, cratePair) -> {
+					if (cratePair.getLeft().isMiniView) {
+						MiniView miniview;
 
-							miniview.render(context, TopRightCrateScreen.Layout.forSize(
-									context.guiWidth(), context.guiHeight(),
-									cratePair.getLeft().fbWidth, cratePair.getLeft().fbHeight));
+						if (miniviewsByInstance.containsKey(instance)) {
+							miniview = miniviewsByInstance.get(instance);
+						} else {
+							miniview = new MiniView(cratePair.getLeft());
+							miniview.init();
+							miniviewsByInstance.put(instance, miniview);
 						}
-					});
-		});
+
+						miniview.render(context);
+					}
+				}));
 	}
 }
