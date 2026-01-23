@@ -1,5 +1,6 @@
 package awildgoose.gooseboy.mixin.client;
 
+import awildgoose.gooseboy.GooseboyClient;
 import awildgoose.gooseboy.screen.renderer.CrateRendererScreen;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -29,5 +30,7 @@ public class GameRendererMixin {
 		if (screen instanceof CrateRendererScreen<?> crateScreen) {
 			crateScreen.painter.renderGpu();
 		}
+
+		GooseboyClient.miniviewsByInstance.forEach((instance, miniView) -> miniView.painter.renderGpu());
 	}
 }

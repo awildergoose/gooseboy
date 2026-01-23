@@ -10,10 +10,10 @@ import static awildgoose.gooseboy.screen.renderer.CrateRendererScreen.SCREEN_UI_
 
 public class MiniView implements AutoCloseable {
 	public LayoutType layoutType;
-
 	public final int fbWidth;
 	public final int fbHeight;
 	public GooseboyPainter painter;
+
 	public MiniView(GooseboyCrate crate) {
 		painter = new GooseboyPainter(crate);
 		fbWidth = crate.fbWidth;
@@ -38,6 +38,11 @@ public class MiniView implements AutoCloseable {
 		this.painter.initDrawing();
 	}
 
+	@Override
+	public void close() {
+		this.painter.close();
+	}
+
 	public enum LayoutType {
 		TOP_RIGHT(TopRightCrateScreen.Layout::forSize),
 		TOP_LEFT(TopLeftCrateScreen.Layout::forSize),
@@ -50,10 +55,5 @@ public class MiniView implements AutoCloseable {
 		LayoutType(CrateRendererScreen.LayoutSupplier<?> supplier) {
 			this.supplier = supplier;
 		}
-	}
-
-	@Override
-	public void close() {
-		this.painter.close();
 	}
 }
