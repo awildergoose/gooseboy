@@ -148,10 +148,10 @@ public class CrateSelectionList extends ObjectSelectionList<CrateSelectionList.E
 
 			this.settingsOrStopButton = new ImageButton(0, 0, 15, 15, new WidgetSprites(
 					poc.hasCrate() ?
-							Gooseboy.withLocation("widget/run_button")
+							Gooseboy.withLocation("widget/close_button")
 							: Gooseboy.withLocation("widget/settings_button"),
 					poc.hasCrate() ?
-							Gooseboy.withLocation("widget/run_button_highlighted")
+							Gooseboy.withLocation("widget/close_button_highlighted")
 							: Gooseboy.withLocation("widget/settings_button_highlighted")
 			), (b) -> {
 				if (poc.hasCrate()) {
