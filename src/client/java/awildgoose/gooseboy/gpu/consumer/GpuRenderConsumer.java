@@ -1,7 +1,7 @@
 package awildgoose.gooseboy.gpu.consumer;
 
-import awildgoose.gooseboy.gpu.GooseboyGpuRenderer;
 import awildgoose.gooseboy.gpu.mesh.MeshRef;
+import awildgoose.gooseboy.gpu.render.GooseboyGpuRenderer;
 import awildgoose.gooseboy.gpu.texture.TextureRef;
 import awildgoose.gooseboy.gpu.vertex.VertexStack;
 import org.jetbrains.annotations.Nullable;

@@ -1,7 +1,7 @@
 package awildgoose.gooseboy;
 
 import awildgoose.gooseboy.crate.GooseboyCrate;
-import awildgoose.gooseboy.gpu.GooseboyGpuRenderer;
+import awildgoose.gooseboy.gpu.render.GooseboyGpuRenderer;
 import com.dylibso.chicory.runtime.ExportFunction;
 import com.dylibso.chicory.wasm.InvalidException;
 import com.mojang.blaze3d.platform.NativeImage;

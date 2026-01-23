@@ -1,6 +1,6 @@
 package awildgoose.gooseboy;
 
-import awildgoose.gooseboy.gpu.GooseboyGpuRenderer;
+import awildgoose.gooseboy.gpu.render.GooseboyGpuRenderer;
 import awildgoose.gooseboy.screen.CrateListScreen;
 import com.dylibso.chicory.runtime.Instance;
 import com.mojang.blaze3d.pipeline.RenderPipeline;

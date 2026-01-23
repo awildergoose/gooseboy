@@ -2,7 +2,7 @@ package awildgoose.gooseboy.gpu.consumer;
 
 import awildgoose.gooseboy.Gooseboy;
 
-public class GpuMemoryReader implements MemoryReadOffsetConsumer {
+public class GpuMemoryReader implements MemoryReadConsumer {
 	private final byte[] bytes;
 
 	public GpuMemoryReader(byte[] bytes) {

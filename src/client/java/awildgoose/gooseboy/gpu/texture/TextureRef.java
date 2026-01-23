@@ -1,7 +1,7 @@
 package awildgoose.gooseboy.gpu.texture;
 
 import awildgoose.gooseboy.Gooseboy;
-import awildgoose.gooseboy.gpu.consumer.MemoryReadOffsetConsumer;
+import awildgoose.gooseboy.gpu.consumer.MemoryReadConsumer;
 import org.jetbrains.annotations.NotNull;
 import org.lwjgl.system.MemoryUtil;
 
@@ -16,7 +16,7 @@ public final class TextureRef {
 		this.id = id;
 	}
 
-	public boolean set(MemoryReadOffsetConsumer memory, int ptr, int len) {
+	public boolean set(MemoryReadConsumer memory, int ptr, int len) {
 		final byte[] src = memory.readBytes(ptr, len);
 
 		if (src == null || src.length == 0) {

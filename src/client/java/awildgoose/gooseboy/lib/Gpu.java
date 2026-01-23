@@ -1,10 +1,10 @@
 package awildgoose.gooseboy.lib;
 
 import awildgoose.gooseboy.GooseboyClient;
-import awildgoose.gooseboy.gpu.GooseboyGpuCamera;
-import awildgoose.gooseboy.gpu.GooseboyGpuRenderer;
 import awildgoose.gooseboy.gpu.command.GpuCommand;
 import awildgoose.gooseboy.gpu.command.QueuedCommand;
+import awildgoose.gooseboy.gpu.render.GooseboyGpuCamera;
+import awildgoose.gooseboy.gpu.render.GooseboyGpuRenderer;
 import com.dylibso.chicory.annotations.HostModule;
 import com.dylibso.chicory.annotations.WasmExport;
 import com.dylibso.chicory.runtime.HostFunction;

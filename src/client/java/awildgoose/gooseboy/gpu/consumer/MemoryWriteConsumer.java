@@ -1,6 +1,6 @@
 package awildgoose.gooseboy.gpu.consumer;
 
-public interface MemoryWriteOffsetConsumer {
+public interface MemoryWriteConsumer {
 	void writeInt(int offset, int value);
 
 	void writeFloat(int offset, float value);

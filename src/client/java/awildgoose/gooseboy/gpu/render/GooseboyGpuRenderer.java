@@ -1,15 +1,11 @@
-package awildgoose.gooseboy.gpu;
+package awildgoose.gooseboy.gpu.render;
 
 import awildgoose.gooseboy.Gooseboy;
 import awildgoose.gooseboy.GooseboyClient;
+import awildgoose.gooseboy.gpu.GpuConstants;
 import awildgoose.gooseboy.gpu.command.GpuCommand;
 import awildgoose.gooseboy.gpu.command.QueuedCommand;
-import awildgoose.gooseboy.gpu.consumer.GpuRenderConsumer;
-import awildgoose.gooseboy.gpu.consumer.MemoryReadOffsetConsumer;
-import awildgoose.gooseboy.gpu.consumer.MemoryWriteOffsetConsumer;
-import awildgoose.gooseboy.gpu.consumer.RenderConsumer;
-import awildgoose.gooseboy.gpu.memory.GpuConstants;
-import awildgoose.gooseboy.gpu.memory.GpuMemoryConsumer;
+import awildgoose.gooseboy.gpu.consumer.*;
 import awildgoose.gooseboy.gpu.mesh.MeshRef;
 import awildgoose.gooseboy.gpu.mesh.MeshRegistry;
 import awildgoose.gooseboy.gpu.texture.TextureRef;
@@ -172,14 +168,14 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 		modelView.pushMatrix();
 
 		GpuRenderConsumer renderConsumer = new GpuRenderConsumer(this);
-		GpuMemoryConsumer gpuMemoryConsumer = new GpuMemoryConsumer(this.gpuMemory);
+		GpuMemoryWriter gpuMemoryWriter = new GpuMemoryWriter(this.gpuMemory);
 
 		for (QueuedCommand queued : queuedCommands) {
 			runCommand(
 					queued.command(),
 					queued.reader(),
 					renderConsumer,
-					gpuMemoryConsumer
+					gpuMemoryWriter
 			);
 		}
 
@@ -203,12 +199,12 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 		profiler.pop();
 	}
 
-	public void setStatus(MemoryWriteOffsetConsumer write, int status) {
+	public void setStatus(MemoryWriteConsumer write, int status) {
 		write.writeInt(GpuConstants.GB_GPU_STATUS, status);
 	}
 
-	public void runCommand(GpuCommand command, MemoryReadOffsetConsumer read,
-						   RenderConsumer render, MemoryWriteOffsetConsumer write) {
+	public void runCommand(GpuCommand command, MemoryReadConsumer read,
+						   RenderConsumer render, MemoryWriteConsumer write) {
 		switch (command) {
 			// Recording
 			case PushRecord -> {

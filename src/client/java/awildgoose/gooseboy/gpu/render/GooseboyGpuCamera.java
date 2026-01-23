@@ -1,4 +1,4 @@
-package awildgoose.gooseboy.gpu;
+package awildgoose.gooseboy.gpu.render;
 
 import awildgoose.gooseboy.Gooseboy;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;

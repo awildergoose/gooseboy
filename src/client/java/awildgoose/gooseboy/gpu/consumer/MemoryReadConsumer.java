@@ -1,6 +1,6 @@
 package awildgoose.gooseboy.gpu.consumer;
 
-public interface MemoryReadOffsetConsumer {
+public interface MemoryReadConsumer {
 	int readInt(int offset);
 
 	float readFloat(int offset);

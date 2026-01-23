@@ -1,4 +1,4 @@
-package awildgoose.gooseboy.gpu.memory;
+package awildgoose.gooseboy.gpu;
 
 public class GpuConstants {
 	public static int GB_GPU_STATUS = 0;
