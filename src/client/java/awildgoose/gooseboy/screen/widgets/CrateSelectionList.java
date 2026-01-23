@@ -85,7 +85,10 @@ public class CrateSelectionList extends ObjectSelectionList<CrateSelectionList.E
 					GooseboyCrate crate = CrateLoader.makeCrate(path);
 
 					if (crate.isOk) {
-						minecraft.setScreen(new TopRightCrateScreen(crate));
+						if (!crate.isMiniView)
+							minecraft.setScreen(new TopRightCrateScreen(crate));
+						else
+							minecraft.setScreen(null);
 					} else {
 						throw new RuntimeException("Crate aborted upon startup");
 					}

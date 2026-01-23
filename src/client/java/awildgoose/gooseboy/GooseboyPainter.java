@@ -24,6 +24,7 @@ public class GooseboyPainter implements AutoCloseable {
 	private DynamicTexture texture;
 	private ByteBuffer tmpBuf;
 	private boolean failed = false;
+	private boolean hasInitialized = false;
 	private long lastRenderNano = 0L;
 	private final GooseboyGpuRenderer gpuRenderer;
 
@@ -64,13 +65,14 @@ public class GooseboyPainter implements AutoCloseable {
 		return s.replaceAll("[^a-z0-9/._-]", "_");
 	}
 
-	public void initDrawing(int fbWidth, int fbHeight) {
+	public void initDrawing() {
 		this.texture = new DynamicTexture(
-				"Gooseboy crate framebuffer for '" + crate.name + "'", fbWidth, fbHeight, false);
+				"Gooseboy crate framebuffer for '" + crate.name + "'", crate.fbWidth, crate.fbHeight, false);
 		Minecraft.getInstance()
 				.getTextureManager()
 				.register(this.framebufferTexture, this.texture);
 		this.tmpBuf = MemoryUtil.memAlloc(this.crate.fbSize);
+		hasInitialized = true;
 	}
 
 	public void close() {
@@ -89,6 +91,8 @@ public class GooseboyPainter implements AutoCloseable {
 	}
 
 	public void render(GuiGraphics guiGraphics, int x, int y, int w, int h) {
+		if (!hasInitialized)
+			initDrawing();
 		long now = System.nanoTime();
 		updateTextureIfNeeded(now);
 

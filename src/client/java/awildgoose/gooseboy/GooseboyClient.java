@@ -2,6 +2,7 @@ package awildgoose.gooseboy;
 
 import awildgoose.gooseboy.gpu.render.GooseboyGpuRenderer;
 import awildgoose.gooseboy.screen.CrateListScreen;
+import awildgoose.gooseboy.screen.renderer.TopRightCrateScreen;
 import com.dylibso.chicory.runtime.Instance;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.platform.InputConstants;
@@ -10,6 +11,7 @@ import com.mojang.blaze3d.vertex.VertexFormat;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
+import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderEvents;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
@@ -33,6 +35,7 @@ public class GooseboyClient implements ClientModInitializer {
 			"key.open_wasm", InputConstants.KEY_M,
 			keyMappingCategory);
 	public static final HashMap<Instance, GooseboyGpuRenderer> rendererByInstance = new HashMap<>();
+	public static final HashMap<Instance, MiniView> miniviewsByInstance = new HashMap<>();
 
 	@Override
 	public void onInitializeClient() {
@@ -51,5 +54,25 @@ public class GooseboyClient implements ClientModInitializer {
 				Gooseboy.withLocation("input_updater"),
 				(context) -> WasmInputManager.update());
 		KeyBindingHelper.registerKeyBinding(keyOpenWasm);
+
+		HudElementRegistry.addLast(Gooseboy.withLocation("miniview"), (context, tickCounter) -> {
+			Gooseboy.getCrates()
+					.forEach((instance, cratePair) -> {
+						if (cratePair.getLeft().isMiniView) {
+							MiniView miniview;
+							if (miniviewsByInstance.containsKey(instance)) {
+								miniview = miniviewsByInstance.get(instance);
+							} else {
+								miniview = new MiniView(cratePair.getLeft());
+								miniview.init();
+								miniviewsByInstance.put(instance, miniview);
+							}
+
+							miniview.render(context, TopRightCrateScreen.Layout.forSize(
+									context.guiWidth(), context.guiHeight(),
+									cratePair.getLeft().fbWidth, cratePair.getLeft().fbHeight));
+						}
+					});
+		});
 	}
 }

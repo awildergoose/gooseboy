@@ -22,6 +22,7 @@ public class GooseboyCrate implements AutoCloseable {
 	public final String name;
 	public final List<Permission> permissions;
 	public boolean isOk = true;
+	public boolean isMiniView;
 	public int fbWidth;
 	public int fbHeight;
 
@@ -29,6 +30,7 @@ public class GooseboyCrate implements AutoCloseable {
 		this.instance = instance;
 		this.name = name;
 		this.permissions = this.loadPermissions();
+		this.isMiniView = meta.allowsMovement;
 		this.init(meta);
 	}
 

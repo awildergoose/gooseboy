@@ -26,20 +26,18 @@ public class TopRightCrateScreen extends CrateRendererScreen<TopRightCrateScreen
 		}
 
 		public static Layout forSize(int guiWidth, int guiHeight, int fbWidth, int fbHeight) {
-			// available area (leave padding on both sides so it never grows full-bleed)
+			// note: this function is entirely AI, UI layout is not my expertise.
 			double availableW = Math.max(1, guiWidth - GUI_PADDING_X * 2);
 			double availableH = Math.max(1, guiHeight - GUI_PADDING_Y * 2);
 
-			// scale but do not upscale beyond MAX_SCALE
 			double scale = Math.min(availableW / (double) IMAGE_WIDTH, availableH / (double) IMAGE_HEIGHT);
 			scale = Math.min(scale, MAX_SCALE);
 
 			int bgWidth = (int) Math.round(IMAGE_WIDTH * scale);
 			int bgHeight = (int) Math.round(IMAGE_HEIGHT * scale);
 
-			// anchor to top-right (right padding = GUI_PADDING_X, top padding = GUI_PADDING_Y)
 			int bgX = guiWidth - bgWidth - GUI_PADDING_X;
-			if (bgX < 0) bgX = 0; // fallback only if screen too small
+			if (bgX < 0) bgX = 0;
 
 			int bgY = GUI_PADDING_Y;
 			int fbDestWidth = (int) Math.round(fbWidth * scale);

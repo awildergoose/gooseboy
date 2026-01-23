@@ -54,6 +54,10 @@ public class Gooseboy implements ModInitializer {
 		runningCrates.remove(crate.instance);
 	}
 
+	public static HashMap<Instance, Pair<GooseboyCrate, CrateMeta>> getCrates() {
+		return runningCrates;
+	}
+
 	public static ResourceLocation withLocation(String path) {
 		return ResourceLocation.fromNamespaceAndPath(Gooseboy.MOD_ID, path);
 	}
