@@ -6,8 +6,9 @@ import java.util.ArrayList;
 import java.util.Optional;
 
 public class TextureRegistry {
-	public static final int MAX_TEXTURE_WIDTH = 256;
-	public static final int MAX_TEXTURE_HEIGHT = 256;
+	// This is high to allow support for atlases, should we keep it as-is?
+	public static final int MAX_TEXTURE_WIDTH = 4096;
+	public static final int MAX_TEXTURE_HEIGHT = 16384;
 
 	private final ArrayList<TextureRef> textures = new ArrayList<>();
 	private int lastTextureId = 0;

@@ -1,7 +1,7 @@
 package awildgoose.gooseboy;
 
 import awildgoose.gooseboy.mixin.client.MouseHandlerAccessor;
-import awildgoose.gooseboy.screen.CenteredCrateScreen;
+import awildgoose.gooseboy.screen.renderer.CenteredCrateScreen;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.platform.Window;
 import net.minecraft.client.KeyMapping;

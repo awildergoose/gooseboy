@@ -1,10 +1,9 @@
-package awildgoose.gooseboy.screen;
+package awildgoose.gooseboy.screen.renderer;
 
 import awildgoose.gooseboy.Gooseboy;
-import awildgoose.gooseboy.GooseboyPainter;
 import awildgoose.gooseboy.crate.GooseboyCrate;
+import awildgoose.gooseboy.screen.layout.CrateLayout;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -12,29 +11,13 @@ import net.minecraft.resources.ResourceLocation;
 import static awildgoose.gooseboy.Gooseboy.FRAMEBUFFER_HEIGHT;
 import static awildgoose.gooseboy.Gooseboy.FRAMEBUFFER_WIDTH;
 
-public class CenteredCrateScreen extends Screen {
+public class CenteredCrateScreen extends CrateRendererScreen {
+	private static final ResourceLocation SCREEN_UI_LOCATION = Gooseboy.withLocation("textures/gui/wasm.png");
 	public static final int IMAGE_WIDTH = 330;
 	public static final int IMAGE_HEIGHT = 214;
-	private static final ResourceLocation SCREEN_UI_LOCATION = Gooseboy.withLocation("textures/gui/wasm.png");
-	private static final int GUI_PADDING = 20;
-	private static final int INSET_PIXELS = 5;
-
-	public final GooseboyPainter painter;
 
 	public CenteredCrateScreen(GooseboyCrate crate) {
-		super(Component.literal(crate.name));
-		this.painter = new GooseboyPainter(crate);
-	}
-
-	@Override
-	protected void init() {
-		this.painter.initDrawing();
-	}
-
-	@Override
-	public void onClose() {
-		this.painter.close();
-		super.onClose();
+		super(crate, Component.literal(crate.name));
 	}
 
 	@Override
@@ -50,14 +33,12 @@ public class CenteredCrateScreen extends Screen {
 	@Override
 	public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
 		super.render(guiGraphics, mouseX, mouseY, partialTicks);
-
-		Layout layout = Layout.forSize(this.width, this.height);
-		this.painter.render(guiGraphics, layout.fbX, layout.fbY, layout.fbDestWidth, layout.fbDestHeight);
+		this.renderCrate(guiGraphics, Layout.forSize(this.width, this.height));
 	}
 
 	@Override
 	public void renderBackground(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
-//		super.renderBackground(guiGraphics, mouseX, mouseY, partialTicks);
+		super.renderBackground(guiGraphics, mouseX, mouseY, partialTicks);
 
 		Layout layout = Layout.forSize(this.width, this.height);
 		guiGraphics.blit(
@@ -69,8 +50,14 @@ public class CenteredCrateScreen extends Screen {
 		);
 	}
 
-	public record Layout(double scale, int bgWidth, int bgHeight, int bgX, int bgY, int fbDestWidth, int fbDestHeight,
-						 int inset, int fbX, int fbY) {
+	public static final class Layout extends CrateLayout {
+		private static final int GUI_PADDING = 20;
+		private static final int INSET_PIXELS = 5;
+
+		public Layout(double scale, int bgWidth, int bgHeight, int bgX, int bgY, int fbDestWidth, int fbDestHeight, int inset, int fbX, int fbY) {
+			super(scale, bgWidth, bgHeight, bgX, bgY, fbDestWidth, fbDestHeight, inset, fbX, fbY);
+		}
+
 		public static Layout forSize(int guiWidth, int guiHeight) {
 			double availableW = Math.max(1, guiWidth - GUI_PADDING);
 			double availableH = Math.max(1, guiHeight - GUI_PADDING);

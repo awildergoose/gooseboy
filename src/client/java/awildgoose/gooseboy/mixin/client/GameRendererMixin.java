@@ -1,6 +1,6 @@
 package awildgoose.gooseboy.mixin.client;
 
-import awildgoose.gooseboy.screen.CenteredCrateScreen;
+import awildgoose.gooseboy.screen.renderer.CrateRendererScreen;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.DeltaTracker;
@@ -16,16 +16,17 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(GameRenderer.class)
 public class GameRendererMixin {
 	@Inject(
-			method = "render",
+			method = "Lnet/minecraft/client/renderer/GameRenderer;render(Lnet/minecraft/client/DeltaTracker;Z)V",
 			at = @At(
 					value = "INVOKE",
 					target = "Lnet/minecraft/client/gui/render/GuiRenderer;render(Lcom/mojang/blaze3d/buffers/GpuBufferSlice;)V",
 					shift = At.Shift.AFTER
 			)
 	)
-	private void gooseboy$renderBeforeGui(DeltaTracker deltaTracker, boolean bl, CallbackInfo ci) {
+	private void gooseboy$renderAfterGui(DeltaTracker deltaTracker, boolean bl, CallbackInfo ci) {
 		Screen screen = Minecraft.getInstance().screen;
-		if (screen instanceof CenteredCrateScreen crateScreen) {
+
+		if (screen instanceof CrateRendererScreen crateScreen) {
 			crateScreen.painter.renderGpu();
 		}
 	}
