@@ -1,7 +1,8 @@
 package awildgoose.gooseboy;
 
 import awildgoose.gooseboy.mixin.client.MouseHandlerAccessor;
-import awildgoose.gooseboy.screen.renderer.CenteredCrateScreen;
+import awildgoose.gooseboy.screen.layout.CrateLayout;
+import awildgoose.gooseboy.screen.renderer.CrateRendererScreen;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.platform.Window;
 import net.minecraft.client.KeyMapping;
@@ -56,36 +57,40 @@ public class WasmInputManager {
 
 	private static int mapMouseToFramebuffer(boolean xAxis) {
 		Minecraft mc = Minecraft.getInstance();
-		Window window = mc.getWindow();
+		if (!(mc.screen instanceof CrateRendererScreen screen)) return 0;
 
+		CrateLayout layout = screen.getLayout();
+		if (layout == null) return 0;
+
+		Window window = mc.getWindow();
 		int guiW = window.getGuiScaledWidth();
 		int guiH = window.getGuiScaledHeight();
+
 		double mouseGui = xAxis
 				? mc.mouseHandler.xpos() * (double) guiW / (double) window.getScreenWidth()
 				: mc.mouseHandler.ypos() * (double) guiH / (double) window.getScreenHeight();
 
-		double availableW = Math.max(1, guiW - 20);
-		double availableH = Math.max(1, guiH - 20);
-		double scale = Math.min(availableW / (double) CenteredCrateScreen.IMAGE_WIDTH,
-								availableH / (double) CenteredCrateScreen.IMAGE_HEIGHT);
+		double localGui = mouseGui - (xAxis ? layout.fbX : layout.fbY);
+		int fbDestSize = xAxis ? layout.fbDestWidth : layout.fbDestHeight;
 
-		int bgWidth = (int) Math.round(CenteredCrateScreen.IMAGE_WIDTH * scale);
-		int bgHeight = (int) Math.round(CenteredCrateScreen.IMAGE_HEIGHT * scale);
-		int bgX = (guiW - bgWidth) / 2;
-		int bgY = (guiH - bgHeight) / 2;
-		int inset = (int) Math.round(5 * scale);
+		if (localGui < 0) {
+			return 0;
+		}
 
-		int fbGuiX = bgX + inset;
-		int fbGuiY = bgY + inset;
+		if (localGui >= fbDestSize) {
+			return (xAxis ? Gooseboy.FRAMEBUFFER_WIDTH : Gooseboy.FRAMEBUFFER_HEIGHT) - 1;
+		}
 
-		double fbPixelD = Math.floor((mouseGui - (xAxis ? fbGuiX : fbGuiY)) / scale);
+		double fbPixelD = Math.floor(localGui / layout.scale);
 		int fbPixel = (int) fbPixelD;
 
 		if (fbPixel < 0) fbPixel = 0;
 		if (xAxis) {
-			if (fbPixel >= Gooseboy.FRAMEBUFFER_WIDTH) fbPixel = Gooseboy.FRAMEBUFFER_WIDTH - 1;
+			if (fbPixel >= Gooseboy.FRAMEBUFFER_WIDTH)
+				fbPixel = Gooseboy.FRAMEBUFFER_WIDTH - 1;
 		} else {
-			if (fbPixel >= Gooseboy.FRAMEBUFFER_HEIGHT) fbPixel = Gooseboy.FRAMEBUFFER_HEIGHT - 1;
+			if (fbPixel >= Gooseboy.FRAMEBUFFER_HEIGHT)
+				fbPixel = Gooseboy.FRAMEBUFFER_HEIGHT - 1;
 		}
 
 		return fbPixel;

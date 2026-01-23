@@ -33,7 +33,7 @@ public class CenteredCrateScreen extends CrateRendererScreen {
 	@Override
 	public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
 		super.render(guiGraphics, mouseX, mouseY, partialTicks);
-		this.renderCrate(guiGraphics, Layout.forSize(this.width, this.height));
+		this.renderCrate(guiGraphics, this.getLayout());
 	}
 
 	@Override
@@ -48,6 +48,11 @@ public class CenteredCrateScreen extends CrateRendererScreen {
 				layout.bgWidth, layout.bgHeight,
 				layout.bgWidth, layout.bgHeight
 		);
+	}
+
+	@Override
+	public CrateLayout getLayout() {
+		return Layout.forSize(this.width, this.height);
 	}
 
 	public static final class Layout extends CrateLayout {

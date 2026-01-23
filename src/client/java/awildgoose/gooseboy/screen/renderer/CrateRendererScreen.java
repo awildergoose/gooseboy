@@ -29,4 +29,6 @@ public abstract class CrateRendererScreen extends Screen {
 	public void renderCrate(GuiGraphics guiGraphics, CrateLayout layout) {
 		this.painter.render(guiGraphics, layout.fbX, layout.fbY, layout.fbDestWidth, layout.fbDestHeight);
 	}
+
+	public abstract CrateLayout getLayout();
 }
