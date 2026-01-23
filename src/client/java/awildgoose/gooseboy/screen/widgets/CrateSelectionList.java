@@ -6,7 +6,7 @@ import awildgoose.gooseboy.WasmInputManager;
 import awildgoose.gooseboy.crate.CrateLoader;
 import awildgoose.gooseboy.crate.GooseboyCrate;
 import awildgoose.gooseboy.screen.CrateSettingsScreen;
-import awildgoose.gooseboy.screen.renderer.CenteredCrateScreen;
+import awildgoose.gooseboy.screen.renderer.TopRightCrateScreen;
 import com.dylibso.chicory.wasm.UninstantiableException;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -85,7 +85,7 @@ public class CrateSelectionList extends ObjectSelectionList<CrateSelectionList.E
 					GooseboyCrate crate = CrateLoader.makeCrate(path);
 
 					if (crate.isOk) {
-						minecraft.setScreen(new CenteredCrateScreen(crate));
+						minecraft.setScreen(new TopRightCrateScreen(crate));
 					} else {
 						throw new RuntimeException("Crate aborted upon startup");
 					}

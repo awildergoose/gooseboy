@@ -5,7 +5,9 @@
   "client": [
     "DontTurnPlayerIfInCrateMixin",
     "GameRendererMixin",
-    "MouseHandlerAccessor"
+    "MinecraftMixin",
+    "MouseHandlerAccessor",
+    "MouseHandlerMixin"
   ],
   "injectors": {
     "defaultRequire": 1

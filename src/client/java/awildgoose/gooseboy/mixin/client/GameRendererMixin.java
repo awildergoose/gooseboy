@@ -12,8 +12,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Environment(EnvType.CLIENT)
 @Mixin(GameRenderer.class)
+@Environment(EnvType.CLIENT)
 public class GameRendererMixin {
 	@Inject(
 			method = "Lnet/minecraft/client/renderer/GameRenderer;render(Lnet/minecraft/client/DeltaTracker;Z)V",
@@ -26,7 +26,7 @@ public class GameRendererMixin {
 	private void gooseboy$renderAfterGui(DeltaTracker deltaTracker, boolean bl, CallbackInfo ci) {
 		Screen screen = Minecraft.getInstance().screen;
 
-		if (screen instanceof CrateRendererScreen crateScreen) {
+		if (screen instanceof CrateRendererScreen<?> crateScreen) {
 			crateScreen.painter.renderGpu();
 		}
 	}

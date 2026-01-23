@@ -2,6 +2,8 @@ package awildgoose.gooseboy.mixin.client;
 
 import awildgoose.gooseboy.WasmInputManager;
 import awildgoose.gooseboy.screen.renderer.CrateRendererScreen;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.MouseHandler;
 import org.spongepowered.asm.mixin.Mixin;
@@ -10,6 +12,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(MouseHandler.class)
+@Environment(EnvType.CLIENT)
 public class DontTurnPlayerIfInCrateMixin {
 	@Inject(at = @At("HEAD"), method = "Lnet/minecraft/client/MouseHandler;turnPlayer(D)V", cancellable = true)
 	private void turnPlayer(double d, CallbackInfo ci) {

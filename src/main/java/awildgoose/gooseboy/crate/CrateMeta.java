@@ -21,4 +21,5 @@ public class CrateMeta {
 
 	public int framebufferWidth = 320;
 	public int framebufferHeight = 200;
+	public boolean allowsMovement = false;
 }

@@ -105,15 +105,18 @@ public class WasmInputManager {
 	}
 
 	public static void grabMouse() {
+		grabMouse(false);
+	}
+
+	public static void grabMouse(boolean forceNotSetAll) {
 		Minecraft minecraft = Minecraft.getInstance();
 		MouseHandler mouseHandler = minecraft.mouseHandler;
 		if (minecraft.isWindowActive()) {
 			//noinspection ReferenceToMixin
 			MouseHandlerAccessor accessor = (MouseHandlerAccessor) mouseHandler;
 			if (!accessor.gooseboy$isMouseGrabbed()) {
-				if (InputQuirks.RESTORE_KEY_STATE_AFTER_MOUSE_GRAB) {
+				if (InputQuirks.RESTORE_KEY_STATE_AFTER_MOUSE_GRAB && !forceNotSetAll)
 					KeyMapping.setAll();
-				}
 
 				accessor.gooseboy$setMouseGrabbed(true);
 				int xPos = minecraft

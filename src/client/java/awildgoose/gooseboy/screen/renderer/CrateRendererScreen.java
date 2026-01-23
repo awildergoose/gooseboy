@@ -2,10 +2,14 @@ package awildgoose.gooseboy.screen.renderer;
 
 import awildgoose.gooseboy.Gooseboy;
 import awildgoose.gooseboy.GooseboyPainter;
+import awildgoose.gooseboy.WasmInputManager;
 import awildgoose.gooseboy.crate.GooseboyCrate;
 import awildgoose.gooseboy.screen.layout.CrateLayout;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -18,12 +22,33 @@ public abstract class CrateRendererScreen<L extends CrateLayout> extends Screen 
 	public final GooseboyPainter painter;
 	public final int fbWidth;
 	public final int fbHeight;
+	public final boolean allowsMovement;
 
 	public CrateRendererScreen(GooseboyCrate crate, Component component) {
 		super(component);
 		this.painter = new GooseboyPainter(crate);
 		this.fbWidth = crate.fbWidth;
 		this.fbHeight = crate.fbHeight;
+		this.allowsMovement = Gooseboy.getCrateMeta(crate.instance).allowsMovement;
+	}
+
+	@Override
+	public boolean keyPressed(KeyEvent keyEvent) {
+		if (keyEvent.isEscape() && this.shouldCloseOnEsc()) {
+			this.onClose();
+			return true;
+		}
+
+		return false;
+	}
+
+	@Override
+	public boolean mouseClicked(MouseButtonEvent mouseButtonEvent, boolean bl) {
+		return false;
+	}
+
+	public boolean shouldRenderBackground() {
+		return !allowsMovement;
 	}
 
 	@Override
@@ -49,7 +74,8 @@ public abstract class CrateRendererScreen<L extends CrateLayout> extends Screen 
 
 	@Override
 	public void renderBackground(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
-		super.renderBackground(guiGraphics, mouseX, mouseY, partialTicks);
+		if (shouldRenderBackground())
+			super.renderBackground(guiGraphics, mouseX, mouseY, partialTicks);
 
 		L layout = this.getLayout();
 		guiGraphics.blit(
@@ -59,6 +85,28 @@ public abstract class CrateRendererScreen<L extends CrateLayout> extends Screen 
 				layout.bgWidth, layout.bgHeight,
 				layout.bgWidth, layout.bgHeight
 		);
+	}
+
+	@Override
+	public boolean isPauseScreen() {
+		return false;
+	}
+
+	@Override
+	public boolean isInGameUi() {
+		return true;
+	}
+
+	@Override
+	public void tick() {
+		super.tick();
+
+		Minecraft mc = Minecraft.getInstance();
+
+		if (mc.player != null) {
+			mc.player.input.tick();
+			WasmInputManager.grabMouse();
+		}
 	}
 
 	public abstract L getLayout();
