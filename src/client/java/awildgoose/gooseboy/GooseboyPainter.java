@@ -14,6 +14,7 @@ import net.minecraft.resources.ResourceLocation;
 import org.lwjgl.system.MemoryUtil;
 
 import java.nio.ByteBuffer;
+import java.util.UUID;
 
 import static awildgoose.gooseboy.Gooseboy.withLocation;
 
@@ -34,7 +35,7 @@ public class GooseboyPainter implements AutoCloseable {
 		this.frameIntervalNano = 1_000_000_000L / Minecraft.getInstance().options.framerateLimit()
 				.get();
 		this.framebufferTexture = withLocation(
-				"crate_framebuffer_" + sanitizePath(crate.name)
+				"crate_framebuffer_" + sanitizePath(crate.name) + "_" + UUID.randomUUID()
 		);
 		this.gpuRenderer = new GooseboyGpuRenderer(crate.fbWidth, crate.fbHeight);
 		GooseboyClient.rendererByInstance.put(crate.instance, this.gpuRenderer);
@@ -67,7 +68,10 @@ public class GooseboyPainter implements AutoCloseable {
 
 	public void initDrawing() {
 		this.texture = new DynamicTexture(
-				"Gooseboy crate framebuffer for '" + crate.name + "'", crate.fbWidth, crate.fbHeight, false);
+				"Gooseboy crate framebuffer for '%s' (%s)".formatted(crate.name, UUID.randomUUID()),
+				crate.fbWidth,
+				crate.fbHeight,
+				false);
 		Minecraft.getInstance()
 				.getTextureManager()
 				.register(this.framebufferTexture, this.texture);
@@ -79,6 +83,9 @@ public class GooseboyPainter implements AutoCloseable {
 		this.gpuRenderer.close();
 		//noinspection resource
 		GooseboyClient.rendererByInstance.remove(crate.instance);
+		//noinspection resource
+		GooseboyClient.miniviewsByInstance.remove(crate.instance);
+
 		if (this.tmpBuf != null) {
 			MemoryUtil.memFree(this.tmpBuf);
 			this.tmpBuf = null;
