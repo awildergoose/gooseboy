@@ -1,6 +1,7 @@
-package awildgoose.gooseboy.gpu;
+package awildgoose.gooseboy.gpu.mesh;
 
 import awildgoose.gooseboy.Gooseboy;
+import awildgoose.gooseboy.gpu.vertex.VertexStack;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;

@@ -1,4 +1,4 @@
-package awildgoose.gooseboy.gpu;
+package awildgoose.gooseboy.gpu.vertex;
 
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.systems.RenderSystem;

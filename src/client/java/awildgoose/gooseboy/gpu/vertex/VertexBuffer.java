@@ -1,4 +1,4 @@
-package awildgoose.gooseboy.gpu;
+package awildgoose.gooseboy.gpu.vertex;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;

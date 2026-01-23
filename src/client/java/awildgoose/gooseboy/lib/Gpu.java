@@ -1,9 +1,10 @@
 package awildgoose.gooseboy.lib;
 
 import awildgoose.gooseboy.GooseboyClient;
-import awildgoose.gooseboy.gpu.GooseboyGpu;
 import awildgoose.gooseboy.gpu.GooseboyGpuCamera;
 import awildgoose.gooseboy.gpu.GooseboyGpuRenderer;
+import awildgoose.gooseboy.gpu.command.GpuCommand;
+import awildgoose.gooseboy.gpu.command.QueuedCommand;
 import com.dylibso.chicory.annotations.HostModule;
 import com.dylibso.chicory.annotations.WasmExport;
 import com.dylibso.chicory.runtime.HostFunction;
@@ -52,12 +53,12 @@ public final class Gpu {
 
 		while (offset < end) {
 			byte cmdId = memory.read(offset);
-			GooseboyGpu.GpuCommand cmd = GooseboyGpu.GpuCommand.findCommandById(cmdId);
+			GpuCommand cmd = GpuCommand.findCommandById(cmdId);
 
 			int payloadLength = cmd.len();
 
 			// TODO improve this
-			if (cmd.id() == GooseboyGpu.GpuCommand.RegisterTexture.id()) {
+			if (cmd.id() == GpuCommand.RegisterTexture.id()) {
 				// width * height * 4
 				int width = memory.readInt(offset + 1);
 				int height = memory.readInt(offset + 1 + 4);
@@ -68,7 +69,7 @@ public final class Gpu {
 			byte[] payload = memory.readBytes(offset + 1, payloadLength);
 
 			gpu.queuedCommands.add(
-					new GooseboyGpu.QueuedCommand(cmd, payload)
+					new QueuedCommand(cmd, payload)
 			);
 
 			offset += 1 + payloadLength;

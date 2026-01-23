@@ -1,5 +1,6 @@
-package awildgoose.gooseboy.gpu;
+package awildgoose.gooseboy.gpu.mesh;
 
+import awildgoose.gooseboy.gpu.vertex.VertexStack;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -17,28 +18,8 @@ public class MeshRegistry {
 
 	public @Nullable MeshRef getMesh(int id) {
 		Optional<MeshRef> ref = meshes.stream()
-				.filter(f -> f.id == id)
+				.filter(f -> f.id() == id)
 				.findFirst();
 		return ref.orElse(null);
-	}
-
-	public static final class MeshRef {
-		private final VertexStack stack;
-		private final int id;
-		public TextureRegistry.@Nullable TextureRef texture;
-
-		public MeshRef(VertexStack stack, int id, @Nullable TextureRegistry.TextureRef texture) {
-			this.stack = stack;
-			this.id = id;
-			this.texture = texture;
-		}
-
-		public VertexStack stack() {
-			return stack;
-		}
-
-		public int id() {
-			return id;
-		}
 	}
 }

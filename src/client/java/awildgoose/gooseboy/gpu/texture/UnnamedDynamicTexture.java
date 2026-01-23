@@ -1,4 +1,4 @@
-package awildgoose.gooseboy.gpu;
+package awildgoose.gooseboy.gpu.texture;
 
 import awildgoose.gooseboy.Gooseboy;
 import com.mojang.blaze3d.platform.NativeImage;

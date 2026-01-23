@@ -2,6 +2,19 @@ package awildgoose.gooseboy.gpu;
 
 import awildgoose.gooseboy.Gooseboy;
 import awildgoose.gooseboy.GooseboyClient;
+import awildgoose.gooseboy.gpu.command.GpuCommand;
+import awildgoose.gooseboy.gpu.command.QueuedCommand;
+import awildgoose.gooseboy.gpu.consumer.GpuRenderConsumer;
+import awildgoose.gooseboy.gpu.consumer.MemoryReadOffsetConsumer;
+import awildgoose.gooseboy.gpu.consumer.MemoryWriteOffsetConsumer;
+import awildgoose.gooseboy.gpu.consumer.RenderConsumer;
+import awildgoose.gooseboy.gpu.memory.GpuConstants;
+import awildgoose.gooseboy.gpu.memory.GpuMemoryConsumer;
+import awildgoose.gooseboy.gpu.mesh.MeshRef;
+import awildgoose.gooseboy.gpu.mesh.MeshRegistry;
+import awildgoose.gooseboy.gpu.texture.TextureRef;
+import awildgoose.gooseboy.gpu.texture.TextureRegistry;
+import awildgoose.gooseboy.gpu.vertex.VertexStack;
 import com.mojang.blaze3d.ProjectionType;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
@@ -53,10 +66,10 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 
 	public final ByteBuffer gpuMemory = ByteBuffer.allocateDirect(4192 * 4)
 			.order(ByteOrder.LITTLE_ENDIAN);
-	public ArrayList<GooseboyGpu.QueuedCommand> queuedCommands = new ArrayList<>();
+	public ArrayList<QueuedCommand> queuedCommands = new ArrayList<>();
 	public VertexStack globalVertexStack = new VertexStack();
 	private final Matrix4fStack gpuModelStack = new Matrix4fStack(GPU_MATRIX_STACK_MAX);
-	public ArrayList<MeshRegistry.MeshRef> recordings = new ArrayList<>();
+	public ArrayList<MeshRef> recordings = new ArrayList<>();
 	public AbstractTexture boundTexture = null;
 	private int gpuMatrixDepth = 0;
 	private int frameStartGpuMatrixDepth = 0;
@@ -71,7 +84,7 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 		);
 	}
 
-	public void renderVertexStack(VertexStack vertexStack, @Nullable TextureRegistry.TextureRef overrideTexture) {
+	public void renderVertexStack(VertexStack vertexStack, @Nullable TextureRef overrideTexture) {
 		GpuBuffer buffer = vertexStack.intoGpuBuffer();
 
 		if (buffer != null) {
@@ -122,7 +135,7 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 		}
 	}
 
-	public void renderMesh(MeshRegistry.MeshRef mesh) {
+	public void renderMesh(MeshRef mesh) {
 		renderVertexStack(mesh.stack(), mesh.texture);
 	}
 
@@ -158,10 +171,10 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 		Matrix4fStack modelView = RenderSystem.getModelViewStack();
 		modelView.pushMatrix();
 
-		GooseboyGpuRenderConsumer renderConsumer = new GooseboyGpuRenderConsumer(this);
-		GooseboyGpuMemoryConsumer gpuMemoryConsumer = new GooseboyGpuMemoryConsumer(this.gpuMemory);
+		GpuRenderConsumer renderConsumer = new GpuRenderConsumer(this);
+		GpuMemoryConsumer gpuMemoryConsumer = new GpuMemoryConsumer(this.gpuMemory);
 
-		for (GooseboyGpu.QueuedCommand queued : queuedCommands) {
+		for (QueuedCommand queued : queuedCommands) {
 			runCommand(
 					queued.command(),
 					queued.reader(),
@@ -190,21 +203,25 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 		profiler.pop();
 	}
 
-	public void runCommand(GooseboyGpu.GpuCommand command, GooseboyGpu.MemoryReadOffsetConsumer read,
-						   GooseboyGpu.RenderConsumer render, GooseboyGpu.MemoryWriteOffsetConsumer write) {
+	public void setStatus(MemoryWriteOffsetConsumer write, int status) {
+		write.writeInt(GpuConstants.GB_GPU_STATUS, status);
+	}
+
+	public void runCommand(GpuCommand command, MemoryReadOffsetConsumer read,
+						   RenderConsumer render, MemoryWriteOffsetConsumer write) {
 		switch (command) {
 			// Recording
 			case PushRecord -> {
-				MeshRegistry.MeshRef mesh = meshRegistry.createMesh();
+				MeshRef mesh = meshRegistry.createMesh();
 				recordings.add(mesh);
-				write.writeInt(GooseboyGpuMemoryConstants.GB_GPU_RECORD_ID, mesh.id());
+				write.writeInt(GpuConstants.GB_GPU_RECORD_ID, mesh.id());
 			}
 			case PopRecord -> recordings.removeLast();
 			case DrawRecorded -> render.mesh(meshRegistry.getMesh(read.readInt(0)));
 
 			// Emit
 			case EmitVertex -> {
-				MeshRegistry.MeshRef recording = recordings.size() > 0 ? recordings.getLast() : null;
+				MeshRef recording = recordings.size() > 0 ? recordings.getLast() : null;
 				float x = read.readFloat(0);
 				float y = read.readFloat(4);
 				float z = read.readFloat(8);
@@ -227,12 +244,20 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 			case RegisterTexture -> {
 				int width = read.readInt(0);
 				int height = read.readInt(4);
-				TextureRegistry.TextureRef texture = textureRegistry.createTexture(width, height);
-				texture.set(read, 8, width * height * 4);
-				write.writeInt(GooseboyGpuMemoryConstants.GB_GPU_TEXTURE_ID, texture.id);
+
+				if (width <= 0 || height <= 0 || width >= TextureRegistry.MAX_TEXTURE_WIDTH || height >= TextureRegistry.MAX_TEXTURE_HEIGHT) {
+					this.setStatus(write, GpuConstants.GB_STATUS_BAD_TEXTURE_SIZE);
+					return;
+				}
+
+				TextureRef texture = textureRegistry.createTexture(width, height);
+				if (!texture.set(read, 8, width * height * 4))
+					this.setStatus(write, GpuConstants.GB_STATUS_BAD_TEXTURE);
+				write.writeInt(GpuConstants.GB_GPU_TEXTURE_ID, texture.id);
 			}
+
 			case BindTexture -> {
-				MeshRegistry.MeshRef recording = recordings.size() > 0 ? recordings.getLast() : null;
+				MeshRef recording = recordings.size() > 0 ? recordings.getLast() : null;
 				int id = read.readInt(0);
 
 				if (recording == null) {
@@ -245,21 +270,20 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 			// Translations
 			case Push -> {
 				if (gpuMatrixDepth >= GPU_MATRIX_STACK_MAX) {
-					write.writeInt(GooseboyGpuMemoryConstants.GB_GPU_STATUS, -1);
+					this.setStatus(write, GpuConstants.GB_STATUS_MATRIX_TOO_BIG);
 				} else {
 					gpuModelStack.pushMatrix();
 					gpuMatrixDepth++;
-					write.writeInt(GooseboyGpuMemoryConstants.GB_GPU_MATRIX_DEPTH, gpuMatrixDepth);
+					write.writeInt(GpuConstants.GB_GPU_MATRIX_DEPTH, gpuMatrixDepth);
 				}
 			}
 			case Pop -> {
 				if (gpuMatrixDepth <= frameStartGpuMatrixDepth) {
-					Gooseboy.LOGGER.warn("GooseGPU: attempted pop below frame start");
-					write.writeInt(GooseboyGpuMemoryConstants.GB_GPU_STATUS, -1);
+					this.setStatus(write, GpuConstants.GB_STATUS_MATRIX_TOO_SMALL);
 				} else {
 					gpuModelStack.popMatrix();
 					gpuMatrixDepth--;
-					write.writeInt(GooseboyGpuMemoryConstants.GB_GPU_MATRIX_DEPTH, 0);
+					write.writeInt(GpuConstants.GB_GPU_MATRIX_DEPTH, 0);
 				}
 			}
 			case Translate -> {

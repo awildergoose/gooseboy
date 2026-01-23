@@ -1,11 +1,13 @@
-package awildgoose.gooseboy.gpu;
+package awildgoose.gooseboy.gpu.memory;
+
+import awildgoose.gooseboy.gpu.consumer.MemoryWriteOffsetConsumer;
 
 import java.nio.ByteBuffer;
 
-public class GooseboyGpuMemoryConsumer implements GooseboyGpu.MemoryWriteOffsetConsumer {
+public class GpuMemoryConsumer implements MemoryWriteOffsetConsumer {
 	private final ByteBuffer buffer;
 
-	public GooseboyGpuMemoryConsumer(ByteBuffer buffer) {
+	public GpuMemoryConsumer(ByteBuffer buffer) {
 		this.buffer = buffer;
 	}
 
