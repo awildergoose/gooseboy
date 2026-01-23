@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class Gooseboy implements ModInitializer {
 	public static final String MOD_ID = "gooseboy";
@@ -36,7 +36,7 @@ public class Gooseboy implements ModInitializer {
 		return gooseboyDir;
 	}
 
-	private static final HashMap<Instance, Pair<GooseboyCrate, CrateMeta>> runningCrates = new HashMap<>();
+	private static final ConcurrentHashMap<Instance, Pair<GooseboyCrate, CrateMeta>> runningCrates = new ConcurrentHashMap<>();
 
 	public static GooseboyCrate getCrate(Instance instance) {
 		return runningCrates.get(instance).getLeft();
@@ -54,7 +54,7 @@ public class Gooseboy implements ModInitializer {
 		runningCrates.remove(crate.instance);
 	}
 
-	public static HashMap<Instance, Pair<GooseboyCrate, CrateMeta>> getCrates() {
+	public static ConcurrentHashMap<Instance, Pair<GooseboyCrate, CrateMeta>> getCrates() {
 		return runningCrates;
 	}
 

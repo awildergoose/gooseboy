@@ -10,10 +10,12 @@ import awildgoose.gooseboy.gpu.mesh.MeshRef;
 import awildgoose.gooseboy.gpu.mesh.MeshRegistry;
 import awildgoose.gooseboy.gpu.texture.TextureRef;
 import awildgoose.gooseboy.gpu.texture.TextureRegistry;
+import awildgoose.gooseboy.gpu.vertex.PrimitiveType;
 import awildgoose.gooseboy.gpu.vertex.VertexStack;
 import com.mojang.blaze3d.ProjectionType;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
+import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.pipeline.TextureTarget;
 import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -49,7 +51,8 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 
 	public final GooseboyGpuCamera camera;
 
-	private final RenderSystem.AutoStorageIndexBuffer indices;
+	private final RenderSystem.AutoStorageIndexBuffer triangleIndices;
+	private final RenderSystem.AutoStorageIndexBuffer quadIndices;
 	private final TextureTarget renderTarget;
 	private final CachedPerspectiveProjectionMatrixBuffer projectionMatrixBuffer;
 
@@ -70,7 +73,8 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 		this.camera = new GooseboyGpuCamera(fbWidth, fbHeight);
 		this.projectionMatrixBuffer = new CachedPerspectiveProjectionMatrixBuffer(
 				"gooseboy_goosegpu", camera.near, camera.far);
-		this.indices = RenderSystem.getSequentialBuffer(VertexFormat.Mode.TRIANGLES);
+		this.triangleIndices = RenderSystem.getSequentialBuffer(VertexFormat.Mode.TRIANGLES);
+		this.quadIndices = RenderSystem.getSequentialBuffer(VertexFormat.Mode.QUADS);
 		this.renderTarget = new TextureTarget(
 				"gooseboy_goosegpu_framebuffer",
 				fbWidth,
@@ -79,8 +83,24 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 		);
 	}
 
-	public void renderVertexStack(VertexStack vertexStack, @Nullable TextureRef overrideTexture) {
+	public void renderVertexStack(VertexStack vertexStack, @Nullable TextureRef overrideTexture, PrimitiveType primitiveType) {
 		GpuBuffer buffer = vertexStack.intoGpuBuffer();
+		RenderSystem.AutoStorageIndexBuffer indices = switch (primitiveType) {
+			case TRIANGLES -> this.triangleIndices;
+			case QUADS -> this.quadIndices;
+		};
+		RenderPipeline pipeline = switch (primitiveType) {
+			case TRIANGLES -> GooseboyClient.TRIANGLES_PIPELINE;
+			case QUADS -> GooseboyClient.QUADS_PIPELINE;
+		};
+		int numIndices = switch (primitiveType) {
+			case TRIANGLES -> vertexStack.size();
+			case QUADS -> vertexStack.size() / 4;
+		};
+		int numIndicesToDraw = switch (primitiveType) {
+			case TRIANGLES -> numIndices;
+			case QUADS -> numIndices * 6;
+		};
 
 		if (buffer != null) {
 			RenderSystem.backupProjectionMatrix();
@@ -102,8 +122,7 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 				boundTexture = texture;
 			}
 
-			int indexCount = vertexStack.size();
-			GpuBuffer indexBuffer = this.indices.getBuffer(indexCount);
+			GpuBuffer indexBuffer = indices.getBuffer(numIndices);
 			GpuBufferSlice transformSlice =
 					this.camera.createTransformSlice(new Matrix4f(gpuModelStack), camera.getProjection());
 
@@ -116,14 +135,13 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 							depthView,
 							OptionalDouble.of(1.0)
 					)) {
-				renderPass.setPipeline(GooseboyClient.GOOSE_GPU_PIPELINE);
+				renderPass.setPipeline(pipeline);
 				RenderSystem.bindDefaultUniforms(renderPass);
 				renderPass.setUniform("DynamicTransforms", transformSlice);
 				renderPass.bindSampler("Sampler0", texture.getTextureView());
-				renderPass.setIndexBuffer(indexBuffer, this.indices.type());
+				renderPass.setIndexBuffer(indexBuffer, indices.type());
 				renderPass.setVertexBuffer(0, buffer);
-
-				renderPass.drawIndexed(0, 0, indexCount, 1);
+				renderPass.drawIndexed(0, 0, numIndicesToDraw, 1);
 			}
 
 			RenderSystem.restoreProjectionMatrix();
@@ -131,7 +149,7 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 	}
 
 	public void renderMesh(MeshRef mesh) {
-		renderVertexStack(mesh.stack(), mesh.texture);
+		renderVertexStack(mesh.stack(), mesh.texture, mesh.primitiveType());
 	}
 
 	public void blitToScreen(GuiGraphics guiGraphics, int x, int y, int width, int height) {
@@ -178,7 +196,7 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 			);
 		}
 
-		renderVertexStack(globalVertexStack, null);
+		renderVertexStack(globalVertexStack, null, PrimitiveType.TRIANGLES);
 		globalVertexStack.clear();
 		queuedCommands.clear();
 
@@ -207,7 +225,8 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 		switch (command) {
 			// Recording
 			case PushRecord -> {
-				MeshRef mesh = meshRegistry.createMesh();
+				byte primitiveType = read.readByte(0);
+				MeshRef mesh = meshRegistry.createMesh(PrimitiveType.findPrimitiveById(primitiveType));
 				recordings.add(mesh);
 				write.writeInt(GpuConstants.GB_GPU_RECORD_ID, mesh.id());
 			}

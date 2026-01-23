@@ -10,6 +10,11 @@ public class GpuMemoryReader implements MemoryReadConsumer {
 	}
 
 	@Override
+	public byte readByte(int offset) {
+		return readBytes(0, 1)[0];
+	}
+
+	@Override
 	public int readInt(int offset) {
 		if (offset < 0 || (long) offset + 4 > bytes.length) {
 			Gooseboy.LOGGER.warn("GpuMemoryReader.readInt: offset {} beyond end (capacity={})", offset, bytes.length);
@@ -33,7 +38,7 @@ public class GpuMemoryReader implements MemoryReadConsumer {
 
 		if (end > bytes.length) {
 			Gooseboy.LOGGER.warn("GpuMemoryReader.readBytes: offset {} beyond end (capacity={})", offset, bytes.length);
-			return new byte[0];
+			return new byte[len];
 		}
 
 		byte[] result = new byte[len];

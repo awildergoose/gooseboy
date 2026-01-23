@@ -16,16 +16,25 @@ import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderPipelines;
 
-import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class GooseboyClient implements ClientModInitializer {
-	public static final RenderPipeline GOOSE_GPU_PIPELINE = RenderPipelines.register(
-			RenderPipeline.builder(RenderPipelines.MATRICES_PROJECTION_SNIPPET)
-					.withLocation(Gooseboy.withLocation("pipeline/goose_gpu"))
-					.withVertexShader(Gooseboy.withLocation("core/rendertype_goose_gpu"))
-					.withFragmentShader(Gooseboy.withLocation("core/rendertype_goose_gpu"))
-					.withSampler("Sampler0")
+	public static final RenderPipeline.Snippet GOOSE_GPU_SNIPPET = RenderPipeline.builder(
+					RenderPipelines.MATRICES_PROJECTION_SNIPPET)
+			.withVertexShader(Gooseboy.withLocation("core/rendertype_goose_gpu"))
+			.withFragmentShader(Gooseboy.withLocation("core/rendertype_goose_gpu"))
+			.withSampler("Sampler0")
+			.buildSnippet();
+	public static final RenderPipeline TRIANGLES_PIPELINE = RenderPipelines.register(
+			RenderPipeline.builder(GOOSE_GPU_SNIPPET)
+					.withLocation(Gooseboy.withLocation("pipeline/goose_gpu_triangles"))
 					.withVertexFormat(DefaultVertexFormat.POSITION_TEX, VertexFormat.Mode.TRIANGLES)
+					.build()
+	);
+	public static final RenderPipeline QUADS_PIPELINE = RenderPipelines.register(
+			RenderPipeline.builder(GOOSE_GPU_SNIPPET)
+					.withLocation(Gooseboy.withLocation("pipeline/goose_gpu_quads"))
+					.withVertexFormat(DefaultVertexFormat.POSITION_TEX, VertexFormat.Mode.QUADS)
 					.build()
 	);
 	private static final KeyMapping.Category keyMappingCategory = KeyMapping.Category.register(
@@ -33,8 +42,8 @@ public class GooseboyClient implements ClientModInitializer {
 	public final KeyMapping keyOpenWasm = new KeyMapping(
 			"key.open_wasm", InputConstants.KEY_M,
 			keyMappingCategory);
-	public static final HashMap<Instance, GooseboyGpuRenderer> rendererByInstance = new HashMap<>();
-	public static final HashMap<Instance, MiniView> miniviewsByInstance = new HashMap<>();
+	public static final ConcurrentHashMap<Instance, GooseboyGpuRenderer> rendererByInstance = new ConcurrentHashMap<>();
+	public static final ConcurrentHashMap<Instance, MiniView> miniviewsByInstance = new ConcurrentHashMap<>();
 
 	@Override
 	public void onInitializeClient() {

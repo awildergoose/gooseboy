@@ -4,14 +4,14 @@ import java.util.HashMap;
 import java.util.Map;
 
 public enum GpuCommand {
-	Push(0x00, 0x00),
-	Pop(0x01, 0x00),
-	PushRecord(0x02, 0x00),
-	PopRecord(0x03, 0x00),
-	DrawRecorded(0x04, 0x04), // u32 id
-	EmitVertex(0x05, 0x14), // f32 xyzuv[5]
-	BindTexture(0x06, 0x04), // u32 id
-	RegisterTexture(0x07, 0x08), // u32 w, u32 h, byte[] rgba
+	Push(0x00, 0),
+	Pop(0x01, 0),
+	PushRecord(0x02, 1), // u8 primitiveType
+	PopRecord(0x03, 0),
+	DrawRecorded(0x04, 4), // u32 id
+	EmitVertex(0x05, 20), // f32 xyzuv[5]
+	BindTexture(0x06, 4), // u32 id
+	RegisterTexture(0x07, 8), // u32 w, u32 h, byte[] rgba
 
 	Translate(0x08, 12),
 	RotateAxis(0x09, 16),
