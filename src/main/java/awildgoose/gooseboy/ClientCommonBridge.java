@@ -16,9 +16,9 @@ public interface ClientCommonBridge {
 
 	boolean isMouseButtonDown(int button);
 
-	int getMouseXInFramebuffer();
+	int getMouseXInFramebuffer(int fbWidth, int fbHeight);
 
-	int getMouseYInFramebuffer();
+	int getMouseYInFramebuffer(int fbWidth, int fbHeight);
 
 	void grabMouse();
 

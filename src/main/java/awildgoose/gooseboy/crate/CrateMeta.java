@@ -18,4 +18,7 @@ public class CrateMeta {
 	public transient byte[] binary; // is null after creation of GooseboyCrate
 	public transient RawImage iconImage;
 	public transient RawImage bannerImage;
+
+	public int framebufferWidth = 320;
+	public int framebufferHeight = 200;
 }

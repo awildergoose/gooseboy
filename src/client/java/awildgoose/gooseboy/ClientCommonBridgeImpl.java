@@ -44,13 +44,13 @@ public class ClientCommonBridgeImpl implements ClientCommonBridge {
 	}
 
 	@Override
-	public int getMouseXInFramebuffer() {
-		return WasmInputManager.getMouseXInFramebuffer();
+	public int getMouseXInFramebuffer(int fbWidth, int fbHeight) {
+		return WasmInputManager.getMouseXInFramebuffer(fbWidth, fbHeight);
 	}
 
 	@Override
-	public int getMouseYInFramebuffer() {
-		return WasmInputManager.getMouseYInFramebuffer();
+	public int getMouseYInFramebuffer(int fbWidth, int fbHeight) {
+		return WasmInputManager.getMouseYInFramebuffer(fbWidth, fbHeight);
 	}
 
 	@Override

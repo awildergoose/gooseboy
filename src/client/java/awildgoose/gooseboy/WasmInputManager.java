@@ -55,9 +55,9 @@ public class WasmInputManager {
 		return GLFW.glfwGetMouseButton(window, button) == GLFW.GLFW_PRESS;
 	}
 
-	private static int mapMouseToFramebuffer(boolean xAxis) {
+	private static int mapMouseToFramebuffer(int fbWidth, int fbHeight, boolean xAxis) {
 		Minecraft mc = Minecraft.getInstance();
-		if (!(mc.screen instanceof CrateRendererScreen screen)) return 0;
+		if (!(mc.screen instanceof CrateRendererScreen<?> screen)) return 0;
 
 		CrateLayout layout = screen.getLayout();
 		if (layout == null) return 0;
@@ -78,7 +78,7 @@ public class WasmInputManager {
 		}
 
 		if (localGui >= fbDestSize) {
-			return (xAxis ? Gooseboy.FRAMEBUFFER_WIDTH : Gooseboy.FRAMEBUFFER_HEIGHT) - 1;
+			return (xAxis ? fbWidth : fbHeight) - 1;
 		}
 
 		double fbPixelD = Math.floor(localGui / layout.scale);
@@ -86,22 +86,22 @@ public class WasmInputManager {
 
 		if (fbPixel < 0) fbPixel = 0;
 		if (xAxis) {
-			if (fbPixel >= Gooseboy.FRAMEBUFFER_WIDTH)
-				fbPixel = Gooseboy.FRAMEBUFFER_WIDTH - 1;
+			if (fbPixel >= fbWidth)
+				fbPixel = fbWidth - 1;
 		} else {
-			if (fbPixel >= Gooseboy.FRAMEBUFFER_HEIGHT)
-				fbPixel = Gooseboy.FRAMEBUFFER_HEIGHT - 1;
+			if (fbPixel >= fbHeight)
+				fbPixel = fbHeight - 1;
 		}
 
 		return fbPixel;
 	}
 
-	public static int getMouseXInFramebuffer() {
-		return mapMouseToFramebuffer(true);
+	public static int getMouseXInFramebuffer(int fbWidth, int fbHeight) {
+		return mapMouseToFramebuffer(fbWidth, fbHeight, true);
 	}
 
-	public static int getMouseYInFramebuffer() {
-		return mapMouseToFramebuffer(false);
+	public static int getMouseYInFramebuffer(int fbWidth, int fbHeight) {
+		return mapMouseToFramebuffer(fbWidth, fbHeight, false);
 	}
 
 	public static void grabMouse() {

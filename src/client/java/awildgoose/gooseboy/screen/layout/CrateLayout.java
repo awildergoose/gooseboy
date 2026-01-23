@@ -11,8 +11,11 @@ public abstract class CrateLayout {
 	public int inset;
 	public int fbX;
 	public int fbY;
+	public int fbW;
+	public int fbH;
 
-	public CrateLayout(double scale, int bgWidth, int bgHeight, int bgX, int bgY, int fbDestWidth, int fbDestHeight, int inset, int fbX, int fbY) {
+	public CrateLayout(double scale, int bgWidth, int bgHeight, int bgX, int bgY, int fbDestWidth, int fbDestHeight,
+					   int inset, int fbX, int fbY, int fbW, int fbH) {
 		this.scale = scale;
 		this.bgWidth = bgWidth;
 		this.bgHeight = bgHeight;
@@ -23,5 +26,7 @@ public abstract class CrateLayout {
 		this.inset = inset;
 		this.fbX = fbX;
 		this.fbY = fbY;
+		this.fbW = fbW;
+		this.fbH = fbH;
 	}
 }

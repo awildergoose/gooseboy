@@ -43,19 +43,15 @@ import java.util.ArrayList;
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
 
-import static awildgoose.gooseboy.Gooseboy.FRAMEBUFFER_HEIGHT;
-import static awildgoose.gooseboy.Gooseboy.FRAMEBUFFER_WIDTH;
-
 @Environment(EnvType.CLIENT)
 public class GooseboyGpuRenderer implements AutoCloseable {
 	private static final int GPU_MATRIX_STACK_MAX = 64;
 
-	public final GooseboyGpuCamera camera = new GooseboyGpuCamera();
+	public final GooseboyGpuCamera camera;
 
 	private final RenderSystem.AutoStorageIndexBuffer indices;
 	private final TextureTarget renderTarget;
-	private final CachedPerspectiveProjectionMatrixBuffer projectionMatrixBuffer = new CachedPerspectiveProjectionMatrixBuffer(
-			"gooseboy_goosegpu", camera.near, camera.far);
+	private final CachedPerspectiveProjectionMatrixBuffer projectionMatrixBuffer;
 
 	private final MeshRegistry meshRegistry = new MeshRegistry();
 	private final TextureRegistry textureRegistry = new TextureRegistry();
@@ -70,12 +66,15 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 	private int gpuMatrixDepth = 0;
 	private int frameStartGpuMatrixDepth = 0;
 
-	public GooseboyGpuRenderer() {
+	public GooseboyGpuRenderer(int fbWidth, int fbHeight) {
+		this.camera = new GooseboyGpuCamera(fbWidth, fbHeight);
+		this.projectionMatrixBuffer = new CachedPerspectiveProjectionMatrixBuffer(
+				"gooseboy_goosegpu", camera.near, camera.far);
 		this.indices = RenderSystem.getSequentialBuffer(VertexFormat.Mode.TRIANGLES);
 		this.renderTarget = new TextureTarget(
 				"gooseboy_goosegpu_framebuffer",
-				FRAMEBUFFER_WIDTH,
-				FRAMEBUFFER_HEIGHT,
+				fbWidth,
+				fbHeight,
 				true
 		);
 	}

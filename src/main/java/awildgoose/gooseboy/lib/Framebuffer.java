@@ -14,13 +14,13 @@ public final class Framebuffer {
 	}
 
 	@WasmExport
-	public int get_framebuffer_width() {
-		return Gooseboy.FRAMEBUFFER_WIDTH;
+	public int get_framebuffer_width(Instance instance) {
+		return Gooseboy.getCrate(instance).fbWidth;
 	}
 
 	@WasmExport
-	public int get_framebuffer_height() {
-		return Gooseboy.FRAMEBUFFER_HEIGHT;
+	public int get_framebuffer_height(Instance instance) {
+		return Gooseboy.getCrate(instance).fbHeight;
 	}
 
 	@WasmExport

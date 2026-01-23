@@ -13,9 +13,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import static awildgoose.gooseboy.Gooseboy.FRAMEBUFFER_HEIGHT;
-import static awildgoose.gooseboy.Gooseboy.FRAMEBUFFER_WIDTH;
-
 public class GooseboyCrate implements AutoCloseable {
 	public final Instance instance;
 	private int fbPtr;
@@ -25,6 +22,8 @@ public class GooseboyCrate implements AutoCloseable {
 	public final String name;
 	public final List<Permission> permissions;
 	public boolean isOk = true;
+	public int fbWidth;
+	public int fbHeight;
 
 	public GooseboyCrate(Instance instance, String name, CrateMeta meta) {
 		this.instance = instance;
@@ -34,7 +33,9 @@ public class GooseboyCrate implements AutoCloseable {
 	}
 
 	private void init(CrateMeta meta) {
-		this.fbSize = FRAMEBUFFER_WIDTH * FRAMEBUFFER_HEIGHT * 4;
+		this.fbWidth = meta.framebufferWidth;
+		this.fbHeight = meta.framebufferHeight;
+		this.fbSize = fbWidth * fbHeight * 4;
 		this.storage = new CrateStorage(this.name);
 
 		// Free the binary, as we don't need it anymore
@@ -42,8 +43,10 @@ public class GooseboyCrate implements AutoCloseable {
 		Gooseboy.addCrate(this, meta);
 
 		try {
-			instance.export("main").apply();
-			this.fbPtr = (int) this.instance.export("get_framebuffer_ptr").apply()[0];
+			instance.export("main")
+					.apply();
+			this.fbPtr = (int) this.instance.export("get_framebuffer_ptr")
+					.apply()[0];
 			this.updateFunction = this.instance.export("update");
 		} catch (Throwable ie) {
 			this.close();

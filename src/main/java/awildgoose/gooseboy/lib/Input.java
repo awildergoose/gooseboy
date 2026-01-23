@@ -30,14 +30,18 @@ public final class Input {
 	public int get_mouse_x(Instance instance) {
 		if (CrateUtils.doesNotHavePermission(instance, GooseboyCrate.Permission.INPUT_MOUSE_POS))
 			return 0;
-		return Gooseboy.ccb.getMouseXInFramebuffer();
+		return Gooseboy.ccb.getMouseXInFramebuffer(
+				Gooseboy.getCrate(instance).fbWidth,
+				Gooseboy.getCrate(instance).fbHeight);
 	}
 
 	@WasmExport
 	public int get_mouse_y(Instance instance) {
 		if (CrateUtils.doesNotHavePermission(instance, GooseboyCrate.Permission.INPUT_MOUSE_POS))
 			return 0;
-		return Gooseboy.ccb.getMouseYInFramebuffer();
+		return Gooseboy.ccb.getMouseYInFramebuffer(
+				Gooseboy.getCrate(instance).fbWidth,
+				Gooseboy.getCrate(instance).fbHeight);
 	}
 
 	@WasmExport

@@ -15,7 +15,7 @@ import org.lwjgl.system.MemoryUtil;
 
 import java.nio.ByteBuffer;
 
-import static awildgoose.gooseboy.Gooseboy.*;
+import static awildgoose.gooseboy.Gooseboy.withLocation;
 
 public class GooseboyPainter implements AutoCloseable {
 	private final GooseboyCrate crate;
@@ -35,7 +35,7 @@ public class GooseboyPainter implements AutoCloseable {
 		this.framebufferTexture = withLocation(
 				"crate_framebuffer_" + sanitizePath(crate.name)
 		);
-		this.gpuRenderer = new GooseboyGpuRenderer();
+		this.gpuRenderer = new GooseboyGpuRenderer(crate.fbWidth, crate.fbHeight);
 		GooseboyClient.rendererByInstance.put(crate.instance, this.gpuRenderer);
 
 		try {
@@ -64,9 +64,9 @@ public class GooseboyPainter implements AutoCloseable {
 		return s.replaceAll("[^a-z0-9/._-]", "_");
 	}
 
-	public void initDrawing() {
+	public void initDrawing(int fbWidth, int fbHeight) {
 		this.texture = new DynamicTexture(
-				"Gooseboy crate framebuffer for '" + crate.name + "'", FRAMEBUFFER_WIDTH, FRAMEBUFFER_HEIGHT, false);
+				"Gooseboy crate framebuffer for '" + crate.name + "'", fbWidth, fbHeight, false);
 		Minecraft.getInstance()
 				.getTextureManager()
 				.register(this.framebufferTexture, this.texture);

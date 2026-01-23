@@ -1,6 +1,5 @@
 package awildgoose.gooseboy.gpu.render;
 
-import awildgoose.gooseboy.Gooseboy;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.systems.RenderSystem;
 import org.joml.Matrix4f;
@@ -12,19 +11,19 @@ import org.joml.Vector4f;
 public class GooseboyGpuCamera {
 	public final Vector3f position = new Vector3f();
 	public Vector2f rotation = new Vector2f();
-	private final int framebufferWidth;
-	private final int framebufferHeight;
+	private final int fbWidth;
+	private final int fbHeight;
 	public float fovDegrees = 70.0f;
 	public float near = 0.1f;
 	public float far = 20000.0f;
 
-	public GooseboyGpuCamera() {
-		this.framebufferWidth = Gooseboy.FRAMEBUFFER_WIDTH;
-		this.framebufferHeight = Gooseboy.FRAMEBUFFER_HEIGHT;
+	public GooseboyGpuCamera(int fbWidth, int fbHeight) {
+		this.fbWidth = fbWidth;
+		this.fbHeight = fbHeight;
 	}
 
 	private float aspect() {
-		return (float) this.framebufferWidth / (float) this.framebufferHeight;
+		return (float) this.fbWidth / (float) this.fbHeight;
 	}
 
 	public GpuBufferSlice createTransformSlice() {
