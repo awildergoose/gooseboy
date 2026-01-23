@@ -1,12 +1,13 @@
 package awildgoose.gooseboy.screen.widgets;
 
 import awildgoose.gooseboy.Gooseboy;
+import awildgoose.gooseboy.GooseboyClient;
 import awildgoose.gooseboy.Wasm;
 import awildgoose.gooseboy.WasmInputManager;
 import awildgoose.gooseboy.crate.CrateLoader;
 import awildgoose.gooseboy.crate.GooseboyCrate;
 import awildgoose.gooseboy.screen.CrateSettingsScreen;
-import awildgoose.gooseboy.screen.renderer.TopRightCrateScreen;
+import awildgoose.gooseboy.screen.renderer.CenteredCrateScreen;
 import com.dylibso.chicory.wasm.UninstantiableException;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -26,19 +27,40 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class CrateSelectionList extends ObjectSelectionList<CrateSelectionList.Entry> {
+	private final Screen parent;
+	public Sort sort;
+
 	public CrateSelectionList(Screen parent, Minecraft minecraft, int i, int j, int k, int l, Sort sort) {
 		super(minecraft, i, j, k, l);
+		this.parent = parent;
+		this.sort = sort;
+		this.rebuildEntries(true);
+	}
 
-		List<Path> crates = Wasm.listWasmCrates();
+	public void rebuildEntries(boolean allCrates) {
+		this.clearEntries();
+		List<PathOrCrate> crates = Wasm.listWasmCrates()
+				.stream()
+				.map(f -> new PathOrCrate(f, null))
+				.collect(Collectors.toList());
+		if (!allCrates) {
+			crates = Gooseboy.getCrates()
+					.values()
+					.stream()
+					.map(gooseboyCrateCrateMetaPair -> new PathOrCrate(null, gooseboyCrateCrateMetaPair.getLeft()))
+					.collect(Collectors.toList());
+		}
 
 		switch (sort) {
-			case FILENAME -> crates.sort(Comparator.comparing(p -> p.getFileName()
-					.toString()));
+			case FILENAME -> crates.sort(Comparator.comparing(PathOrCrate::getFileName));
 			case LAST_MODIFIED -> crates.sort(Comparator.comparingLong(p -> {
+						if (!((PathOrCrate) p).hasPath())
+							return Long.MIN_VALUE;
 						try {
-							return Files.getLastModifiedTime((Path) p)
+							return Files.getLastModifiedTime(((PathOrCrate) p).path)
 									.toMillis();
 						} catch (IOException e) {
 							return Long.MIN_VALUE;
@@ -60,59 +82,91 @@ public class CrateSelectionList extends ObjectSelectionList<CrateSelectionList.E
 		LAST_MODIFIED
 	}
 
+	record PathOrCrate(Path path, GooseboyCrate crate) {
+		public String getFileName() {
+			return this.hasCrate() ? crate.name : this.path.getFileName()
+					.toString();
+		}
+
+		public boolean hasPath() {
+			return this.path != null;
+		}
+
+		public boolean hasCrate() {
+			return this.crate != null;
+		}
+	}
+
 	public static class Entry extends ObjectSelectionList.Entry<CrateSelectionList.Entry> {
 		private static final ResourceLocation WASM_ICON = Gooseboy.withLocation("textures/gui/wasm_icon.png");
 		private final StringWidget text;
-		private final ImageButton runButton;
-		private final ImageButton settingsButton;
+		private final ImageButton settingsOrStopButton;
+		private ImageButton runButton;
 
-		public Entry(Screen parent, Minecraft minecraft, CrateSelectionList list, Path path) {
+		public Entry(Screen parent, Minecraft minecraft, CrateSelectionList list, PathOrCrate poc) {
 			int i = list.getRowWidth() - this.getTextX() - 2;
-			String text = path.getFileName()
-					.toString();
+			String text = poc.getFileName();
 			Component component = Component.literal(text);
 			this.text = new StringWidget(component, minecraft.font);
 			this.text.setMaxWidth(i);
 
-			this.runButton = new ImageButton(0, 0, 15, 15, new WidgetSprites(
-					Gooseboy.withLocation("widget/run_button"),
-					Gooseboy.withLocation("widget/run_button_highlighted")
+			if (poc.hasPath())
+				this.runButton = new ImageButton(0, 0, 15, 15, new WidgetSprites(
+						Gooseboy.withLocation("widget/run_button"),
+						Gooseboy.withLocation("widget/run_button_highlighted")
+				), (b) -> {
+					// run
+					WasmInputManager.reset();
+
+					try {
+						GooseboyCrate crate = CrateLoader.makeCrate(poc.path);
+
+						if (crate.isOk) {
+							if (!crate.isMiniView)
+								minecraft.setScreen(new CenteredCrateScreen(crate));
+							else
+								minecraft.setScreen(null);
+						} else {
+							throw new RuntimeException("Crate aborted upon startup");
+						}
+					} catch (Exception e) {
+						e.printStackTrace();
+
+						if (e instanceof UninstantiableException) {
+							Gooseboy.ccb.doTranslatedErrorMessage(
+									"ui.gooseboy.not_enough_memory.title",
+									"ui.gooseboy.not_enough_memory.body");
+						} else if (e instanceof CrateLoader.CrateLoaderException er) {
+							Gooseboy.ccb.doErrorMessage(er.title, er.body);
+						} else {
+							Gooseboy.ccb.doTranslatedErrorMessage(
+									"ui.gooseboy.crate_run_failed.title",
+									"ui.gooseboy.crate_run_failed.body");
+						}
+					}
+				});
+
+			this.settingsOrStopButton = new ImageButton(0, 0, 15, 15, new WidgetSprites(
+					poc.hasCrate() ?
+							Gooseboy.withLocation("widget/run_button")
+							: Gooseboy.withLocation("widget/settings_button"),
+					poc.hasCrate() ?
+							Gooseboy.withLocation("widget/run_button_highlighted")
+							: Gooseboy.withLocation("widget/settings_button_highlighted")
 			), (b) -> {
-				// run
-				WasmInputManager.reset();
-
-				try {
-					GooseboyCrate crate = CrateLoader.makeCrate(path);
-
-					if (crate.isOk) {
-						if (!crate.isMiniView)
-							minecraft.setScreen(new TopRightCrateScreen(crate));
-						else
-							minecraft.setScreen(null);
+				if (poc.hasCrate()) {
+					// stop
+					if (GooseboyClient.miniviewsByInstance.containsKey(poc.crate.instance)) {
+						GooseboyClient.miniviewsByInstance.get(poc.crate.instance)
+								.close();
 					} else {
-						throw new RuntimeException("Crate aborted upon startup");
+						Gooseboy.LOGGER.error("unable to stop crate, miniview renderer is not present?");
 					}
-				} catch (Exception e) {
-					e.printStackTrace();
 
-					if (e instanceof UninstantiableException) {
-						Gooseboy.ccb.doTranslatedErrorMessage(
-								"ui.gooseboy.not_enough_memory.title",
-								"ui.gooseboy.not_enough_memory.body");
-					} else if (e instanceof CrateLoader.CrateLoaderException er) {
-						Gooseboy.ccb.doErrorMessage(er.title, er.body);
-					} else {
-						Gooseboy.ccb.doTranslatedErrorMessage(
-								"ui.gooseboy.crate_run_failed.title",
-								"ui.gooseboy.crate_run_failed.body");
-					}
+					list.rebuildEntries(false);
+					return;
 				}
-			});
 
-			this.settingsButton = new ImageButton(0, 0, 15, 15, new WidgetSprites(
-					Gooseboy.withLocation("widget/settings_button"),
-					Gooseboy.withLocation("widget/settings_button_highlighted")
-			), (b) -> {
 				// settings
 				minecraft.setScreen(new CrateSettingsScreen(parent, text));
 			});
@@ -120,15 +174,15 @@ public class CrateSelectionList extends ObjectSelectionList<CrateSelectionList.E
 
 		@Override
 		public boolean mouseClicked(MouseButtonEvent mouseButtonEvent, boolean bl) {
-			if (this.settingsButton.mouseClicked(mouseButtonEvent, bl)) return true;
-			if (this.runButton.mouseClicked(mouseButtonEvent, bl)) return true;
+			if (this.settingsOrStopButton.mouseClicked(mouseButtonEvent, bl)) return true;
+			if (this.runButton != null && this.runButton.mouseClicked(mouseButtonEvent, bl)) return true;
 			return super.mouseClicked(mouseButtonEvent, bl);
 		}
 
 		@Override
 		public boolean mouseReleased(MouseButtonEvent mouseButtonEvent) {
-			if (this.settingsButton.mouseReleased(mouseButtonEvent)) return true;
-			if (this.runButton.mouseReleased(mouseButtonEvent)) return true;
+			if (this.settingsOrStopButton.mouseReleased(mouseButtonEvent)) return true;
+			if (this.runButton != null && this.runButton.mouseReleased(mouseButtonEvent)) return true;
 			return super.mouseReleased(mouseButtonEvent);
 		}
 
@@ -157,12 +211,14 @@ public class CrateSelectionList extends ObjectSelectionList<CrateSelectionList.E
 			this.text.render(guiGraphics, i, j, f);
 
 			// the lock icon
-			this.settingsButton.setPosition(getContentRight() - 16, centeredY);
-			this.settingsButton.render(guiGraphics, i, j, f);
+			this.settingsOrStopButton.setPosition(getContentRight() - 16, centeredY);
+			this.settingsOrStopButton.render(guiGraphics, i, j, f);
 
-			// the checkbox icon
-			this.runButton.setPosition(getContentRight() - 16 - 16 - 2, centeredY);
-			this.runButton.render(guiGraphics, i, j, f);
+			if (this.runButton != null) {
+				// the checkbox icon
+				this.runButton.setPosition(getContentRight() - 16 - 16 - 2, centeredY);
+				this.runButton.render(guiGraphics, i, j, f);
+			}
 		}
 	}
 }

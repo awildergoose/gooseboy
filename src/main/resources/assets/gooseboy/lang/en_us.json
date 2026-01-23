@@ -1,6 +1,8 @@
 {
   "key.category.gooseboy.wasm": "Gooseboy",
   "key.open_wasm": "Open Gooseboy menu",
+  "ui.gooseboy.all_crates": "All Crates",
+  "ui.gooseboy.running_crates": "Running Crates",
   "ui.gooseboy.crate_run_failed.body": "Check the console for more information",
   "ui.gooseboy.crate_run_failed.title": "Failed to run crate",
   "ui.gooseboy.crate_update_failed.body": "Check the console for more information",
