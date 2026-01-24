@@ -9,6 +9,7 @@ import com.dylibso.chicory.runtime.TrapException;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
 
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -25,12 +26,14 @@ public class GooseboyCrate implements AutoCloseable {
 	public boolean isMiniView;
 	public int fbWidth;
 	public int fbHeight;
+	public Path goosePath;
 
-	public GooseboyCrate(Instance instance, String name, CrateMeta meta) {
+	public GooseboyCrate(Instance instance, String name, CrateMeta meta, Path goosePath) {
 		this.instance = instance;
 		this.name = name;
 		this.permissions = this.loadPermissions();
 		this.isMiniView = meta.allowsMovement;
+		this.goosePath = goosePath;
 		this.init(meta);
 	}
 
@@ -38,7 +41,7 @@ public class GooseboyCrate implements AutoCloseable {
 		this.fbWidth = meta.framebufferWidth;
 		this.fbHeight = meta.framebufferHeight;
 		this.fbSize = fbWidth * fbHeight * 4;
-		this.storage = new CrateStorage(this.name);
+		this.storage = new CrateStorage(this.name, this.goosePath);
 
 		// Free the binary, as we don't need it anymore
 		meta.binary = null;

@@ -7,12 +7,14 @@ import net.fabricmc.api.ModInitializer;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.resources.ResourceLocation;
 import org.apache.commons.lang3.tuple.Pair;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class Gooseboy implements ModInitializer {
@@ -21,27 +23,53 @@ public class Gooseboy implements ModInitializer {
 
 	public static ClientCommonBridge ccb;
 
-	public static Path getGooseboyDirectory() {
-		Path gameDir = FabricLoader.getInstance().getGameDir();
-		Path gooseboyDir = gameDir.resolve("gooseboy");
-
+	private static void makeDirectories(Path base) {
 		try {
-			Files.createDirectories(gooseboyDir);
-			Files.createDirectories(gooseboyDir.resolve("crates"));
-			Files.createDirectories(gooseboyDir.resolve("storage"));
-			Files.createDirectories(gooseboyDir.resolve("cache"));
+			Files.createDirectories(base);
+			Files.createDirectories(base.resolve("crates"));
+			Files.createDirectories(base.resolve("storage"));
+			Files.createDirectories(base.resolve("cache"));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
 
+	public static Path getGooseboyDirectory() {
+		Path gameDir = FabricLoader.getInstance()
+				.getGameDir();
+		Path gooseboyDir = gameDir.resolve("gooseboy");
+		makeDirectories(gooseboyDir);
 		return gooseboyDir;
+	}
+
+	public static @Nullable Path getHomeGooseboyDirectory() {
+		String home = System.getenv("HOME");
+		if (home == null || home.isEmpty()) {
+			home = System.getenv("USERPROFILE");
+
+			if (home == null || home.isEmpty()) {
+				return null;
+			}
+		}
+
+		Path folder = Paths.get(home)
+				.resolve(".gooseboy");
+		makeDirectories(folder);
+		return folder;
+	}
+
+	public static Path getGooseboyCratesDirectory() {
+		return Gooseboy.getGooseboyDirectory()
+				.resolve("crates");
 	}
 
 	private static final ConcurrentHashMap<Instance, Pair<GooseboyCrate, CrateMeta>> runningCrates = new ConcurrentHashMap<>();
 
 	public static GooseboyCrate getCrate(Instance instance) {
-		return runningCrates.get(instance).getLeft();
+		return runningCrates.get(instance)
+				.getLeft();
 	}
+
 	public static CrateMeta getCrateMeta(Instance instance) {
 		return runningCrates.get(instance)
 				.getRight();

@@ -17,17 +17,18 @@ public class CrateStorage {
 	private final Path filePath;
 	private boolean dirty = false;
 
-	public CrateStorage(String name) {
-		this.filePath = resolveFilePath(name);
+	public CrateStorage(String name, Path goosePath) {
+		this.filePath = resolveFilePath(goosePath, name);
 		this.load();
 	}
 
-	public static Path resolveFilePath(String name) {
-		return Gooseboy.getGooseboyDirectory().resolve("storage").resolve(name + ".bin");
+	public static Path resolveFilePath(Path goosePath, String name) {
+		return goosePath.resolve("storage")
+				.resolve(name + ".bin");
 	}
 
-	public static long getSizeOf(String name) {
-		Path filePath = resolveFilePath(name);
+	public static long getSizeOf(String name, Path goosePath) {
+		Path filePath = resolveFilePath(goosePath, name);
 
 		if (!Files.exists(filePath)) {
 			return 0;

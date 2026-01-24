@@ -13,17 +13,19 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import org.apache.commons.lang3.tuple.Pair;
 
+import java.nio.file.Path;
+
 public class CrateSettingsScreen extends Screen {
 	private final HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this, 20, 20);
 	protected final CrateSettingsList list;
 	private final String crateName;
 	private final Screen parent;
 
-	public CrateSettingsScreen(Screen parent, String crateName) {
+	public CrateSettingsScreen(Screen parent, String crateName, Path goosePath) {
 		super(Component.translatable("ui.gooseboy.settings.title", crateName));
 		this.crateName = crateName;
 		this.parent = parent;
-		this.list = new CrateSettingsList(Minecraft.getInstance(), 0, 0, 200, 200, crateName);
+		this.list = new CrateSettingsList(Minecraft.getInstance(), 0, 0, 200, 200, crateName, goosePath);
 		this.layout.addToContents(this.list);
 	}
 

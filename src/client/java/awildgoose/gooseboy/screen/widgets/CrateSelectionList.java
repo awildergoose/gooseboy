@@ -41,13 +41,15 @@ public class CrateSelectionList extends ObjectSelectionList<CrateSelectionList.E
 		this.clearEntries();
 		List<PathOrCrate> crates = Wasm.listWasmCrates()
 				.stream()
-				.map(f -> new PathOrCrate(f, null))
+				.map(f -> new PathOrCrate(f.getLeft(), f.getRight(), null))
 				.collect(Collectors.toList());
 		if (!allCrates) {
 			crates = Gooseboy.getCrates()
 					.values()
 					.stream()
-					.map(gooseboyCrateCrateMetaPair -> new PathOrCrate(null, gooseboyCrateCrateMetaPair.getLeft()))
+					.map(gooseboyCrateCrateMetaPair -> new PathOrCrate(gooseboyCrateCrateMetaPair.getLeft().goosePath,
+																	   null,
+																	   gooseboyCrateCrateMetaPair.getLeft()))
 					.collect(Collectors.toList());
 		}
 
@@ -79,7 +81,7 @@ public class CrateSelectionList extends ObjectSelectionList<CrateSelectionList.E
 		LAST_MODIFIED
 	}
 
-	record PathOrCrate(Path path, GooseboyCrate crate) {
+	record PathOrCrate(Path goosePath, Path path, GooseboyCrate crate) {
 		public String getFileName() {
 			return this.hasCrate() ? crate.name : this.path.getFileName()
 					.toString();
@@ -178,7 +180,10 @@ public class CrateSelectionList extends ObjectSelectionList<CrateSelectionList.E
 				}
 
 				// settings
-				minecraft.setScreen(new CrateSettingsScreen(parent, text));
+				minecraft.setScreen(new CrateSettingsScreen(
+						parent, text, poc.path.getParent()
+						.getParent()
+				));
 			});
 		}
 

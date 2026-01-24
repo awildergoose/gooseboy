@@ -8,16 +8,13 @@ import com.dylibso.chicory.runtime.Instance;
 import com.dylibso.chicory.wasm.ChicoryException;
 import com.google.gson.*;
 import org.apache.commons.lang3.tuple.Pair;
-import org.jetbrains.annotations.Nullable;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
@@ -39,34 +36,6 @@ public class CrateLoader {
 						}
 					})
 			.create();
-
-	public static @Nullable Path getHomeGooseboyCratesFolder() {
-		String home = System.getenv("HOME");
-		if (home == null || home.isEmpty()) {
-			home = System.getenv("USERPROFILE");
-
-			if (home == null || home.isEmpty()) {
-				return null;
-			}
-		}
-
-		Path folder = Paths.get(home)
-				.resolve(".gooseboy");
-
-		if (!Files.exists(folder)) {
-			try {
-				Files.createDirectories(folder);
-			} catch (IOException ignored) {
-			}
-		}
-
-		return folder;
-	}
-
-	public static Path getGooseboyCratesPath() {
-		return Gooseboy.getGooseboyDirectory()
-				.resolve("crates");
-	}
 
 	public static CrateMeta loadCrate(Path path) throws IOException, JsonSyntaxException {
 		File file = path.toFile();
@@ -112,6 +81,9 @@ public class CrateLoader {
 	}
 
 	public static GooseboyCrate makeCrate(Path path) throws IOException, ChicoryException, CrateLoaderException {
+		// TODO is this really a good way of doing it?
+		Path goosePath = path.getParent()
+				.getParent();
 		String filename = path.getFileName()
 				.toString();
 		CrateMeta meta = CrateLoader.loadCrate(path);
@@ -134,9 +106,9 @@ public class CrateLoader {
 		Pair<Integer, Integer> memoryLimits = ConfigManager.getMemoryLimits(filename);
 		int initialMemory = memoryLimits.getLeft();
 		int maxMemory = memoryLimits.getRight();
-		Instance instance = Wasm.createInstance(wasm, initialMemory, maxMemory);
+		Instance instance = Wasm.createInstance(wasm, initialMemory, maxMemory, goosePath);
 
-		return new GooseboyCrate(instance, filename, meta);
+		return new GooseboyCrate(instance, filename, meta, goosePath);
 	}
 
 	public static class CrateLoaderException extends Exception {

@@ -16,6 +16,7 @@ import net.minecraft.network.chat.Component;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
@@ -43,12 +44,13 @@ public class CrateSettingsList extends ObjectSelectionList<CrateSettingsList.Ent
 		}
 	}
 
-	public CrateSettingsList(Minecraft minecraft, int i, int j, int k, int l, String crateName) {
+	public CrateSettingsList(Minecraft minecraft, int i, int j, int k, int l, String crateName, Path goosePath) {
 		super(minecraft, i, j, k, l);
 		this.permissions = new ArrayList<>(ConfigManager.getEffectivePermissions(crateName));
 		this.memoryLimits = ConfigManager.getMemoryLimits(crateName);
 		this.addEntry(new TextEntry(minecraft, this,
-									"ui.gooseboy.settings.allocated", formatBytes(CrateStorage.getSizeOf(crateName))));
+									"ui.gooseboy.settings.allocated",
+									formatBytes(CrateStorage.getSizeOf(crateName, goosePath))));
 		this.addEntry(new TextEntry(minecraft, this, "ui.gooseboy.settings.initial_memory"));
 		this.addEntry(new NumberEditEntry(minecraft, this, "ui.gooseboy.settings.initial_memory",
 										  memoryLimits.getLeft()

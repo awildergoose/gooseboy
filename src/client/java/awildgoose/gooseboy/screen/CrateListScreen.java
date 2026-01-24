@@ -1,7 +1,6 @@
 package awildgoose.gooseboy.screen;
 
 import awildgoose.gooseboy.Gooseboy;
-import awildgoose.gooseboy.crate.CrateLoader;
 import awildgoose.gooseboy.screen.widgets.CrateSelectionList;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
@@ -39,7 +38,7 @@ public class CrateListScreen extends Screen {
 			}
 
 			try {
-				Files.copy(path, CrateLoader.getGooseboyCratesPath()
+				Files.copy(path, Gooseboy.getGooseboyCratesDirectory()
 						.resolve(path.getFileName()));
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -79,9 +78,7 @@ public class CrateListScreen extends Screen {
 		footer.addChild(Button.builder(
 						Component.translatable("ui.gooseboy.open_crates_folder"),
 						(b) -> Util.getPlatform()
-								.openPath(Gooseboy.getGooseboyDirectory()
-												  .resolve(
-														  "crates")))
+								.openPath(Gooseboy.getGooseboyCratesDirectory()))
 								.build(), (v) -> v.alignHorizontallyCenter()
 				.paddingTop(-5));
 		footer.addChild(Button.builder(

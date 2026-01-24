@@ -1,6 +1,5 @@
 package awildgoose.gooseboy;
 
-import awildgoose.gooseboy.crate.CrateLoader;
 import awildgoose.gooseboy.lib.Registrar;
 import com.dylibso.chicory.compiler.MachineFactoryCompiler;
 import com.dylibso.chicory.experimental.dircache.DirectoryCache;
@@ -10,6 +9,7 @@ import com.dylibso.chicory.wasm.ChicoryException;
 import com.dylibso.chicory.wasm.Parser;
 import com.dylibso.chicory.wasm.WasmModule;
 import com.dylibso.chicory.wasm.types.MemoryLimits;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.IOException;
 import java.net.JarURLConnection;
@@ -32,10 +32,12 @@ public class Wasm {
 				.endsWith(".gbcrate");
 	}
 
-	public static List<Path> listWasmCrates() {
-		Map<String, Path> crates = new LinkedHashMap<>();
+	public static List<Pair<Path, Path>> listWasmCrates() {
+		// Pair<goosePath, cratePath>
+		Map<String, Pair<Path, Path>> crates = new LinkedHashMap<>();
 
-		Consumer<Stream<Path>> addWasmFiles = stream ->
+		Consumer<Path> addWasmFiles = path -> {
+			try (Stream<Path> stream = Files.list(path.resolve("crates"))) {
 				stream.filter(Files::isRegularFile)
 						.filter(f -> isValidGooseboyFilename(f.getFileName()
 																	 .toString()))
@@ -48,25 +50,21 @@ public class Wasm {
 										"ui.gooseboy.duplicate_crate.body", filename);
 								return;
 							}
-							crates.put(filename, f.toAbsolutePath()
-									.normalize());
+							crates.put(filename, Pair.of(path, f.toAbsolutePath()
+									.normalize()));
 						});
-
-		Path wasmPath = Gooseboy.getGooseboyDirectory()
-				.resolve("crates");
-		if (Files.exists(wasmPath)) {
-			try (Stream<Path> stream = Files.list(wasmPath)) {
-				addWasmFiles.accept(stream);
 			} catch (IOException ignored) {
 			}
+		};
+
+		Path wasmPath = Gooseboy.getGooseboyDirectory();
+		if (Files.exists(wasmPath)) {
+			addWasmFiles.accept(wasmPath);
 		}
 
-		Path homePath = CrateLoader.getHomeGooseboyCratesFolder();
+		Path homePath = Gooseboy.getHomeGooseboyDirectory();
 		if (homePath != null && Files.exists(homePath)) {
-			try (Stream<Path> stream = Files.list(homePath)) {
-				addWasmFiles.accept(stream);
-			} catch (IOException ignored) {
-			}
+			addWasmFiles.accept(homePath);
 		}
 
 		try {
@@ -96,14 +94,12 @@ public class Wasm {
 									.toAbsolutePath()
 									.normalize();
 							Path full = jarFilePath.resolve(name);
-							crates.put(filename, full);
+							crates.put(filename, Pair.of(homePath, full));
 						}
 					}
 				} else if ("file".equals(resource.getProtocol())) {
 					Path dir = Paths.get(resource.toURI());
-					try (Stream<Path> stream = Files.list(dir)) {
-						addWasmFiles.accept(stream);
-					}
+					addWasmFiles.accept(dir);
 				}
 			}
 		} catch (Exception ignored) {
@@ -117,7 +113,7 @@ public class Wasm {
 	}
 
 	public static Instance createInstance(byte[] wasm, int initialMemoryKilobytes,
-										  int maximumMemoryKilobytes) throws ChicoryException {
+										  int maximumMemoryKilobytes, Path goosePath) throws ChicoryException {
 		int initialPages = kilobytesToPages(initialMemoryKilobytes);
 		int maxPages = kilobytesToPages(maximumMemoryKilobytes);
 
@@ -129,8 +125,7 @@ public class Wasm {
 		if (!ConfigManager.getConfig().use_interpreter) {
 			MachineFactoryCompiler.Builder machine = MachineFactoryCompiler.builder(module);
 			if (ConfigManager.getConfig().experimental_use_compiler_cache)
-				machine.withCache(new DirectoryCache(Gooseboy.getGooseboyDirectory()
-															 .resolve("cache")));
+				machine.withCache(new DirectoryCache(goosePath.resolve("cache")));
 			builder.withMachineFactory(
 					machine.compile());
 		}
