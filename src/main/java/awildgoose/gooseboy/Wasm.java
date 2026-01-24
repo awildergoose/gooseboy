@@ -68,18 +68,19 @@ public class Wasm {
 		}
 
 		try {
-			URL resource = Gooseboy.class.getResource("/assets/gooseboy/crates/");
+			URL resource = Gooseboy.class.getResource("/assets/" + Gooseboy.MOD_ID + "/gooseboy/");
 			if (resource != null) {
-				if ("jar".equals(resource.getProtocol())) {
+				if (resource.getProtocol()
+						.equals("jar")) {
 					JarURLConnection jarConnection = (JarURLConnection) resource.openConnection();
 					JarFile jarFile = jarConnection.getJarFile();
 					Enumeration<JarEntry> entries = jarFile.entries();
 					while (entries.hasMoreElements()) {
 						JarEntry entry = entries.nextElement();
 						String name = entry.getName();
-						if (name.startsWith("assets/gooseboy/crates/")
-								&& isValidGooseboyFilename(name)) {
 
+						if (name.startsWith("assets/" + Gooseboy.MOD_ID + "/gooseboy/") && isValidGooseboyFilename(
+								name)) {
 							String filename = Paths.get(name)
 									.getFileName()
 									.toString();
@@ -97,7 +98,8 @@ public class Wasm {
 							crates.put(filename, Pair.of(homePath, full));
 						}
 					}
-				} else if ("file".equals(resource.getProtocol())) {
+				} else if (resource.getProtocol()
+						.equals("file")) {
 					Path dir = Paths.get(resource.toURI());
 					addWasmFiles.accept(dir);
 				}

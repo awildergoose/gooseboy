@@ -41,6 +41,8 @@ public class CrateLoader {
 		File file = path.toFile();
 		CrateMeta meta;
 
+		// TODO
+		// java.nio.file.NoSuchFileException: instances\Minecraft12110withFabric\mods\gooseboy-1.3.0.jar\assets\gooseboy\gooseboy\crates\tests.gbcrate
 		try (ZipFile zipFile = new ZipFile(file)) {
 			ZipEntry crateEntry = zipFile.getEntry("crate.json");
 			if (crateEntry == null)
