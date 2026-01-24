@@ -29,6 +29,7 @@ public class Gooseboy implements ModInitializer {
 			Files.createDirectories(gooseboyDir);
 			Files.createDirectories(gooseboyDir.resolve("crates"));
 			Files.createDirectories(gooseboyDir.resolve("storage"));
+			Files.createDirectories(gooseboyDir.resolve("cache"));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

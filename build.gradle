@@ -42,6 +42,7 @@ dependencies {
 	shade "com.dylibso.chicory:runtime:${project.chicory_version}"
 	shade "com.dylibso.chicory:annotations:${project.chicory_version}"
 	shade "com.dylibso.chicory:compiler:${project.chicory_version}"
+	shade "com.dylibso.chicory:dircache-experimental:${project.chicory_version}"
 	annotationProcessor "com.dylibso.chicory:annotations-processor:${project.chicory_version}"
 }
 

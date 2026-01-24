@@ -1,7 +1,10 @@
 package awildgoose.gooseboy;
 
 import awildgoose.gooseboy.crate.GooseboyCrate;
-import com.google.gson.*;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonDeserializer;
+import com.google.gson.Strictness;
 import net.fabricmc.loader.api.FabricLoader;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -37,6 +40,7 @@ public final class ConfigManager {
 	public static class RootConfig {
 		@SuppressWarnings("unused") public String version = "1.1.0";
 		public boolean use_interpreter = false;
+		public boolean experimental_use_compiler_cache = false;
 		public Map<String, CrateSettings> crate_settings = new HashMap<>();
 		public CrateSettings default_crate_settings = new CrateSettings();
 	}

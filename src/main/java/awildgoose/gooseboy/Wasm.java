@@ -3,6 +3,7 @@ package awildgoose.gooseboy;
 import awildgoose.gooseboy.crate.CrateLoader;
 import awildgoose.gooseboy.lib.Registrar;
 import com.dylibso.chicory.compiler.MachineFactoryCompiler;
+import com.dylibso.chicory.experimental.dircache.DirectoryCache;
 import com.dylibso.chicory.runtime.ImportValues;
 import com.dylibso.chicory.runtime.Instance;
 import com.dylibso.chicory.wasm.ChicoryException;
@@ -125,9 +126,14 @@ public class Wasm {
 				.withImportValues(Registrar.register(ImportValues.builder())
 										  .build());
 
-		if (!ConfigManager.getConfig().use_interpreter)
+		if (!ConfigManager.getConfig().use_interpreter) {
+			MachineFactoryCompiler.Builder machine = MachineFactoryCompiler.builder(module);
+			if (ConfigManager.getConfig().experimental_use_compiler_cache)
+				machine.withCache(new DirectoryCache(Gooseboy.getGooseboyDirectory()
+															 .resolve("cache")));
 			builder.withMachineFactory(
-					MachineFactoryCompiler::compile);
+					machine.compile());
+		}
 
 		builder.withMemoryLimits(
 				new MemoryLimits(initialPages, maxPages)

@@ -16,7 +16,17 @@ public final class Console {
 	public void log(Instance instance, int ptr, int len) {
 		if (CrateUtils.doesNotHavePermission(instance, GooseboyCrate.Permission.CONSOLE))
 			return;
-		Gooseboy.LOGGER.info("[{}] {}", Gooseboy.getCrate(instance).name, instance.memory().readString(ptr, len));
+
+		String text = instance.memory()
+				.readString(ptr, len);
+		String name = Gooseboy.getCrate(instance).name;
+
+		if (text.startsWith("PANIC at ")) {
+			Gooseboy.ccb.doErrorMessage("Crate panic", text);
+			Gooseboy.LOGGER.error("[{}] {}", name, text);
+		} else {
+			Gooseboy.LOGGER.info("[{}] {}", name, text);
+		}
 	}
 
 	public HostFunction[] toHostFunctions() {
