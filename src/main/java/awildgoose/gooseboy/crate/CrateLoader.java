@@ -8,18 +8,18 @@ import com.dylibso.chicory.runtime.Instance;
 import com.dylibso.chicory.wasm.ChicoryException;
 import com.google.gson.*;
 import org.apache.commons.lang3.tuple.Pair;
+import org.jetbrains.annotations.NotNull;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
-import java.util.Objects;
+import java.nio.file.Paths;
+import java.util.*;
 import java.util.function.Function;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+import java.util.zip.ZipInputStream;
 
 public class CrateLoader {
 	private static final Gson GSON = new GsonBuilder()
@@ -37,48 +37,95 @@ public class CrateLoader {
 					})
 			.create();
 
-	public static CrateMeta loadCrate(Path path) throws IOException, JsonSyntaxException {
-		File file = path.toFile();
-		CrateMeta meta;
+	public static byte[] readAllBytesPossiblyFromJar(Path path) throws IOException {
+		String raw = path.toString();
+		String norm = raw.replace('\\', '/');
 
-		// TODO
-		// java.nio.file.NoSuchFileException: instances\Minecraft12110withFabric\mods\gooseboy-1.3.0.jar\assets\gooseboy\gooseboy\crates\tests.gbcrate
-		try (ZipFile zipFile = new ZipFile(file)) {
-			ZipEntry crateEntry = zipFile.getEntry("crate.json");
-			if (crateEntry == null)
-				throw new RuntimeException("Meta missing");
+		// last .jar (for paths like G:/some.jar/assets/some.png)
+		int jarIdx = norm.toLowerCase(Locale.ROOT)
+				.lastIndexOf(".jar");
 
-			try (InputStream in = zipFile.getInputStream(crateEntry)) {
-				meta = GSON.fromJson(new String(in.readAllBytes(), StandardCharsets.UTF_8), CrateMeta.class);
+		if (jarIdx != -1) {
+			String jarPathStr = norm.substring(0, jarIdx + 4);
+			String entryPath = "";
+			if (jarIdx + 4 < norm.length()) {
+				int next = jarIdx + 4;
+				if (norm.charAt(next) == '/') next++;
+				entryPath = norm.substring(next);
 			}
 
-			if (meta == null)
-				throw new RuntimeException("Meta failed");
+			Path jarPath = Paths.get(jarPathStr);
 
-			Function<String, ZipEntry> find = name -> {
-				ZipEntry e = zipFile.getEntry(name);
-				if (e == null)
-					throw new RuntimeException("Missing file in crate: " + name);
-				return e;
-			};
+			if (Files.exists(jarPath) && !entryPath.isEmpty()) {
+				String zipEntryName = entryPath.replace('\\', '/');
 
-			if (meta.icon != null) {
-				try (InputStream in = zipFile.getInputStream(find.apply(meta.icon))) {
-					meta.iconImage = RawImage.load((ByteArrayInputStream) in);
+				try (ZipFile zip = new ZipFile(jarPath.toFile())) {
+					ZipEntry entry = zip.getEntry(zipEntryName);
+					if (entry == null) entry = zip.getEntry("/" + zipEntryName);
+					if (entry == null) throw new FileNotFoundException(
+							"Entry not found in jar: %s".formatted(zipEntryName));
+
+					try (InputStream in = zip.getInputStream(entry)) {
+						return in.readAllBytes();
+					}
 				}
-			}
-
-			if (meta.banner != null) {
-				try (InputStream in = zipFile.getInputStream(find.apply(meta.banner))) {
-					meta.bannerImage = RawImage.load((ByteArrayInputStream) in);
-				}
-			}
-
-			try (InputStream in = zipFile.getInputStream(find.apply(meta.entrypoint))) {
-				meta.binary = in.readAllBytes();
 			}
 		}
 
+		Path p = Paths.get(raw);
+		if (Files.exists(p)) {
+			return Files.readAllBytes(p);
+		}
+
+		throw new FileNotFoundException("File not found: %s".formatted(raw));
+	}
+
+	public static CrateMeta loadCrate(Path path) throws IOException, JsonSyntaxException {
+		byte[] crateBytes = readAllBytesPossiblyFromJar(path);
+
+		Map<String, byte[]> entries = new HashMap<>();
+		try (ByteArrayInputStream bais = new ByteArrayInputStream(crateBytes);
+			 ZipInputStream zis = new ZipInputStream(bais)) {
+			ZipEntry ze;
+			byte[] buf = new byte[8192];
+			while ((ze = zis.getNextEntry()) != null) {
+				ByteArrayOutputStream baos = new ByteArrayOutputStream();
+				int r;
+				while ((r = zis.read(buf)) != -1) {
+					baos.write(buf, 0, r);
+				}
+				entries.put(ze.getName(), baos.toByteArray());
+				zis.closeEntry();
+			}
+		}
+
+		Function<@NotNull String, byte[]> find = (name) -> {
+			byte[] data = entries.get(name);
+			if (data == null) throw new RuntimeException("Missing file in crate: %s".formatted(name));
+			return data;
+		};
+
+		byte[] metaBytes = entries.get("crate.json");
+		if (metaBytes == null) throw new RuntimeException("Crate meta missing");
+
+		CrateMeta meta = GSON.fromJson(new String(metaBytes, StandardCharsets.UTF_8), CrateMeta.class);
+		if (meta == null) throw new RuntimeException("Failed to parse crate meta");
+
+		if (meta.icon != null) {
+			byte[] iconBytes = find.apply(meta.icon);
+			try (ByteArrayInputStream in = new ByteArrayInputStream(iconBytes)) {
+				meta.iconImage = RawImage.load(in);
+			}
+		}
+
+		if (meta.banner != null) {
+			byte[] bannerBytes = find.apply(meta.banner);
+			try (ByteArrayInputStream in = new ByteArrayInputStream(bannerBytes)) {
+				meta.bannerImage = RawImage.load(in);
+			}
+		}
+
+		meta.binary = find.apply(meta.entrypoint);
 		return meta;
 	}
 
