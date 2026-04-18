@@ -55,9 +55,12 @@ public class CrateListScreen extends Screen {
 	}
 
 	public void reloadList(boolean rebuild) {
-		this.layout = new HeaderAndFooterLayout(this, 20, 20);
+		CrateSelectionList.Sort sort = CrateSelectionList.Sort.LAST_MODIFIED;
+		if (this.list != null)
+			sort = this.list.sort;
+		this.layout = new HeaderAndFooterLayout(this, 30, 30);
 		this.list = new CrateSelectionList(
-				this, Minecraft.getInstance(), 0, 0, 200, 200, CrateSelectionList.Sort.LAST_MODIFIED);
+				this, Minecraft.getInstance(), 0, 0, 200, 200, sort);
 		this.layout.addToContents(this.list);
 		if (rebuild)
 			this.rebuildWidgets();
@@ -65,7 +68,6 @@ public class CrateListScreen extends Screen {
 
 	@Override
 	protected void init() {
-		// TODO translate all_crates and running_crates
 		LinearLayout header = this.layout.addToHeader(LinearLayout.horizontal()
 															  .spacing(4));
 
@@ -84,13 +86,13 @@ public class CrateListScreen extends Screen {
 								(b) -> Util.getPlatform()
 										.openPath(Gooseboy.getGooseboyCratesDirectory()))
 						.build(), (v) -> v.alignHorizontallyCenter()
-						.paddingTop(-5));
+						.alignVerticallyMiddle());
 		footer.addChild(
 				Button.builder(
 								Component.translatable("ui.gooseboy.refresh"),
 								(b) -> this.reloadList(true))
 						.build(), (v) -> v.alignHorizontallyCenter()
-						.paddingTop(-5));
+						.alignVerticallyMiddle());
 		footer.addChild(
 				Button.builder(
 								Component.translatable("ui.gooseboy.sort." + list.sort.name()),
@@ -100,7 +102,7 @@ public class CrateListScreen extends Screen {
 									this.reloadList(true);
 								})
 						.build(), (v) -> v.alignHorizontallyCenter()
-						.paddingTop(-5));
+						.alignVerticallyMiddle());
 		this.layout.visitWidgets(this::addRenderableWidget);
 		this.repositionElements();
 	}

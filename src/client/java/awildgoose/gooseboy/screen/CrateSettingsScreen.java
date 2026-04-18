@@ -35,7 +35,7 @@ public class CrateSettingsScreen extends Screen {
 															  .spacing(4));
 		header.addChild(new StringWidget(this.title, this.font), LayoutSettings::alignHorizontallyCenter);
 		this.layout.addToFooter(
-				Button.builder(Component.translatable("gui.ok"), (b) -> this.onClose())
+				Button.builder(Component.translatable("gui.done"), (b) -> this.onClose())
 						.build(),
 				(v) -> v.alignHorizontallyCenter()
 						.paddingTop(-10));

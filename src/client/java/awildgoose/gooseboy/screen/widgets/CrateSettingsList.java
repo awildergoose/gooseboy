@@ -13,6 +13,7 @@ import net.minecraft.client.input.CharacterEvent;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.Style;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
 
@@ -30,10 +31,10 @@ public class CrateSettingsList extends ObjectSelectionList<CrateSettingsList.Ent
 		this.permissions = new ArrayList<>(ConfigManager.getEffectivePermissions(crateName));
 		this.memoryLimits = ConfigManager.getMemoryLimits(crateName);
 		this.addEntry(new TextEntry(
-				minecraft, this,
+				minecraft, this, true,
 				"ui.gooseboy.settings.allocated",
 				formatBytes(CrateStorage.getSizeOf(crateName, goosePath))));
-		this.addEntry(new TextEntry(minecraft, this, "ui.gooseboy.settings.initial_memory"));
+		this.addEntry(new TextEntry(minecraft, this, true, "ui.gooseboy.settings.initial_memory"));
 		this.addEntry(new NumberEditEntry(
 				minecraft, this, "ui.gooseboy.settings.initial_memory",
 				memoryLimits.getLeft()
@@ -43,7 +44,7 @@ public class CrateSettingsList extends ObjectSelectionList<CrateSettingsList.Ent
 			int n = Integer.parseInt(s);
 			this.memoryLimits = Pair.of(n, this.memoryLimits.getRight());
 		}));
-		this.addEntry(new TextEntry(minecraft, this, "ui.gooseboy.settings.maximum_memory"));
+		this.addEntry(new TextEntry(minecraft, this, true, "ui.gooseboy.settings.maximum_memory"));
 		this.addEntry(new NumberEditEntry(
 				minecraft, this, "ui.gooseboy.settings.maximum_memory",
 				memoryLimits.getRight()
@@ -53,7 +54,7 @@ public class CrateSettingsList extends ObjectSelectionList<CrateSettingsList.Ent
 			int n = Integer.parseInt(s);
 			this.memoryLimits = Pair.of(this.memoryLimits.getLeft(), n);
 		}));
-		this.addEntry(new TextEntry(minecraft, this, "ui.gooseboy.settings.permissions"));
+		this.addEntry(new TextEntry(minecraft, this, true, "ui.gooseboy.settings.permissions"));
 
 		for (GooseboyCrate.Permission permission : GooseboyCrate.Permission.values()) {
 			String title = "ui.gooseboy.settings.permission.%s".formatted(permission.name());
@@ -70,9 +71,7 @@ public class CrateSettingsList extends ObjectSelectionList<CrateSettingsList.Ent
 	}
 
 	public static String formatBytes(long bytes) {
-		if (bytes < 1024) return bytes + " B";
-
-		final String[] units = {"B", "KB", "MB", "GB", "TB", "PB"};
+		final String[] units = {"bytes", "kilobytes", "megabytes"};
 		int unitIndex = 0;
 		double value = bytes;
 
@@ -118,10 +117,13 @@ public class CrateSettingsList extends ObjectSelectionList<CrateSettingsList.Ent
 	public static class TextEntry extends Entry {
 		private final StringWidget text;
 
-		public TextEntry(Minecraft minecraft, CrateSettingsList list, String text, Object... o) {
+		public TextEntry(Minecraft minecraft, CrateSettingsList list, boolean bold, String text, Object... o) {
 			super(minecraft, list, text);
 			int i = list.getRowWidth() - this.getTextX() - 2;
 			Component component = Component.translatable(text, o);
+			component = Component.empty()
+					.withStyle(Style.EMPTY.withBold(bold))
+					.append(component);
 			this.text = new StringWidget(component, minecraft.font);
 			this.text.setMaxWidth(i);
 		}
@@ -132,7 +134,7 @@ public class CrateSettingsList extends ObjectSelectionList<CrateSettingsList.Ent
 		}
 
 		private int getTextX() {
-			return this.getContentX() + 16 + 4;
+			return this.getContentX() + 4;
 		}
 
 		@Override
