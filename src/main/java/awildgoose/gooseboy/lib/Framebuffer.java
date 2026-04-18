@@ -31,9 +31,9 @@ public final class Framebuffer {
 
 	@WasmExport
 	public void blit_premultiplied_clipped(Instance instance, int destPtr, int dstW, int dstH, int destX, int destY,
-										   int srcW, int srcH,
-										   int srcPtr,
-										   int blendI) {
+	                                       int srcW, int srcH,
+	                                       int srcPtr,
+	                                       int blendI) {
 		boolean blend = blendI != 0;
 
 		if (srcW <= 0 || srcH <= 0 || dstW <= 0 || dstH <= 0) return;

@@ -21,14 +21,16 @@ public final class ConfigManager {
 	private static final Gson GSON = new GsonBuilder()
 			.setPrettyPrinting()
 			.setStrictness(Strictness.LENIENT)
-			.registerTypeAdapter(GooseboyCrate.Permission.class, (JsonDeserializer<GooseboyCrate.Permission>) (json, typeOfT, ctx) -> {
-				try {
-					return GooseboyCrate.Permission.valueOf(json.getAsString());
-				} catch (Exception e) {
-					Gooseboy.LOGGER.warn("Unknown permission: '" + json.getAsString() + "'");
-					return null;
-				}
-			})
+			.registerTypeAdapter(
+					GooseboyCrate.Permission.class,
+					(JsonDeserializer<GooseboyCrate.Permission>) (json, typeOfT, ctx) -> {
+						try {
+							return GooseboyCrate.Permission.valueOf(json.getAsString());
+						} catch (Exception e) {
+							Gooseboy.LOGGER.warn("Unknown permission: '{}'", json.getAsString());
+							return null;
+						}
+					})
 			.create();
 
 	public static class CrateSettings {
@@ -64,7 +66,8 @@ public final class ConfigManager {
 			} else {
 				config = new RootConfig();
 				config.default_crate_settings.permissions = Arrays.asList(
-						GooseboyCrate.Permission.CONSOLE, GooseboyCrate.Permission.INPUT_MOUSE, GooseboyCrate.Permission.INPUT_MOUSE_POS
+						GooseboyCrate.Permission.CONSOLE, GooseboyCrate.Permission.INPUT_MOUSE,
+						GooseboyCrate.Permission.INPUT_MOUSE_POS
 				);
 
 				save();
@@ -96,9 +99,11 @@ public final class ConfigManager {
 	public static synchronized void save() {
 		try {
 			Files.createDirectories(CONFIG_PATH.getParent());
-			Path tmp = CONFIG_PATH.resolveSibling(CONFIG_PATH.getFileName().toString() + ".tmp");
+			Path tmp = CONFIG_PATH.resolveSibling(CONFIG_PATH.getFileName()
+														  .toString() + ".tmp");
 
-			try (Writer w = Files.newBufferedWriter(tmp, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)) {
+			try (Writer w = Files.newBufferedWriter(
+					tmp, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)) {
 				GSON.toJson(getConfig(), w);
 			}
 

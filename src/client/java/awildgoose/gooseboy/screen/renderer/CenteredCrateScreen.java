@@ -19,7 +19,7 @@ public class CenteredCrateScreen extends CrateRendererScreen<CenteredCrateScreen
 		private static final int INSET_PIXELS = 5;
 
 		public Layout(double scale, int bgWidth, int bgHeight, int bgX, int bgY, int fbDestWidth, int fbDestHeight,
-					  int inset, int fbX, int fbY, int fbW, int fbH) {
+		              int inset, int fbX, int fbY, int fbW, int fbH) {
 			super(scale, bgWidth, bgHeight, bgX, bgY, fbDestWidth, fbDestHeight, inset, fbX, fbY, fbW, fbH);
 		}
 
@@ -39,7 +39,8 @@ public class CenteredCrateScreen extends CrateRendererScreen<CenteredCrateScreen
 			int fbX = bgX + inset;
 			int fbY = bgY + inset;
 
-			return new Layout(scale, bgWidth, bgHeight, bgX, bgY, fbDestWidth, fbDestHeight, inset, fbX, fbY, fbWidth
+			return new Layout(
+					scale, bgWidth, bgHeight, bgX, bgY, fbDestWidth, fbDestHeight, inset, fbX, fbY, fbWidth
 					, fbHeight);
 		}
 	}

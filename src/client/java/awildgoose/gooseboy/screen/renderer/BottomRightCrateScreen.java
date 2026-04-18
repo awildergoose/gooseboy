@@ -21,7 +21,7 @@ public class BottomRightCrateScreen extends CrateRendererScreen<BottomRightCrate
 		private static final double MAX_SCALE = 1.0;
 
 		public Layout(double scale, int bgWidth, int bgHeight, int bgX, int bgY, int fbDestWidth, int fbDestHeight,
-					  int inset, int fbX, int fbY, int fbW, int fbH) {
+		              int inset, int fbX, int fbY, int fbW, int fbH) {
 			super(scale, bgWidth, bgHeight, bgX, bgY, fbDestWidth, fbDestHeight, inset, fbX, fbY, fbW, fbH);
 		}
 
@@ -49,8 +49,9 @@ public class BottomRightCrateScreen extends CrateRendererScreen<BottomRightCrate
 			int fbX = bgX + inset;
 			int fbY = bgY + inset;
 
-			return new Layout(scale, bgWidth, bgHeight, bgX, bgY,
-							  fbDestWidth, fbDestHeight, inset, fbX, fbY, fbWidth, fbHeight);
+			return new Layout(
+					scale, bgWidth, bgHeight, bgX, bgY,
+					fbDestWidth, fbDestHeight, inset, fbX, fbY, fbWidth, fbHeight);
 		}
 	}
 }

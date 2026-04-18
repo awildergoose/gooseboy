@@ -14,9 +14,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(MouseHandler.class)
 @Environment(EnvType.CLIENT)
 public class DontTurnPlayerIfInCrateMixin {
-	@Inject(at = @At("HEAD"), method = "Lnet/minecraft/client/MouseHandler;turnPlayer(D)V", cancellable = true)
+	@Inject(at = @At("HEAD"), method = "turnPlayer(D)V", cancellable = true)
 	private void turnPlayer(double d, CallbackInfo ci) {
-		//noinspection ReferenceToMixin
 		MouseHandlerAccessor mouseHandler = (MouseHandlerAccessor) Minecraft.getInstance().mouseHandler;
 		WasmInputManager.LAST_ACCUMULATED_MOUSE_X = mouseHandler.gooseboy$getAccumulatedDX();
 		WasmInputManager.LAST_ACCUMULATED_MOUSE_Y = mouseHandler.gooseboy$getAccumulatedDY();

@@ -12,10 +12,13 @@ import java.util.zip.GZIPOutputStream;
 public class CrateStorage {
 	// TODO make this configurable per-crate
 	public static final int STORAGE_SIZE = 512 * 1024; // 512 KB
-
 	private final byte[] data = new byte[STORAGE_SIZE];
 	private final Path filePath;
 	private boolean dirty = false;
+
+	// file format handling
+	private static final byte[] FF_MAGIC = new byte[]{'g', 's', 'b', 'c', 'r', 'a', 't', 'e'};
+	private static final int FF_VERSION = 1;
 
 	public CrateStorage(String name, Path goosePath) {
 		this.filePath = resolveFilePath(goosePath, name);
@@ -70,13 +73,9 @@ public class CrateStorage {
 		return STORAGE_SIZE;
 	}
 
-	// File-Format handling
-	private static final byte[] FF_MAGIC = new byte[]{'g', 's', 'b', 'c', 'r', 'a', 't', 'e'};
-	private static final int FF_VERSION = 1;
-
 	public byte[] gzipCompressData() {
 		try (ByteArrayOutputStream output = new ByteArrayOutputStream();
-			 GZIPOutputStream gzip = new GZIPOutputStream(output)) {
+		     GZIPOutputStream gzip = new GZIPOutputStream(output)) {
 
 			gzip.write(data);
 			gzip.finish();
@@ -89,8 +88,8 @@ public class CrateStorage {
 
 	public byte[] decompressGZIPData(byte[] data) {
 		try (ByteArrayInputStream input = new ByteArrayInputStream(data);
-			 GZIPInputStream gzip = new GZIPInputStream(input);
-			 ByteArrayOutputStream output = new ByteArrayOutputStream()) {
+		     GZIPInputStream gzip = new GZIPInputStream(input);
+		     ByteArrayOutputStream output = new ByteArrayOutputStream()) {
 
 			byte[] buffer = new byte[4096];
 			int len;
@@ -139,8 +138,9 @@ public class CrateStorage {
 
 				byte[] compressed = in.readNBytes(compressedLength);
 				if (compressed.length != compressedLength) {
-					Gooseboy.LOGGER.error("Storage crate expected {} compressed bytes but read {}",
-										  compressedLength, compressed.length);
+					Gooseboy.LOGGER.error(
+							"Storage crate expected {} compressed bytes but read {}",
+							compressedLength, compressed.length);
 					return;
 				}
 
@@ -150,8 +150,9 @@ public class CrateStorage {
 				}
 
 				if (decompressed.length != uncompressedLength) {
-					Gooseboy.LOGGER.error("Storage crate uncompressed size {} != expected {}",
-										  decompressed.length, uncompressedLength);
+					Gooseboy.LOGGER.error(
+							"Storage crate uncompressed size {} != expected {}",
+							decompressed.length, uncompressedLength);
 					return;
 				}
 

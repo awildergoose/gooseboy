@@ -37,13 +37,13 @@ public class GooseboyClient implements ClientModInitializer {
 					.withVertexFormat(DefaultVertexFormat.POSITION_TEX, VertexFormat.Mode.QUADS)
 					.build()
 	);
+	public static final ConcurrentHashMap<Instance, GooseboyGpuRenderer> rendererByInstance = new ConcurrentHashMap<>();
+	public static final ConcurrentHashMap<Instance, MiniView> miniviewsByInstance = new ConcurrentHashMap<>();
 	private static final KeyMapping.Category keyMappingCategory = KeyMapping.Category.register(
 			Gooseboy.withLocation("wasm"));
 	public final KeyMapping keyOpenWasm = new KeyMapping(
 			"key.open_wasm", InputConstants.KEY_M,
 			keyMappingCategory);
-	public static final ConcurrentHashMap<Instance, GooseboyGpuRenderer> rendererByInstance = new ConcurrentHashMap<>();
-	public static final ConcurrentHashMap<Instance, MiniView> miniviewsByInstance = new ConcurrentHashMap<>();
 
 	@Override
 	public void onInitializeClient() {
@@ -63,21 +63,22 @@ public class GooseboyClient implements ClientModInitializer {
 				(context) -> WasmInputManager.update());
 		KeyBindingHelper.registerKeyBinding(keyOpenWasm);
 
-		HudElementRegistry.addLast(Gooseboy.withLocation("miniview"), (context, tickCounter) -> Gooseboy.getCrates()
-				.forEach((instance, cratePair) -> {
-					if (cratePair.getLeft().isMiniView) {
-						MiniView miniview;
+		HudElementRegistry.addLast(
+				Gooseboy.withLocation("miniview"), (context, tickCounter) -> Gooseboy.getCrates()
+						.forEach((instance, cratePair) -> {
+							if (cratePair.getLeft().isMiniView) {
+								MiniView miniview;
 
-						if (miniviewsByInstance.containsKey(instance)) {
-							miniview = miniviewsByInstance.get(instance);
-						} else {
-							miniview = new MiniView(cratePair.getLeft());
-							miniview.init();
-							miniviewsByInstance.put(instance, miniview);
-						}
+								if (miniviewsByInstance.containsKey(instance)) {
+									miniview = miniviewsByInstance.get(instance);
+								} else {
+									miniview = new MiniView(cratePair.getLeft());
+									miniview.init();
+									miniviewsByInstance.put(instance, miniview);
+								}
 
-						miniview.render(context);
-					}
-				}));
+								miniview.render(context);
+							}
+						}));
 	}
 }

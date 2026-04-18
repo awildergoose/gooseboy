@@ -7,7 +7,8 @@ import com.dylibso.chicory.runtime.Memory;
 
 @HostModule("memory")
 public final class Mem {
-	public Mem() {}
+	public Mem() {
+	}
 
 	@WasmExport
 	public void mem_fill(Memory memory, int address, int len, int value) {

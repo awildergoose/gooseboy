@@ -72,7 +72,8 @@ public class GooseboyCrate implements AutoCloseable {
 	}
 
 	public byte[] getFramebufferBytes() {
-		return this.instance.memory().readBytes(this.fbPtr, this.fbSize);
+		return this.instance.memory()
+				.readBytes(this.fbPtr, this.fbSize);
 	}
 
 	public void update() {
@@ -114,7 +115,8 @@ public class GooseboyCrate implements AutoCloseable {
 		INPUT_MOUSE_POS(4),
 		INPUT_GRAB_MOUSE(5),
 		STORAGE_READ(6),
-		STORAGE_WRITE(7);
+		STORAGE_WRITE(7),
+		GPU(8);
 
 		private final int id;
 
@@ -123,7 +125,9 @@ public class GooseboyCrate implements AutoCloseable {
 		}
 
 		public static Optional<Permission> intToEnum(int i) {
-			return Arrays.stream(Permission.values()).filter(f -> f.id == i).findFirst();
+			return Arrays.stream(Permission.values())
+					.filter(f -> f.id == i)
+					.findFirst();
 		}
 	}
 }

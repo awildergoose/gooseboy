@@ -31,20 +31,23 @@ public class CrateListScreen extends Screen {
 		// upload crate(s)
 		list.forEach(path -> {
 			if (!isValidGooseboyFilename(path.toString())) {
-				Gooseboy.ccb.doTranslatedErrorMessage("ui.gooseboy.upload_failed.title", "ui.gooseboy.upload_failed" +
-						".bad_filename", path.getFileName()
-															  .toString());
+				Gooseboy.ccb.doTranslatedErrorMessage(
+						"ui.gooseboy.upload_failed.title", "ui.gooseboy.upload_failed" +
+								".bad_filename", path.getFileName()
+								.toString());
 				return;
 			}
 
 			try {
-				Files.copy(path, Gooseboy.getGooseboyCratesDirectory()
-						.resolve(path.getFileName()));
+				Files.copy(
+						path, Gooseboy.getGooseboyCratesDirectory()
+								.resolve(path.getFileName()));
 			} catch (Exception e) {
 				e.printStackTrace();
-				Gooseboy.ccb.doTranslatedErrorMessage("ui.gooseboy.upload_failed.title", "ui.gooseboy.upload_failed" +
-						".body", path.getFileName()
-															  .toString());
+				Gooseboy.ccb.doTranslatedErrorMessage(
+						"ui.gooseboy.upload_failed.title", "ui.gooseboy.upload_failed" +
+								".body", path.getFileName()
+								.toString());
 			}
 		});
 
@@ -75,26 +78,29 @@ public class CrateListScreen extends Screen {
 
 		LinearLayout footer = this.layout.addToFooter(LinearLayout.horizontal()
 															  .spacing(4));
-		footer.addChild(Button.builder(
-						Component.translatable("ui.gooseboy.open_crates_folder"),
-						(b) -> Util.getPlatform()
-								.openPath(Gooseboy.getGooseboyCratesDirectory()))
-								.build(), (v) -> v.alignHorizontallyCenter()
-				.paddingTop(-5));
-		footer.addChild(Button.builder(
-						Component.translatable("ui.gooseboy.refresh"),
-						(b) -> this.reloadList(true))
-								.build(), (v) -> v.alignHorizontallyCenter()
-				.paddingTop(-5));
-		footer.addChild(Button.builder(
-						Component.translatable("ui.gooseboy.sort." + list.sort.name()),
-						(b) -> {
-							list.sort = list.sort == CrateSelectionList.Sort.FILENAME ?
-									CrateSelectionList.Sort.LAST_MODIFIED : CrateSelectionList.Sort.FILENAME;
-							this.reloadList(true);
-						})
-								.build(), (v) -> v.alignHorizontallyCenter()
-				.paddingTop(-5));
+		footer.addChild(
+				Button.builder(
+								Component.translatable("ui.gooseboy.open_crates_folder"),
+								(b) -> Util.getPlatform()
+										.openPath(Gooseboy.getGooseboyCratesDirectory()))
+						.build(), (v) -> v.alignHorizontallyCenter()
+						.paddingTop(-5));
+		footer.addChild(
+				Button.builder(
+								Component.translatable("ui.gooseboy.refresh"),
+								(b) -> this.reloadList(true))
+						.build(), (v) -> v.alignHorizontallyCenter()
+						.paddingTop(-5));
+		footer.addChild(
+				Button.builder(
+								Component.translatable("ui.gooseboy.sort." + list.sort.name()),
+								(b) -> {
+									list.sort = list.sort == CrateSelectionList.Sort.FILENAME ?
+											CrateSelectionList.Sort.LAST_MODIFIED : CrateSelectionList.Sort.FILENAME;
+									this.reloadList(true);
+								})
+						.build(), (v) -> v.alignHorizontallyCenter()
+						.paddingTop(-5));
 		this.layout.visitWidgets(this::addRenderableWidget);
 		this.repositionElements();
 	}

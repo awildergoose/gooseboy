@@ -10,11 +10,12 @@ import com.dylibso.chicory.runtime.Instance;
 
 @HostModule("console")
 public final class Console {
-	public Console() {}
+	public Console() {
+	}
 
 	@WasmExport
 	public void log(Instance instance, int ptr, int len) {
-		if (CrateUtils.doesNotHavePermission(instance, GooseboyCrate.Permission.CONSOLE))
+		if (CrateUtils.doesNotHavePermissionAndWarn(instance, GooseboyCrate.Permission.CONSOLE))
 			return;
 
 		String text = instance.memory()

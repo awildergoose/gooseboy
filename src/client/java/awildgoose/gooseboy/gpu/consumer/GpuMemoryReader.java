@@ -4,20 +4,27 @@ import awildgoose.gooseboy.Gooseboy;
 
 public class GpuMemoryReader implements MemoryReadConsumer {
 	private final byte[] bytes;
+	private final boolean canLog;
 
-	public GpuMemoryReader(byte[] bytes) {
+	public GpuMemoryReader(byte[] bytes, boolean canLog) {
 		this.bytes = bytes;
+		this.canLog = canLog;
+	}
+
+	private void warn(String format, Object... arguments) {
+		if (this.canLog)
+			Gooseboy.LOGGER.warn(format, arguments);
 	}
 
 	@Override
 	public byte readByte(int offset) {
-		return readBytes(0, 1)[0];
+		return readBytes(offset, 1)[0];
 	}
 
 	@Override
 	public int readInt(int offset) {
 		if (offset < 0 || (long) offset + 4 > bytes.length) {
-			Gooseboy.LOGGER.warn("GpuMemoryReader.readInt: offset {} beyond end (capacity={})", offset, bytes.length);
+			this.warn("GpuMemoryReader.readInt: offset {} beyond end (capacity={})", offset, bytes.length);
 			return 0;
 		}
 
@@ -37,7 +44,7 @@ public class GpuMemoryReader implements MemoryReadConsumer {
 		long end = (long) offset + (long) len;
 
 		if (end > bytes.length) {
-			Gooseboy.LOGGER.warn("GpuMemoryReader.readBytes: offset {} beyond end (capacity={})", offset, bytes.length);
+			this.warn("GpuMemoryReader.readBytes: offset {} beyond end (capacity={})", offset, bytes.length);
 			return new byte[len];
 		}
 

@@ -9,9 +9,9 @@ import net.minecraft.client.renderer.RenderPipelines;
 import static awildgoose.gooseboy.screen.renderer.CrateRendererScreen.SCREEN_UI_LOCATION;
 
 public class MiniView implements AutoCloseable {
-	public LayoutType layoutType;
 	public final int fbWidth;
 	public final int fbHeight;
+	public LayoutType layoutType;
 	public GooseboyPainter painter;
 
 	public MiniView(GooseboyCrate crate) {
@@ -22,8 +22,9 @@ public class MiniView implements AutoCloseable {
 	}
 
 	public void render(GuiGraphics guiGraphics) {
-		CrateLayout layout = layoutType.supplier.apply(guiGraphics.guiWidth(), guiGraphics.guiHeight(), fbWidth,
-													   fbHeight);
+		CrateLayout layout = layoutType.supplier.apply(
+				guiGraphics.guiWidth(), guiGraphics.guiHeight(), fbWidth,
+				fbHeight);
 		guiGraphics.blit(
 				RenderPipelines.GUI_TEXTURED, SCREEN_UI_LOCATION,
 				layout.bgX, layout.bgY,

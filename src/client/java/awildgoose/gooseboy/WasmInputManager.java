@@ -25,7 +25,9 @@ public class WasmInputManager {
 	public static double LAST_ACCUMULATED_MOUSE_Y = 0;
 
 	public static void update() {
-		long window = Minecraft.getInstance().getWindow().handle();
+		long window = Minecraft.getInstance()
+				.getWindow()
+				.handle();
 
 		for (int i = 32; i <= GLFW.GLFW_KEY_LAST; i++) {
 			boolean down = GLFW.glfwGetKey(window, i) == GLFW.GLFW_PRESS;
@@ -51,7 +53,9 @@ public class WasmInputManager {
 	}
 
 	public static boolean isMouseButtonDown(int button) {
-		long window = Minecraft.getInstance().getWindow().handle();
+		long window = Minecraft.getInstance()
+				.getWindow()
+				.handle();
 		return GLFW.glfwGetMouseButton(window, button) == GLFW.GLFW_PRESS;
 	}
 
@@ -112,7 +116,6 @@ public class WasmInputManager {
 		Minecraft minecraft = Minecraft.getInstance();
 		MouseHandler mouseHandler = minecraft.mouseHandler;
 		if (minecraft.isWindowActive()) {
-			//noinspection ReferenceToMixin
 			MouseHandlerAccessor accessor = (MouseHandlerAccessor) mouseHandler;
 			if (!accessor.gooseboy$isMouseGrabbed()) {
 				if (InputQuirks.RESTORE_KEY_STATE_AFTER_MOUSE_GRAB && !forceNotSetAll)

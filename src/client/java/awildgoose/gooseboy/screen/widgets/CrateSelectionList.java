@@ -47,9 +47,10 @@ public class CrateSelectionList extends ObjectSelectionList<CrateSelectionList.E
 			crates = Gooseboy.getCrates()
 					.values()
 					.stream()
-					.map(gooseboyCrateCrateMetaPair -> new PathOrCrate(gooseboyCrateCrateMetaPair.getLeft().goosePath,
-																	   null,
-																	   gooseboyCrateCrateMetaPair.getLeft()))
+					.map(gooseboyCrateCrateMetaPair -> new PathOrCrate(
+							gooseboyCrateCrateMetaPair.getLeft().goosePath,
+							null,
+							gooseboyCrateCrateMetaPair.getLeft()))
 					.collect(Collectors.toList());
 		}
 
@@ -81,10 +82,10 @@ public class CrateSelectionList extends ObjectSelectionList<CrateSelectionList.E
 		LAST_MODIFIED
 	}
 
-	record PathOrCrate(Path goosePath, Path path, GooseboyCrate crate) {
+	public record PathOrCrate(Path goosePath, Path path, GooseboyCrate crate) {
 		public String getFileName() {
 			return this.hasCrate() ? crate.name : this.path.getFileName()
-					.toString();
+												  .toString();
 		}
 
 		public boolean hasPath() {
@@ -109,7 +110,8 @@ public class CrateSelectionList extends ObjectSelectionList<CrateSelectionList.E
 			this.text = new StringWidget(component, minecraft.font);
 			this.text.setMaxWidth(i);
 
-			this.runButton = new ImageButton(0, 0, 15, 15, new WidgetSprites(
+			this.runButton = new ImageButton(
+					0, 0, 15, 15, new WidgetSprites(
 					poc.hasCrate() ?
 							Gooseboy.withLocation("widget/close_button")
 							: Gooseboy.withLocation("widget/run_button"),
@@ -161,7 +163,8 @@ public class CrateSelectionList extends ObjectSelectionList<CrateSelectionList.E
 				}
 			});
 
-			this.settingsOrStopButton = new ImageButton(0, 0, 15, 15, new WidgetSprites(
+			this.settingsOrStopButton = new ImageButton(
+					0, 0, 15, 15, new WidgetSprites(
 					Gooseboy.withLocation("widget/settings_button"),
 					Gooseboy.withLocation("widget/settings_button_highlighted")
 			), (b) -> {

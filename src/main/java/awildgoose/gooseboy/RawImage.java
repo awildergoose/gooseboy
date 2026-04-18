@@ -26,14 +26,17 @@ public class RawImage {
 		int h = img.getHeight();
 
 		if (img.getType() == BufferedImage.TYPE_INT_ARGB) {
-			int[] raw = ((DataBufferInt) img.getRaster().getDataBuffer()).getData();
+			int[] raw = ((DataBufferInt) img.getRaster()
+					.getDataBuffer()).getData();
 			return new RawImage(w, h, raw.clone());
 		}
 
 		BufferedImage argb = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
-		argb.getGraphics().drawImage(img, 0, 0, null);
+		argb.getGraphics()
+				.drawImage(img, 0, 0, null);
 
-		int[] raw = ((DataBufferInt) argb.getRaster().getDataBuffer()).getData();
+		int[] raw = ((DataBufferInt) argb.getRaster()
+				.getDataBuffer()).getData();
 		return new RawImage(w, h, raw.clone());
 	}
 }

@@ -11,4 +11,5 @@ public class GpuConstants {
 	public static int GB_STATUS_BAD_TEXTURE = 2;
 	public static int GB_STATUS_MATRIX_TOO_SMALL = 3;
 	public static int GB_STATUS_MATRIX_TOO_BIG = 4;
+	public static int GB_STATUS_NOT_RECORDING = 5;
 }

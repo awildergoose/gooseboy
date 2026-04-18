@@ -16,8 +16,8 @@ import org.apache.commons.lang3.tuple.Pair;
 import java.nio.file.Path;
 
 public class CrateSettingsScreen extends Screen {
-	private final HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this, 20, 20);
 	protected final CrateSettingsList list;
+	private final HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this, 20, 20);
 	private final String crateName;
 	private final Screen parent;
 
@@ -31,11 +31,14 @@ public class CrateSettingsScreen extends Screen {
 
 	@Override
 	protected void init() {
-		LinearLayout header = this.layout.addToHeader(LinearLayout.vertical().spacing(4));
+		LinearLayout header = this.layout.addToHeader(LinearLayout.vertical()
+															  .spacing(4));
 		header.addChild(new StringWidget(this.title, this.font), LayoutSettings::alignHorizontallyCenter);
 		this.layout.addToFooter(
-				Button.builder(Component.translatable("gui.ok"), (b) -> this.onClose()).build(),
-				(v) -> v.alignHorizontallyCenter().paddingTop(-10));
+				Button.builder(Component.translatable("gui.ok"), (b) -> this.onClose())
+						.build(),
+				(v) -> v.alignHorizontallyCenter()
+						.paddingTop(-10));
 		this.layout.visitWidgets(this::addRenderableWidget);
 		this.repositionElements();
 	}

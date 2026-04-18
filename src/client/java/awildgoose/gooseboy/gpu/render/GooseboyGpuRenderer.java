@@ -50,20 +50,17 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 	private static final int GPU_MATRIX_STACK_MAX = 64;
 
 	public final GooseboyGpuCamera camera;
-
+	public final ByteBuffer gpuMemory = ByteBuffer.allocateDirect(4192 * 4)
+			.order(ByteOrder.LITTLE_ENDIAN);
 	private final RenderSystem.AutoStorageIndexBuffer triangleIndices;
 	private final RenderSystem.AutoStorageIndexBuffer quadIndices;
 	private final TextureTarget renderTarget;
 	private final CachedPerspectiveProjectionMatrixBuffer projectionMatrixBuffer;
-
 	private final MeshRegistry meshRegistry = new MeshRegistry();
 	private final TextureRegistry textureRegistry = new TextureRegistry();
-
-	public final ByteBuffer gpuMemory = ByteBuffer.allocateDirect(4192 * 4)
-			.order(ByteOrder.LITTLE_ENDIAN);
+	private final Matrix4fStack gpuModelStack = new Matrix4fStack(GPU_MATRIX_STACK_MAX);
 	public ArrayList<QueuedCommand> queuedCommands = new ArrayList<>();
 	public VertexStack globalVertexStack = new VertexStack();
-	private final Matrix4fStack gpuModelStack = new Matrix4fStack(GPU_MATRIX_STACK_MAX);
 	public ArrayList<MeshRef> recordings = new ArrayList<>();
 	public AbstractTexture boundTexture = null;
 	private int gpuMatrixDepth = 0;
@@ -104,11 +101,12 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 
 		if (buffer != null) {
 			RenderSystem.backupProjectionMatrix();
-			RenderSystem.setProjectionMatrix(this.projectionMatrixBuffer.getBuffer(
-					this.renderTarget.width,
-					this.renderTarget.height,
-					this.camera.fovDegrees
-			), ProjectionType.PERSPECTIVE);
+			RenderSystem.setProjectionMatrix(
+					this.projectionMatrixBuffer.getBuffer(
+							this.renderTarget.width,
+							this.renderTarget.height,
+							this.camera.fovDegrees
+					), ProjectionType.PERSPECTIVE);
 
 			GpuTextureView colorView = this.renderTarget.getColorTextureView();
 			GpuTextureView depthView = this.renderTarget.getDepthTextureView();
@@ -201,8 +199,9 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 		queuedCommands.clear();
 
 		if (gpuMatrixDepth != frameStartGpuMatrixDepth) {
-			Gooseboy.LOGGER.warn("GooseGPU: matrix stack leak! start={} end={}", frameStartGpuMatrixDepth,
-								 gpuMatrixDepth);
+			Gooseboy.LOGGER.warn(
+					"GooseGPU: matrix stack leak! start={} end={}", frameStartGpuMatrixDepth,
+					gpuMatrixDepth);
 
 			int toPop = gpuMatrixDepth - frameStartGpuMatrixDepth;
 			for (int i = 0; i < toPop; ++i) {
@@ -221,7 +220,7 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 	}
 
 	public void runCommand(GpuCommand command, MemoryReadConsumer read,
-						   RenderConsumer render, MemoryWriteConsumer write) {
+	                       RenderConsumer render, MemoryWriteConsumer write) {
 		switch (command) {
 			// Recording
 			case PushRecord -> {
@@ -230,27 +229,33 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 				recordings.add(mesh);
 				write.writeInt(GpuConstants.GB_GPU_RECORD_ID, mesh.id());
 			}
-			case PopRecord -> recordings.removeLast();
+			case PopRecord -> {
+				if (!recordings.isEmpty()) {
+					recordings.removeLast();
+				} else {
+					this.setStatus(write, GpuConstants.GB_STATUS_NOT_RECORDING);
+				}
+			}
 			case DrawRecorded -> render.mesh(meshRegistry.getMesh(read.readInt(0)));
 
 			// Emit
 			case EmitVertex -> {
-				MeshRef recording = recordings.size() > 0 ? recordings.getLast() : null;
+				MeshRef recording = !recordings.isEmpty() ? recordings.getLast() : null;
 				float x = read.readFloat(0);
 				float y = read.readFloat(4);
 				float z = read.readFloat(8);
 				float u = read.readFloat(12);
 				float v = read.readFloat(16);
 
-				if (recording == null) {
-					// immediate-mode
-					render.vertex(x, y, z, u, v);
-				} else {
+				if (recording != null) {
 					// recommended instanced mode
 					recording.stack()
 							.push(new VertexStack.Vertex(
 									x, y, z, u, v
 							));
+				} else {
+					// immediate-mode is not supported
+					this.setStatus(write, GpuConstants.GB_STATUS_NOT_RECORDING);
 				}
 			}
 
@@ -269,15 +274,15 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 					this.setStatus(write, GpuConstants.GB_STATUS_BAD_TEXTURE);
 				write.writeInt(GpuConstants.GB_GPU_TEXTURE_ID, texture.id);
 			}
-
 			case BindTexture -> {
-				MeshRef recording = recordings.size() > 0 ? recordings.getLast() : null;
+				MeshRef recording = !recordings.isEmpty() ? recordings.getLast() : null;
 				int id = read.readInt(0);
 
-				if (recording == null) {
-					render.texture(textureRegistry.getTexture(id));
-				} else {
+				if (recording != null) {
 					recording.texture = textureRegistry.getTexture(id);
+				} else {
+					// immediate-mode is not supported
+					this.setStatus(write, GpuConstants.GB_STATUS_NOT_RECORDING);
 				}
 			}
 

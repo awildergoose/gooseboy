@@ -25,6 +25,50 @@ public class CrateSettingsList extends ObjectSelectionList<CrateSettingsList.Ent
 	public final List<GooseboyCrate.Permission> permissions;
 	public Pair<Integer, Integer> memoryLimits;
 
+	public CrateSettingsList(Minecraft minecraft, int i, int j, int k, int l, String crateName, Path goosePath) {
+		super(minecraft, i, j, k, l);
+		this.permissions = new ArrayList<>(ConfigManager.getEffectivePermissions(crateName));
+		this.memoryLimits = ConfigManager.getMemoryLimits(crateName);
+		this.addEntry(new TextEntry(
+				minecraft, this,
+				"ui.gooseboy.settings.allocated",
+				formatBytes(CrateStorage.getSizeOf(crateName, goosePath))));
+		this.addEntry(new TextEntry(minecraft, this, "ui.gooseboy.settings.initial_memory"));
+		this.addEntry(new NumberEditEntry(
+				minecraft, this, "ui.gooseboy.settings.initial_memory",
+				memoryLimits.getLeft()
+						.toString(), s -> {
+			if (s.chars()
+					.noneMatch(Character::isDigit)) return;
+			int n = Integer.parseInt(s);
+			this.memoryLimits = Pair.of(n, this.memoryLimits.getRight());
+		}));
+		this.addEntry(new TextEntry(minecraft, this, "ui.gooseboy.settings.maximum_memory"));
+		this.addEntry(new NumberEditEntry(
+				minecraft, this, "ui.gooseboy.settings.maximum_memory",
+				memoryLimits.getRight()
+						.toString(), s -> {
+			if (s.chars()
+					.noneMatch(Character::isDigit)) return;
+			int n = Integer.parseInt(s);
+			this.memoryLimits = Pair.of(this.memoryLimits.getLeft(), n);
+		}));
+		this.addEntry(new TextEntry(minecraft, this, "ui.gooseboy.settings.permissions"));
+
+		for (GooseboyCrate.Permission permission : GooseboyCrate.Permission.values()) {
+			String title = "ui.gooseboy.settings.permission.%s".formatted(permission.name());
+			this.addEntry(new BooleanEntry(
+					minecraft, this, title, permissions.contains(permission),
+					(checkbox, bl) -> {
+						if (bl) {
+							this.permissions.add(permission);
+						} else {
+							this.permissions.remove(permission);
+						}
+					}));
+		}
+	}
+
 	public static String formatBytes(long bytes) {
 		if (bytes < 1024) return bytes + " B";
 
@@ -41,46 +85,6 @@ public class CrateSettingsList extends ObjectSelectionList<CrateSettingsList.Ent
 			return String.format("%.0f %s", value, units[unitIndex]);
 		} else {
 			return String.format("%.1f %s", value, units[unitIndex]);
-		}
-	}
-
-	public CrateSettingsList(Minecraft minecraft, int i, int j, int k, int l, String crateName, Path goosePath) {
-		super(minecraft, i, j, k, l);
-		this.permissions = new ArrayList<>(ConfigManager.getEffectivePermissions(crateName));
-		this.memoryLimits = ConfigManager.getMemoryLimits(crateName);
-		this.addEntry(new TextEntry(minecraft, this,
-									"ui.gooseboy.settings.allocated",
-									formatBytes(CrateStorage.getSizeOf(crateName, goosePath))));
-		this.addEntry(new TextEntry(minecraft, this, "ui.gooseboy.settings.initial_memory"));
-		this.addEntry(new NumberEditEntry(minecraft, this, "ui.gooseboy.settings.initial_memory",
-										  memoryLimits.getLeft()
-												  .toString(), s -> {
-			if (s.chars()
-					.noneMatch(Character::isDigit)) return;
-			int n = Integer.parseInt(s);
-			this.memoryLimits = Pair.of(n, this.memoryLimits.getRight());
-		}));
-		this.addEntry(new TextEntry(minecraft, this, "ui.gooseboy.settings.maximum_memory"));
-		this.addEntry(new NumberEditEntry(minecraft, this, "ui.gooseboy.settings.maximum_memory",
-										  memoryLimits.getRight()
-												  .toString(), s -> {
-			if (s.chars()
-					.noneMatch(Character::isDigit)) return;
-			int n = Integer.parseInt(s);
-			this.memoryLimits = Pair.of(this.memoryLimits.getLeft(), n);
-		}));
-		this.addEntry(new TextEntry(minecraft, this, "ui.gooseboy.settings.permissions"));
-
-		for (GooseboyCrate.Permission permission : GooseboyCrate.Permission.values()) {
-			String title = "ui.gooseboy.settings.permission.%s".formatted(permission.name());
-			this.addEntry(new BooleanEntry(minecraft, this, title, permissions.contains(permission),
-										   (checkbox, bl) -> {
-											   if (bl) {
-												   this.permissions.add(permission);
-											   } else {
-												   this.permissions.remove(permission);
-											   }
-										   }));
 		}
 	}
 
@@ -150,7 +154,7 @@ public class CrateSettingsList extends ObjectSelectionList<CrateSettingsList.Ent
 		private final Checkbox checkbox;
 
 		public BooleanEntry(Minecraft minecraft, CrateSettingsList list, String text, boolean checked,
-							Checkbox.OnValueChange callback, Object... o) {
+		                    Checkbox.OnValueChange callback, Object... o) {
 			super(minecraft, list, text);
 			checkbox =
 					Checkbox.builder(Component.translatable(text, o), minecraft.font)
@@ -192,7 +196,7 @@ public class CrateSettingsList extends ObjectSelectionList<CrateSettingsList.Ent
 		private final EditBox editBox;
 
 		public NumberEditEntry(Minecraft minecraft, CrateSettingsList list, String text, String defaultText,
-							   Consumer<String> responder, Object... o) {
+		                       Consumer<String> responder, Object... o) {
 			super(minecraft, list, text);
 			editBox = new EditBox(minecraft.font, 0, 0, Component.translatable(text, o));
 			editBox.setValue(defaultText);

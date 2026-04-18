@@ -50,8 +50,10 @@ public class Wasm {
 										"ui.gooseboy.duplicate_crate.body", filename);
 								return;
 							}
-							crates.put(filename, Pair.of(path, f.toAbsolutePath()
-									.normalize()));
+							crates.put(
+									filename, Pair.of(
+											path, f.toAbsolutePath()
+													.normalize()));
 						});
 			} catch (IOException ignored) {
 			}
@@ -115,7 +117,7 @@ public class Wasm {
 	}
 
 	public static Instance createInstance(byte[] wasm, int initialMemoryKilobytes,
-										  int maximumMemoryKilobytes, Path goosePath) throws ChicoryException {
+	                                      int maximumMemoryKilobytes, Path goosePath) throws ChicoryException {
 		int initialPages = kilobytesToPages(initialMemoryKilobytes);
 		int maxPages = kilobytesToPages(maximumMemoryKilobytes);
 

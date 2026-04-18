@@ -1,6 +1,8 @@
 package awildgoose.gooseboy.lib;
 
 import awildgoose.gooseboy.GooseboyClient;
+import awildgoose.gooseboy.crate.CrateUtils;
+import awildgoose.gooseboy.crate.GooseboyCrate;
 import awildgoose.gooseboy.gpu.command.GpuCommand;
 import awildgoose.gooseboy.gpu.command.QueuedCommand;
 import awildgoose.gooseboy.gpu.render.GooseboyGpuCamera;
@@ -20,9 +22,10 @@ public final class Gpu {
 	}
 
 	@WasmExport
-	public void get_camera_transform(Instance instance, int ptr) {
+	public int get_camera_transform(Instance instance, int ptr) {
+		if (CrateUtils.doesNotHavePermissionAndWarn(instance, GooseboyCrate.Permission.GPU)) return 0;
 		GooseboyGpuRenderer gpu = GooseboyClient.rendererByInstance.get(instance);
-		if (gpu == null) return;
+		if (gpu == null) return 0;
 
 		GooseboyGpuCamera camera = gpu.camera;
 		float[] values = {camera.getX(), camera.getY(), camera.getZ(), camera.getYaw(), camera.getPitch()};
@@ -32,24 +35,29 @@ public final class Gpu {
 			transform.putFloat(value);
 		instance.memory()
 				.write(ptr, transform.array());
+		return 1;
 	}
 
 	@WasmExport
-	public void set_camera_transform(Instance instance, float x, float y, float z, float yaw, float pitch) {
+	public int set_camera_transform(Instance instance, float x, float y, float z, float yaw, float pitch) {
+		if (CrateUtils.doesNotHavePermissionAndWarn(instance, GooseboyCrate.Permission.GPU)) return 0;
 		GooseboyGpuRenderer gpu = GooseboyClient.rendererByInstance.get(instance);
-		if (gpu == null) return;
+		if (gpu == null) return 0;
 		gpu.camera.setPosition(x, y, z);
 		gpu.camera.rotation.set(yaw, pitch);
+		return 1;
 	}
 
 	@WasmExport
-	public void submit_gpu_commands(Instance instance, int ptr, int count) {
-		int offset = ptr;
-		int end = ptr + count;
-
+	public int submit_gpu_commands(Instance instance, int ptr, int count) {
+		if (CrateUtils.doesNotHavePermissionAndWarn(instance, GooseboyCrate.Permission.GPU)) return 0;
 		Memory memory = instance.memory();
 		GooseboyGpuRenderer gpu = GooseboyClient.rendererByInstance.get(instance);
-		if (gpu == null) return;
+		if (gpu == null) return 0;
+
+		boolean canLog = CrateUtils.canLog(instance);
+		int offset = ptr;
+		int end = ptr + count;
 
 		while (offset < end) {
 			byte cmdId = memory.read(offset);
@@ -69,15 +77,18 @@ public final class Gpu {
 			byte[] payload = memory.readBytes(offset + 1, payloadLength);
 
 			gpu.queuedCommands.add(
-					new QueuedCommand(cmd, payload)
+					new QueuedCommand(cmd, payload, canLog)
 			);
 
 			offset += 1 + payloadLength;
 		}
+
+		return 1;
 	}
 
 	@WasmExport
 	public int gpu_read(Instance instance, int offset, int ptr, int len) {
+		if (CrateUtils.doesNotHavePermissionAndWarn(instance, GooseboyCrate.Permission.GPU)) return 0;
 		Memory memory = instance.memory();
 		GooseboyGpuRenderer gpu = GooseboyClient.rendererByInstance.get(instance);
 		if (gpu == null) return 0;

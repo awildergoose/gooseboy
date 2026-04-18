@@ -30,8 +30,9 @@ public final class TextureRef {
 			try {
 				tmp = MemoryUtil.memAlloc(src.length);
 			} catch (Throwable t) {
-				Gooseboy.LOGGER.error("failed to allocate for texture for id={} len={} -> {}",
-									  id, src.length, t);
+				Gooseboy.LOGGER.error(
+						"failed to allocate for texture for id={} len={} -> {}",
+						id, src.length, t);
 				return false;
 			}
 

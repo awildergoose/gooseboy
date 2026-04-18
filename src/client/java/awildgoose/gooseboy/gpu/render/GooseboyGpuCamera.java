@@ -10,9 +10,9 @@ import org.joml.Vector4f;
 @SuppressWarnings("unused")
 public class GooseboyGpuCamera {
 	public final Vector3f position = new Vector3f();
-	public Vector2f rotation = new Vector2f();
 	private final int fbWidth;
 	private final int fbHeight;
+	public Vector2f rotation = new Vector2f();
 	public float fovDegrees = 70.0f;
 	public float near = 0.1f;
 	public float far = 20000.0f;
@@ -107,8 +107,8 @@ public class GooseboyGpuCamera {
 	}
 
 	public void setPitch(float pitchRadians) {
-		final float MAX_PITCH = (float) Math.toRadians(89.0);
-		this.rotation.y = Math.max(-MAX_PITCH, Math.min(MAX_PITCH, pitchRadians));
+		final float MAX_PITCH = (float) Math.toRadians(90.0);
+		this.rotation.y = Math.clamp(MAX_PITCH, -MAX_PITCH, pitchRadians);
 	}
 	//#endregion
 }

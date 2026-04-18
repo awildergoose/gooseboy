@@ -31,7 +31,7 @@ public class CrateLoader {
 						try {
 							return GooseboyCrate.Permission.valueOf(json.getAsString());
 						} catch (Exception e) {
-							Gooseboy.LOGGER.warn("Unknown permission: " + json.getAsString());
+							Gooseboy.LOGGER.warn("Unknown permission: {}", json.getAsString());
 							return null;
 						}
 					})
@@ -85,7 +85,7 @@ public class CrateLoader {
 
 		Map<String, byte[]> entries = new HashMap<>();
 		try (ByteArrayInputStream bais = new ByteArrayInputStream(crateBytes);
-			 ZipInputStream zis = new ZipInputStream(bais)) {
+		     ZipInputStream zis = new ZipInputStream(bais)) {
 			ZipEntry ze;
 			byte[] buf = new byte[8192];
 			while ((ze = zis.getNextEntry()) != null) {

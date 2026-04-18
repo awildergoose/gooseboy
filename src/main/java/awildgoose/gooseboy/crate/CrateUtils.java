@@ -8,7 +8,11 @@ import java.util.ArrayList;
 public class CrateUtils {
 	private static final ArrayList<GooseboyCrate.Permission> permissionsWarned = new ArrayList<>();
 
-	public static boolean doesNotHavePermission(Instance instance, GooseboyCrate.Permission permission) {
+	public static boolean canLog(Instance instance) {
+		return Gooseboy.getCrate(instance).permissions.contains(GooseboyCrate.Permission.CONSOLE);
+	}
+
+	public static boolean doesNotHavePermissionAndWarn(Instance instance, GooseboyCrate.Permission permission) {
 		if (Gooseboy.getCrate(instance).permissions.contains(permission)) {
 			return false;
 		}

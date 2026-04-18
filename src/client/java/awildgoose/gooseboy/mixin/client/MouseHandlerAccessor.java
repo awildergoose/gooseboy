@@ -11,14 +11,19 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 public interface MouseHandlerAccessor {
 	@Accessor("xpos")
 	void gooseboy$setXPos(double value);
+
 	@Accessor("ypos")
 	void gooseboy$setYPos(double value);
+
 	@Accessor("mouseGrabbed")
 	boolean gooseboy$isMouseGrabbed();
+
 	@Accessor("mouseGrabbed")
 	void gooseboy$setMouseGrabbed(boolean grabbed);
+
 	@Accessor("accumulatedDX")
 	double gooseboy$getAccumulatedDX();
+
 	@Accessor("accumulatedDY")
 	double gooseboy$getAccumulatedDY();
 }

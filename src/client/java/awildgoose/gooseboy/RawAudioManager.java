@@ -8,25 +8,27 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public class RawAudioManager {
-	private static class PlayingSound {
-		int source, buffer;
-		long id;
-	}
-
 	private static final List<PlayingSound> active = new CopyOnWriteArrayList<>();
-
-	private static long AUDIO_ID;
-
 	// TODO make these configurable per-crate
 	private static final int MAX_AUDIO_SIZE = 10 * 1024 * 1024; // 10 MB
 	private static final int MAX_CONCURRENT_SOUNDS = 32;
-	private static final int SAMPLE_RATE = 44100;
+	private static long AUDIO_ID;
 
-	// TODO new signature: play(byte[] pcm, int sampleRate, int format);
-	public static long play(byte[] pcm) {
+	public static long play(byte[] pcm, int sampleRate, int format) {
 		if (pcm == null || pcm.length > MAX_AUDIO_SIZE) return -1;
 		if (pcm.length % 2 != 0) return -1;
 		if (active.size() >= MAX_CONCURRENT_SOUNDS) return -1;
+
+		switch (format) {
+			case AL10.AL_FORMAT_MONO8,
+			     AL10.AL_FORMAT_MONO16,
+			     AL10.AL_FORMAT_STEREO8,
+			     AL10.AL_FORMAT_STEREO16: {
+				break;
+			}
+			default:
+				return -1;
+		}
 
 		ByteBuffer bufferDirect = ByteBuffer.allocateDirect(pcm.length)
 				.order(ByteOrder.nativeOrder());
@@ -34,7 +36,7 @@ public class RawAudioManager {
 		bufferDirect.flip();
 
 		int buffer = AL10.alGenBuffers();
-		AL10.alBufferData(buffer, AL10.AL_FORMAT_MONO16, bufferDirect, SAMPLE_RATE);
+		AL10.alBufferData(buffer, format, bufferDirect, sampleRate);
 
 		int source = AL10.alGenSources();
 		AL10.alSourcei(source, AL10.AL_BUFFER, buffer);
@@ -73,7 +75,7 @@ public class RawAudioManager {
 	public static void setVolume(long id, float volume) {
 		for (PlayingSound ps : active) {
 			if (ps.id == id) {
-				float v = Math.max(0f, Math.min(10f, volume));
+				float v = Math.clamp(volume, 0f, 10f);
 				AL10.alSourcef(ps.source, AL10.AL_GAIN, v);
 				break;
 			}
@@ -83,7 +85,7 @@ public class RawAudioManager {
 	public static void setPitch(long id, float pitch) {
 		for (PlayingSound ps : active) {
 			if (ps.id == id) {
-				float p = Math.max(0.1f, Math.min(10f, pitch));
+				float p = Math.clamp(pitch, 0.1f, 10f);
 				AL10.alSourcef(ps.source, AL10.AL_PITCH, p);
 				break;
 			}
@@ -91,7 +93,8 @@ public class RawAudioManager {
 	}
 
 	public static boolean isPlaying(long id) {
-		return active.stream().anyMatch(ps -> ps.id == id);
+		return active.stream()
+				.anyMatch(ps -> ps.id == id);
 	}
 
 	public static void tick() {
@@ -104,5 +107,10 @@ public class RawAudioManager {
 			}
 			return false;
 		});
+	}
+
+	private static class PlayingSound {
+		int source, buffer;
+		long id;
 	}
 }

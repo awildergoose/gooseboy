@@ -28,8 +28,9 @@ public class UnnamedDynamicTexture extends AbstractTexture implements Dumpable {
 
 	private void createTexture() {
 		GpuDevice gpuDevice = RenderSystem.getDevice();
-		this.texture = gpuDevice.createTexture((Supplier<String>) null, 5, TextureFormat.RGBA8,
-											   this.pixels.getWidth(), this.pixels.getHeight(), 1, 1);
+		this.texture = gpuDevice.createTexture(
+				(Supplier<String>) null, 5, TextureFormat.RGBA8,
+				this.pixels.getWidth(), this.pixels.getHeight(), 1, 1);
 		this.texture.setTextureFilter(FilterMode.NEAREST, false);
 		this.textureView = gpuDevice.createTextureView(this.texture);
 	}
@@ -40,7 +41,7 @@ public class UnnamedDynamicTexture extends AbstractTexture implements Dumpable {
 					.createCommandEncoder()
 					.writeToTexture(this.texture, this.pixels);
 		} else {
-			Gooseboy.LOGGER.warn(
+			Gooseboy.LOGGER.error(
 					"Trying to upload disposed texture {}", this.getTexture()
 							.getLabel());
 		}

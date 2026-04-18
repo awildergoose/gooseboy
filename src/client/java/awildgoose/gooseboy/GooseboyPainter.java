@@ -22,12 +22,12 @@ public class GooseboyPainter implements AutoCloseable {
 	private final GooseboyCrate crate;
 	private final ResourceLocation framebufferTexture;
 	private final long frameIntervalNano;
+	private final GooseboyGpuRenderer gpuRenderer;
 	private DynamicTexture texture;
 	private ByteBuffer tmpBuf;
 	private boolean failed = false;
 	private boolean hasInitialized = false;
 	private long lastRenderNano = 0L;
-	private final GooseboyGpuRenderer gpuRenderer;
 
 	public GooseboyPainter(GooseboyCrate crate) {
 		this.crate = crate;
@@ -56,14 +56,14 @@ public class GooseboyPainter implements AutoCloseable {
 		}
 	}
 
-	public void renderGpu() {
-		this.gpuRenderer.render();
-	}
-
 	private static String sanitizePath(String s) {
 		s = s.toLowerCase();
 
 		return s.replaceAll("[^a-z0-9/._-]", "_");
+	}
+
+	public void renderGpu() {
+		this.gpuRenderer.render();
 	}
 
 	public void initDrawing() {
