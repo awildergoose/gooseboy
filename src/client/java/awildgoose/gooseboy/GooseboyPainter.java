@@ -76,6 +76,8 @@ public class GooseboyPainter implements AutoCloseable {
 				.getTextureManager()
 				.register(this.framebufferTexture, this.texture);
 		this.tmpBuf = MemoryUtil.memAlloc(this.crate.fbSize);
+		// clear the framebuffer as in to not blit any previous unfreed memory
+		this.blitFramebuffer(System.nanoTime());
 		hasInitialized = true;
 	}
 
@@ -117,28 +119,31 @@ public class GooseboyPainter implements AutoCloseable {
 		);
 	}
 
+	public void blitFramebuffer(long now) {
+		byte[] fbBytes = this.crate.getFramebufferBytes();
+
+		if (tmpBuf != null) {
+			tmpBuf.clear();
+			tmpBuf.put(fbBytes)
+					.flip();
+
+			NativeImage pixels = this.texture.getPixels();
+			if (pixels != null) {
+				MemoryUtil.memCopy(MemoryUtil.memAddress(tmpBuf), pixels.getPointer(), this.crate.fbSize);
+			}
+			texture.upload();
+		}
+
+		lastRenderNano = now;
+	}
+
 	private void updateTextureIfNeeded(long now) {
 		boolean shouldUpdate = (now - lastRenderNano) >= this.frameIntervalNano;
 		if (!shouldUpdate) return;
 
 		if (this.crate.isOk) {
 			this.crate.update();
-
-			byte[] fbBytes = this.crate.getFramebufferBytes();
-
-			if (tmpBuf != null) {
-				tmpBuf.clear();
-				tmpBuf.put(fbBytes)
-						.flip();
-
-				NativeImage pixels = this.texture.getPixels();
-				if (pixels != null) {
-					MemoryUtil.memCopy(MemoryUtil.memAddress(tmpBuf), pixels.getPointer(), this.crate.fbSize);
-				}
-				texture.upload();
-			}
-
-			lastRenderNano = now;
+			this.blitFramebuffer(now);
 		} else if (!failed) {
 			Gooseboy.ccb.doTranslatedErrorMessage(
 					"ui.gooseboy.crate_update_failed.title",

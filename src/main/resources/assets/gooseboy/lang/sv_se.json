@@ -1,6 +1,8 @@
 {
   "key.category.gooseboy.wasm": "Gooseboy",
   "key.open_wasm": "Öppna Gooseboy-menyn",
+  "ui.gooseboy.all_crates": "Alla Crates",
+  "ui.gooseboy.running_crates": "Crates som körs",
   "ui.gooseboy.crate_run_failed.body": "Se konsolen för mer information.",
   "ui.gooseboy.crate_run_failed.title": "Misslyckades att köra crate:n",
   "ui.gooseboy.crate_update_failed.body": "Se konsolen för mer information.",
@@ -26,6 +28,7 @@
   "ui.gooseboy.settings.permission.INPUT_MOUSE_POS": "Hämta musens position",
   "ui.gooseboy.settings.permission.STORAGE_READ": "Läsa lagring",
   "ui.gooseboy.settings.permission.STORAGE_WRITE": "Skriva till lagring",
+  "ui.gooseboy.settings.permission.GPU": "GPUn",
   "ui.gooseboy.settings.permissions": "Behörigheter",
   "ui.gooseboy.settings.title": "%s – Inställningar",
   "ui.gooseboy.sort.FILENAME": "Sortera efter: Filnamn",

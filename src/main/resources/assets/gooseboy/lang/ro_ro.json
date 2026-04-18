@@ -1,6 +1,8 @@
 {
   "key.category.gooseboy.wasm": "Gooseboy",
   "key.open_wasm": "Deschide meniul Gooseboy",
+  "ui.gooseboy.all_crates": "Toate lăzile",
+  "ui.gooseboy.running_crates": "Lăzi de rulare",
   "ui.gooseboy.crate_run_failed.body": "Verificați consola pentru mai multe informații",
   "ui.gooseboy.crate_run_failed.title": "Nu s-a putut rula crate-ul",
   "ui.gooseboy.crate_update_failed.body": "Verificați consola pentru mai multe informații",
@@ -26,6 +28,7 @@
   "ui.gooseboy.settings.permission.INPUT_MOUSE_POS": "Obține poziția mouse-ului",
   "ui.gooseboy.settings.permission.STORAGE_READ": "Citește stocarea",
   "ui.gooseboy.settings.permission.STORAGE_WRITE": "Scrie în stocare",
+  "ui.gooseboy.settings.permission.GPU": "GPU",
   "ui.gooseboy.settings.permissions": "Permisiuni",
   "ui.gooseboy.settings.title": "%s - Setări",
   "ui.gooseboy.sort.FILENAME": "Sortează după: Nume fișier",

@@ -28,6 +28,7 @@
   "ui.gooseboy.settings.permission.INPUT_MOUSE_POS": "Get mouse position",
   "ui.gooseboy.settings.permission.STORAGE_READ": "Read storage",
   "ui.gooseboy.settings.permission.STORAGE_WRITE": "Write storage",
+  "ui.gooseboy.settings.permission.GPU": "GPU",
   "ui.gooseboy.settings.permissions": "Permissions",
   "ui.gooseboy.settings.title": "%s - Settings",
   "ui.gooseboy.sort.FILENAME": "Sort by: Filename",
