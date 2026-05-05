@@ -27,6 +27,14 @@ public final class GameSystem {
 				.orElse(0);
 	}
 
+	@WasmExport
+	public int get_platform_name(Instance instance, int ptr) {
+		String text = Gooseboy.PLATFORM;
+		instance.memory()
+				.write(ptr, text.getBytes());
+		return text.length();
+	}
+
 	public HostFunction[] toHostFunctions() {
 		return GameSystem_ModuleFactory.toHostFunctions(this);
 	}

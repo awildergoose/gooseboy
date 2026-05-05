@@ -21,6 +21,8 @@ public class Gooseboy implements ModInitializer {
 	public static final String MOD_ID = "gooseboy";
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
+	public static final String PLATFORM = "Minecraft";
+
 	public static ClientCommonBridge ccb;
 
 	private static void makeDirectories(Path base) {
