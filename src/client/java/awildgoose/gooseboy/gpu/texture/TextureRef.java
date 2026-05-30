@@ -46,6 +46,11 @@ public final class TextureRef {
 				MemoryUtil.memCopy(MemoryUtil.memAddress(tmp), dstPtr, src.length);
 			} catch (Throwable t) {
 				Gooseboy.LOGGER.error("failed to copy texture for id={} len={} -> {}", id, src.length, t);
+				try {
+					MemoryUtil.memFree(tmp);
+				} catch (Throwable t2) {
+					Gooseboy.LOGGER.error("failed to free texture for id={} -> {}", id, t2);
+				}
 				return false;
 			}
 
