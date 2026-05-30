@@ -16,15 +16,10 @@ public final class VertexStack {
 		return this.vertices.size();
 	}
 
-	public VertexStack push(Vertex vertex) {
+	public void push(Vertex vertex) {
 		this.vertices.put(vertex.x, vertex.y, vertex.z, vertex.u, vertex.v);
-		return this;
 	}
-
-	public void clear() {
-		this.vertices.clear();
-	}
-
+	
 	public void build(VertexConsumer consumer) {
 		this.vertices.forEachVertex((x, y, z, u, v) -> consumer.addVertex(x, y, z)
 				.setUv(u, v));

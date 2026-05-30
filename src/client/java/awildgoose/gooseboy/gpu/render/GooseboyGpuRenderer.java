@@ -59,9 +59,8 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 	private final MeshRegistry meshRegistry = new MeshRegistry();
 	private final TextureRegistry textureRegistry = new TextureRegistry();
 	private final Matrix4fStack gpuModelStack = new Matrix4fStack(GPU_MATRIX_STACK_MAX);
-	public ArrayList<QueuedCommand> queuedCommands = new ArrayList<>();
-	public VertexStack globalVertexStack = new VertexStack();
-	public ArrayList<MeshRef> recordings = new ArrayList<>();
+	public final ArrayList<QueuedCommand> queuedCommands = new ArrayList<>();
+	public final ArrayList<MeshRef> recordings = new ArrayList<>();
 	public AbstractTexture boundTexture = null;
 	private int gpuMatrixDepth = 0;
 	private int frameStartGpuMatrixDepth = 0;
@@ -194,8 +193,6 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 			);
 		}
 
-		this.renderVertexStack(this.globalVertexStack, null, PrimitiveType.TRIANGLES);
-		this.globalVertexStack.clear();
 		this.queuedCommands.clear();
 
 		if (this.gpuMatrixDepth != this.frameStartGpuMatrixDepth) {

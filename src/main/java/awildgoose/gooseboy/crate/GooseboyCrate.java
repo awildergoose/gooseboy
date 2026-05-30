@@ -26,7 +26,7 @@ public class GooseboyCrate implements AutoCloseable {
 	public boolean isMiniView;
 	public int fbWidth;
 	public int fbHeight;
-	public Path goosePath;
+	public final Path goosePath;
 
 	public GooseboyCrate(Instance instance, String name, CrateMeta meta, Path goosePath) {
 		this.instance = instance;
@@ -80,7 +80,7 @@ public class GooseboyCrate implements AutoCloseable {
 		if (this.updateFunction != null) {
 			ProfilerFiller profilerFiller = Profiler.get();
 			long now = System.nanoTime();
-			profilerFiller.push("gooseboy");
+			profilerFiller.push("Gooseboy");
 			try {
 				this.updateFunction.apply(now);
 			} catch (TrapException e) {
