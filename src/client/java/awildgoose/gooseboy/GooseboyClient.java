@@ -53,7 +53,7 @@ public class GooseboyClient implements ClientModInitializer {
 
 			if (client.player == null) return;
 
-			if (keyOpenWasm.isDown())
+			if (this.keyOpenWasm.isDown())
 				Minecraft.getInstance()
 						.setScreen(new CrateListScreen());
 		});
@@ -61,7 +61,7 @@ public class GooseboyClient implements ClientModInitializer {
 		WorldRenderEvents.END_MAIN.register(
 				Gooseboy.withLocation("input_updater"),
 				(context) -> WasmInputManager.update());
-		KeyBindingHelper.registerKeyBinding(keyOpenWasm);
+		KeyBindingHelper.registerKeyBinding(this.keyOpenWasm);
 
 		HudElementRegistry.addLast(
 				Gooseboy.withLocation("miniview"), (context, tickCounter) -> Gooseboy.getCrates()

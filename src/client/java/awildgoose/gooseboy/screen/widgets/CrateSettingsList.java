@@ -37,7 +37,7 @@ public class CrateSettingsList extends ObjectSelectionList<CrateSettingsList.Ent
 		this.addEntry(new TextEntry(minecraft, this, true, "ui.gooseboy.settings.initial_memory"));
 		this.addEntry(new NumberEditEntry(
 				minecraft, this, "ui.gooseboy.settings.initial_memory",
-				memoryLimits.getLeft()
+				this.memoryLimits.getLeft()
 						.toString(), s -> {
 			if (s.chars()
 					.noneMatch(Character::isDigit)) return;
@@ -47,7 +47,7 @@ public class CrateSettingsList extends ObjectSelectionList<CrateSettingsList.Ent
 		this.addEntry(new TextEntry(minecraft, this, true, "ui.gooseboy.settings.maximum_memory"));
 		this.addEntry(new NumberEditEntry(
 				minecraft, this, "ui.gooseboy.settings.maximum_memory",
-				memoryLimits.getRight()
+				this.memoryLimits.getRight()
 						.toString(), s -> {
 			if (s.chars()
 					.noneMatch(Character::isDigit)) return;
@@ -59,7 +59,7 @@ public class CrateSettingsList extends ObjectSelectionList<CrateSettingsList.Ent
 		for (GooseboyCrate.Permission permission : GooseboyCrate.Permission.values()) {
 			String title = "ui.gooseboy.settings.permission.%s".formatted(permission.name());
 			this.addEntry(new BooleanEntry(
-					minecraft, this, title, permissions.contains(permission),
+					minecraft, this, title, this.permissions.contains(permission),
 					(checkbox, bl) -> {
 						if (bl) {
 							this.permissions.add(permission);
@@ -158,7 +158,7 @@ public class CrateSettingsList extends ObjectSelectionList<CrateSettingsList.Ent
 		public BooleanEntry(Minecraft minecraft, CrateSettingsList list, String text, boolean checked,
 		                    Checkbox.OnValueChange callback, Object... o) {
 			super(minecraft, list, text);
-			checkbox =
+			this.checkbox =
 					Checkbox.builder(Component.translatable(text, o), minecraft.font)
 							.selected(checked)
 							.onValueChange(callback)
@@ -167,7 +167,7 @@ public class CrateSettingsList extends ObjectSelectionList<CrateSettingsList.Ent
 
 		@Override
 		public @NotNull Component getNarration() {
-			return checkbox.getMessage();
+			return this.checkbox.getMessage();
 		}
 
 		@Override
@@ -189,8 +189,8 @@ public class CrateSettingsList extends ObjectSelectionList<CrateSettingsList.Ent
 			int contentY = this.getContentY() + 1;
 			int centeredY = contentY - 2;
 
-			checkbox.setPosition(contentX, centeredY);
-			checkbox.render(guiGraphics, i, j, f);
+			this.checkbox.setPosition(contentX, centeredY);
+			this.checkbox.render(guiGraphics, i, j, f);
 		}
 	}
 
@@ -200,19 +200,19 @@ public class CrateSettingsList extends ObjectSelectionList<CrateSettingsList.Ent
 		public NumberEditEntry(Minecraft minecraft, CrateSettingsList list, String text, String defaultText,
 		                       Consumer<String> responder, Object... o) {
 			super(minecraft, list, text);
-			editBox = new EditBox(minecraft.font, 0, 0, Component.translatable(text, o));
-			editBox.setValue(defaultText);
-			editBox.setFilter(p -> p.chars()
+			this.editBox = new EditBox(minecraft.font, 0, 0, Component.translatable(text, o));
+			this.editBox.setValue(defaultText);
+			this.editBox.setFilter(p -> p.chars()
 					.allMatch(Character::isDigit));
-			editBox.setResponder(responder);
-			editBox.setCursorPosition(0);
-			editBox.setHighlightPos(0);
-			editBox.setFocused(true);
+			this.editBox.setResponder(responder);
+			this.editBox.setCursorPosition(0);
+			this.editBox.setHighlightPos(0);
+			this.editBox.setFocused(true);
 		}
 
 		@Override
 		public @NotNull Component getNarration() {
-			return editBox.getMessage();
+			return this.editBox.getMessage();
 		}
 
 		@Override
@@ -252,10 +252,10 @@ public class CrateSettingsList extends ObjectSelectionList<CrateSettingsList.Ent
 			int contentY = this.getContentY();
 			int centeredY = contentY - 2;
 
-			editBox.setWidth(this.getWidth());
-			editBox.setHeight(this.getHeight());
-			editBox.setPosition(contentX, centeredY);
-			editBox.render(guiGraphics, i, j, f);
+			this.editBox.setWidth(this.getWidth());
+			this.editBox.setHeight(this.getHeight());
+			this.editBox.setPosition(contentX, centeredY);
+			this.editBox.render(guiGraphics, i, j, f);
 		}
 	}
 }

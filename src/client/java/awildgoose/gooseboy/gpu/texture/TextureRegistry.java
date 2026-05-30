@@ -14,14 +14,14 @@ public class TextureRegistry {
 	private int lastTextureId = 0;
 
 	public TextureRef createTexture(int width, int height) {
-		TextureRef ref = new TextureRef(new UnnamedDynamicTexture(width, height), lastTextureId++);
-		textures.add(ref);
+		TextureRef ref = new TextureRef(new UnnamedDynamicTexture(width, height), this.lastTextureId++);
+		this.textures.add(ref);
 		return ref;
 	}
 
 	public @Nullable TextureRef getTexture(int id) {
-		Optional<TextureRef> ref = textures.stream()
-				.filter(f -> f.id == id)
+		Optional<TextureRef> ref = this.textures.stream()
+				.filter(f -> f.id() == id)
 				.findFirst();
 		return ref.orElse(null);
 	}

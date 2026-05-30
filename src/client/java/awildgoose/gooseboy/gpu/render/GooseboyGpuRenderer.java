@@ -69,7 +69,7 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 	public GooseboyGpuRenderer(int fbWidth, int fbHeight) {
 		this.camera = new GooseboyGpuCamera(fbWidth, fbHeight);
 		this.projectionMatrixBuffer = new CachedPerspectiveProjectionMatrixBuffer(
-				"gooseboy_goosegpu", camera.near, camera.far);
+				"gooseboy_goosegpu", this.camera.near, this.camera.far);
 		this.triangleIndices = RenderSystem.getSequentialBuffer(VertexFormat.Mode.TRIANGLES);
 		this.quadIndices = RenderSystem.getSequentialBuffer(VertexFormat.Mode.QUADS);
 		this.renderTarget = new TextureTarget(
@@ -111,18 +111,18 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 			GpuTextureView colorView = this.renderTarget.getColorTextureView();
 			GpuTextureView depthView = this.renderTarget.getDepthTextureView();
 
-			AbstractTexture texture = overrideTexture == null ? boundTexture : overrideTexture.texture;
+			AbstractTexture texture = overrideTexture == null ? this.boundTexture : overrideTexture.texture();
 
-			if (boundTexture == null) {
+			if (this.boundTexture == null) {
 				TextureManager textureManager = Minecraft.getInstance()
 						.getTextureManager();
 				texture = textureManager.getTexture(MissingTextureAtlasSprite.getLocation());
-				boundTexture = texture;
+				this.boundTexture = texture;
 			}
 
 			GpuBuffer indexBuffer = indices.getBuffer(numIndices);
 			GpuBufferSlice transformSlice =
-					this.camera.createTransformSlice(new Matrix4f(gpuModelStack), camera.getProjection());
+					this.camera.createTransformSlice(new Matrix4f(this.gpuModelStack), this.camera.getProjection());
 
 			try (RenderPass renderPass = RenderSystem.getDevice()
 					.createCommandEncoder()
@@ -147,7 +147,7 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 	}
 
 	public void renderMesh(MeshRef mesh) {
-		renderVertexStack(mesh.stack(), mesh.texture, mesh.primitiveType());
+		this.renderVertexStack(mesh.stack(), mesh.texture, mesh.primitiveType());
 	}
 
 	public void blitToScreen(GuiGraphics guiGraphics, int x, int y, int width, int height) {
@@ -177,7 +177,7 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 		ProfilerFiller profiler = Profiler.get();
 		profiler.push("GooseGPU");
 
-		frameStartGpuMatrixDepth = gpuMatrixDepth;
+		this.frameStartGpuMatrixDepth = this.gpuMatrixDepth;
 
 		Matrix4fStack modelView = RenderSystem.getModelViewStack();
 		modelView.pushMatrix();
@@ -185,8 +185,8 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 		GpuRenderConsumer renderConsumer = new GpuRenderConsumer(this);
 		GpuMemoryWriter gpuMemoryWriter = new GpuMemoryWriter(this.gpuMemory);
 
-		for (QueuedCommand queued : queuedCommands) {
-			runCommand(
+		for (QueuedCommand queued : this.queuedCommands) {
+			this.runCommand(
 					queued.command(),
 					queued.reader(),
 					renderConsumer,
@@ -194,20 +194,20 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 			);
 		}
 
-		renderVertexStack(globalVertexStack, null, PrimitiveType.TRIANGLES);
-		globalVertexStack.clear();
-		queuedCommands.clear();
+		this.renderVertexStack(this.globalVertexStack, null, PrimitiveType.TRIANGLES);
+		this.globalVertexStack.clear();
+		this.queuedCommands.clear();
 
-		if (gpuMatrixDepth != frameStartGpuMatrixDepth) {
+		if (this.gpuMatrixDepth != this.frameStartGpuMatrixDepth) {
 			Gooseboy.LOGGER.warn(
-					"GooseGPU: matrix stack leak! start={} end={}", frameStartGpuMatrixDepth,
-					gpuMatrixDepth);
+					"GooseGPU: matrix stack leak! start={} end={}", this.frameStartGpuMatrixDepth,
+					this.gpuMatrixDepth);
 
-			int toPop = gpuMatrixDepth - frameStartGpuMatrixDepth;
+			int toPop = this.gpuMatrixDepth - this.frameStartGpuMatrixDepth;
 			for (int i = 0; i < toPop; ++i) {
-				gpuModelStack.popMatrix();
+				this.gpuModelStack.popMatrix();
 			}
-			gpuMatrixDepth = frameStartGpuMatrixDepth;
+			this.gpuMatrixDepth = this.frameStartGpuMatrixDepth;
 		}
 
 		modelView.popMatrix();
@@ -225,22 +225,22 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 			// Recording
 			case PushRecord -> {
 				byte primitiveType = read.readByte(0);
-				MeshRef mesh = meshRegistry.createMesh(PrimitiveType.findPrimitiveById(primitiveType));
-				recordings.add(mesh);
+				MeshRef mesh = this.meshRegistry.createMesh(PrimitiveType.findPrimitiveById(primitiveType));
+				this.recordings.add(mesh);
 				write.writeInt(GpuConstants.GB_GPU_RECORD_ID, mesh.id());
 			}
 			case PopRecord -> {
-				if (!recordings.isEmpty()) {
-					recordings.removeLast();
+				if (!this.recordings.isEmpty()) {
+					this.recordings.removeLast();
 				} else {
 					this.setStatus(write, GpuConstants.GB_STATUS_NOT_RECORDING);
 				}
 			}
-			case DrawRecorded -> render.mesh(meshRegistry.getMesh(read.readInt(0)));
+			case DrawRecorded -> render.mesh(this.meshRegistry.getMesh(read.readInt(0)));
 
 			// Emit
 			case EmitVertex -> {
-				MeshRef recording = !recordings.isEmpty() ? recordings.getLast() : null;
+				MeshRef recording = !this.recordings.isEmpty() ? this.recordings.getLast() : null;
 				float x = read.readFloat(0);
 				float y = read.readFloat(4);
 				float z = read.readFloat(8);
@@ -269,17 +269,17 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 					return;
 				}
 
-				TextureRef texture = textureRegistry.createTexture(width, height);
+				TextureRef texture = this.textureRegistry.createTexture(width, height);
 				if (!texture.set(read, 8, width * height * 4))
 					this.setStatus(write, GpuConstants.GB_STATUS_BAD_TEXTURE);
-				write.writeInt(GpuConstants.GB_GPU_TEXTURE_ID, texture.id);
+				write.writeInt(GpuConstants.GB_GPU_TEXTURE_ID, texture.id());
 			}
 			case BindTexture -> {
-				MeshRef recording = !recordings.isEmpty() ? recordings.getLast() : null;
+				MeshRef recording = !this.recordings.isEmpty() ? this.recordings.getLast() : null;
 				int id = read.readInt(0);
 
 				if (recording != null) {
-					recording.texture = textureRegistry.getTexture(id);
+					recording.texture = this.textureRegistry.getTexture(id);
 				} else {
 					// immediate-mode is not supported
 					this.setStatus(write, GpuConstants.GB_STATUS_NOT_RECORDING);
@@ -288,20 +288,20 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 
 			// Translations
 			case Push -> {
-				if (gpuMatrixDepth >= GPU_MATRIX_STACK_MAX) {
+				if (this.gpuMatrixDepth >= GPU_MATRIX_STACK_MAX) {
 					this.setStatus(write, GpuConstants.GB_STATUS_MATRIX_TOO_BIG);
 				} else {
-					gpuModelStack.pushMatrix();
-					gpuMatrixDepth++;
-					write.writeInt(GpuConstants.GB_GPU_MATRIX_DEPTH, gpuMatrixDepth);
+					this.gpuModelStack.pushMatrix();
+					this.gpuMatrixDepth++;
+					write.writeInt(GpuConstants.GB_GPU_MATRIX_DEPTH, this.gpuMatrixDepth);
 				}
 			}
 			case Pop -> {
-				if (gpuMatrixDepth <= frameStartGpuMatrixDepth) {
+				if (this.gpuMatrixDepth <= this.frameStartGpuMatrixDepth) {
 					this.setStatus(write, GpuConstants.GB_STATUS_MATRIX_TOO_SMALL);
 				} else {
-					gpuModelStack.popMatrix();
-					gpuMatrixDepth--;
+					this.gpuModelStack.popMatrix();
+					this.gpuMatrixDepth--;
 					write.writeInt(GpuConstants.GB_GPU_MATRIX_DEPTH, 0);
 				}
 			}
@@ -309,40 +309,40 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 				float tx = read.readFloat(0);
 				float ty = read.readFloat(4);
 				float tz = read.readFloat(8);
-				gpuModelStack.translate(tx, ty, tz);
+				this.gpuModelStack.translate(tx, ty, tz);
 			}
 			case RotateAxis -> {
 				float ax = read.readFloat(0);
 				float ay = read.readFloat(4);
 				float az = read.readFloat(8);
 				float angle = read.readFloat(12);
-				gpuModelStack.rotate(angle, ax, ay, az);
+				this.gpuModelStack.rotate(angle, ax, ay, az);
 			}
 			case RotateEuler -> {
 				float yaw = read.readFloat(0);
 				float pitch = read.readFloat(4);
 				float roll = read.readFloat(8);
-				gpuModelStack.rotateXYZ(yaw, pitch, roll);
+				this.gpuModelStack.rotateXYZ(yaw, pitch, roll);
 			}
 			case Scale -> {
 				float sx = read.readFloat(0);
 				float sy = read.readFloat(4);
 				float sz = read.readFloat(8);
-				gpuModelStack.scale(sx, sy, sz);
+				this.gpuModelStack.scale(sx, sy, sz);
 			}
 			case LoadMatrix -> {
 				float[] m = new float[16];
 				for (int i = 0; i < 16; i++) m[i] = read.readFloat(i * 4);
-				gpuModelStack.set(m);
+				this.gpuModelStack.set(m);
 			}
 			case MulMatrix -> {
 				float[] m = new float[16];
 				for (int i = 0; i < 16; i++) m[i] = read.readFloat(i * 4);
 				Matrix4f mat = new Matrix4f();
 				mat.set(m);
-				gpuModelStack.mul(mat);
+				this.gpuModelStack.mul(mat);
 			}
-			case Identity -> gpuModelStack.identity();
+			case Identity -> this.gpuModelStack.identity();
 		}
 	}
 }

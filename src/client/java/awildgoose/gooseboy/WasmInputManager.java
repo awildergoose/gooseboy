@@ -16,13 +16,16 @@ import java.util.Arrays;
 import java.util.Queue;
 
 // TODO this needs a MAJOR refactor
-public class WasmInputManager {
+public final class WasmInputManager {
 	private static final boolean[] keys = new boolean[GLFW.GLFW_KEY_LAST + 1];
 	private static final Queue<Integer> keyQueue = new ArrayDeque<>();
 
 	// These values are set from a mixin right before the values get reset to 0s
 	public static double LAST_ACCUMULATED_MOUSE_X = 0;
 	public static double LAST_ACCUMULATED_MOUSE_Y = 0;
+
+	private WasmInputManager() {
+	}
 
 	public static void update() {
 		long window = Minecraft.getInstance()

@@ -25,6 +25,6 @@ public class GpuRenderConsumer implements RenderConsumer {
 
 	@Override
 	public void texture(@Nullable TextureRef texture) {
-		this.renderer.boundTexture = texture == null ? null : texture.texture;
+		this.renderer.boundTexture = texture == null ? null : texture.texture();
 	}
 }

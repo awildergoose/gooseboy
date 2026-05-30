@@ -12,7 +12,7 @@ public class GooseboyGpuCamera {
 	public final Vector3f position = new Vector3f();
 	private final int fbWidth;
 	private final int fbHeight;
-	public Vector2f rotation = new Vector2f();
+	public final Vector2f rotation = new Vector2f();
 	public float fovDegrees = 70.0f;
 	public float near = 0.1f;
 	public float far = 20000.0f;
@@ -27,28 +27,28 @@ public class GooseboyGpuCamera {
 	}
 
 	public GpuBufferSlice createTransformSlice() {
-		return createTransformSlice(new Matrix4f().identity());
+		return this.createTransformSlice(new Matrix4f().identity());
 	}
 
 	public GpuBufferSlice createTransformSlice(Matrix4f projection) {
-		return createTransformSlice(new Matrix4f().identity(), projection);
+		return this.createTransformSlice(new Matrix4f().identity(), projection);
 	}
 
 	public Matrix4f getProjection() {
 		return new Matrix4f().perspective(
-				(float) Math.toRadians(fovDegrees),
-				aspect(),
-				near,
-				far
+				(float) Math.toRadians(this.fovDegrees),
+				this.aspect(),
+				this.near,
+				this.far
 		);
 	}
 
 	public GpuBufferSlice createTransformSlice(Matrix4f model, Matrix4f projection) {
 		Matrix4f view = new Matrix4f()
 				.identity()
-				.rotateX(-getPitch())
-				.rotateY(-getYaw())
-				.translate(-getX(), -getY(), -getZ());
+				.rotateX(-this.getPitch())
+				.rotateY(-this.getYaw())
+				.translate(-this.getX(), -this.getY(), -this.getZ());
 		Matrix4f modelView = new Matrix4f(view).mul(model);
 
 		return RenderSystem.getDynamicUniforms()

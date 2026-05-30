@@ -1,18 +1,17 @@
 package awildgoose.gooseboy.crate;
 
 import awildgoose.gooseboy.Gooseboy;
-import com.dylibso.chicory.runtime.Memory;
+import com.dylibso.chicory.runtime.Instance;
 
 import java.io.*;
+import java.nio.ByteBuffer;
 import java.nio.file.*;
 import java.util.Arrays;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 public class CrateStorage {
-	// TODO make this configurable per-crate
-	public static final int STORAGE_SIZE = 512 * 1024; // 512 KB
-	private final byte[] data = new byte[STORAGE_SIZE];
+	private final ByteBuffer data;
 	private final Path filePath;
 	private boolean dirty = false;
 
@@ -20,9 +19,10 @@ public class CrateStorage {
 	private static final byte[] FF_MAGIC = new byte[]{'g', 's', 'b', 'c', 'r', 'a', 't', 'e'};
 	private static final int FF_VERSION = 1;
 
-	public CrateStorage(String name, Path goosePath) {
+	public CrateStorage(String name, Path goosePath, CrateMeta meta) {
+		this.data = ByteBuffer.allocate(this.size(meta));
 		this.filePath = resolveFilePath(goosePath, name);
-		this.load();
+		this.load(meta);
 	}
 
 	public static Path resolveFilePath(Path goosePath, String name) {
@@ -44,40 +44,46 @@ public class CrateStorage {
 		}
 	}
 
-	public int read(Memory mem, int offset, int wasmPtr, int len) {
-		if (offset < 0 || offset >= STORAGE_SIZE) return 0;
-		int toRead = Math.min(len, STORAGE_SIZE - offset);
+	public int read(Instance instance, int offset, int wasmPtr, int len) {
+		if (offset < 0 || offset >= this.size(instance)) return 0;
+		int toRead = Math.min(len, this.size(instance) - offset);
 
 		byte[] chunk = new byte[toRead];
-		System.arraycopy(data, offset, chunk, 0, toRead);
-		mem.write(wasmPtr, chunk);
+		System.arraycopy(this.data.array(), offset, chunk, 0, toRead);
+		instance.memory()
+				.write(wasmPtr, chunk);
 		return toRead;
 	}
 
-	public int write(Memory mem, int offset, int wasmPtr, int len) {
-		if (offset < 0 || offset >= STORAGE_SIZE) return 0;
-		int toWrite = Math.min(len, STORAGE_SIZE - offset);
+	public int write(Instance instance, int offset, int wasmPtr, int len) {
+		if (offset < 0 || offset >= this.size(instance)) return 0;
+		int toWrite = Math.min(len, this.size(instance) - offset);
 
-		byte[] chunk = mem.readBytes(wasmPtr, toWrite);
-		System.arraycopy(chunk, 0, data, offset, toWrite);
+		byte[] chunk = instance.memory()
+				.readBytes(wasmPtr, toWrite);
+		System.arraycopy(chunk, 0, this.data.array(), offset, toWrite);
 		this.dirty = true;
 		return toWrite;
 	}
 
 	public void clear() {
-		java.util.Arrays.fill(data, (byte) 0);
+		Arrays.fill(this.data.array(), (byte) 0);
 		this.dirty = true;
 	}
 
-	public int size() {
-		return STORAGE_SIZE;
+	public int size(Instance instance) {
+		return this.size(Gooseboy.getCrateMeta(instance));
+	}
+
+	public int size(CrateMeta meta) {
+		return meta.storageSize;
 	}
 
 	public byte[] gzipCompressData() {
 		try (ByteArrayOutputStream output = new ByteArrayOutputStream();
 		     GZIPOutputStream gzip = new GZIPOutputStream(output)) {
 
-			gzip.write(data);
+			gzip.write(this.data.array());
 			gzip.finish();
 			return output.toByteArray();
 		} catch (IOException e) {
@@ -103,15 +109,15 @@ public class CrateStorage {
 		}
 	}
 
-	public void load() {
+	public void load(CrateMeta meta) {
 		try {
-			Files.createDirectories(filePath.getParent());
+			Files.createDirectories(this.filePath.getParent());
 
-			if (!Files.exists(filePath)) {
+			if (!Files.exists(this.filePath)) {
 				return;
 			}
 
-			try (DataInputStream in = new DataInputStream(Files.newInputStream(filePath))) {
+			try (DataInputStream in = new DataInputStream(Files.newInputStream(this.filePath))) {
 				byte[] magic = in.readNBytes(FF_MAGIC.length);
 				if (!Arrays.equals(magic, FF_MAGIC)) {
 					Gooseboy.LOGGER.error("Invalid storage crate file, magic identifier is wrong!");
@@ -156,7 +162,7 @@ public class CrateStorage {
 					return;
 				}
 
-				System.arraycopy(decompressed, 0, data, 0, Math.min(decompressed.length, STORAGE_SIZE));
+				System.arraycopy(decompressed, 0, this.data.array(), 0, Math.min(decompressed.length, this.size(meta)));
 			}
 		} catch (IOException e) {
 			Gooseboy.LOGGER.error("Failed to load WASM storage crate:", e);
@@ -168,12 +174,12 @@ public class CrateStorage {
 			return;
 
 		try {
-			Files.createDirectories(filePath.getParent());
+			Files.createDirectories(this.filePath.getParent());
 
 			byte[] compressedData = this.gzipCompressData();
 			CompressionType compression = CompressionType.GZIP;
 
-			Path temp = filePath.resolveSibling(filePath.getFileName()
+			Path temp = this.filePath.resolveSibling(this.filePath.getFileName()
 														.toString() + ".tmp");
 			try (DataOutputStream out = new DataOutputStream(
 					Files.newOutputStream(temp, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING))) {
@@ -181,14 +187,14 @@ public class CrateStorage {
 				out.writeInt(FF_VERSION);
 				out.writeByte(compression.code);
 				out.writeInt(compressedData.length);
-				out.writeInt(data.length);
+				out.writeInt(this.data.array().length);
 				out.write(compressedData);
 			}
 
 			try {
-				Files.move(temp, filePath, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+				Files.move(temp, this.filePath, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
 			} catch (AtomicMoveNotSupportedException ex) {
-				Files.move(temp, filePath, StandardCopyOption.REPLACE_EXISTING);
+				Files.move(temp, this.filePath, StandardCopyOption.REPLACE_EXISTING);
 			}
 		} catch (IOException e) {
 			Gooseboy.LOGGER.error("Failed to save WASM storage crate:", e);

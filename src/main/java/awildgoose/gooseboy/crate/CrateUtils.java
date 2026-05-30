@@ -5,8 +5,11 @@ import com.dylibso.chicory.runtime.Instance;
 
 import java.util.ArrayList;
 
-public class CrateUtils {
+public final class CrateUtils {
 	private static final ArrayList<GooseboyCrate.Permission> permissionsWarned = new ArrayList<>();
+
+	private CrateUtils() {
+	}
 
 	public static boolean canLog(Instance instance) {
 		return Gooseboy.getCrate(instance).permissions.contains(GooseboyCrate.Permission.CONSOLE);

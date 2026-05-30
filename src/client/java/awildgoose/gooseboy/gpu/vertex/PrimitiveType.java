@@ -28,6 +28,6 @@ public enum PrimitiveType {
 	}
 
 	public int id() {
-		return id;
+		return this.id;
 	}
 }

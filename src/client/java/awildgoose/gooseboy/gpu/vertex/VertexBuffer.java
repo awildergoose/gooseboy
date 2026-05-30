@@ -9,49 +9,49 @@ public class VertexBuffer {
 	private int vertexCount = 0;
 
 	public VertexBuffer(int initialVertices) {
-		buffer = ByteBuffer.allocateDirect(initialVertices * VERTEX_SIZE)
+		this.buffer = ByteBuffer.allocateDirect(initialVertices * VERTEX_SIZE)
 				.order(ByteOrder.nativeOrder());
 	}
 
 	public int size() {
-		return vertexCount;
+		return this.vertexCount;
 	}
 
 	private void ensureCapacity() {
-		int required = (vertexCount + 1) * VERTEX_SIZE;
-		if (required > buffer.capacity()) {
-			int newCapacity = Math.max(required, buffer.capacity() * 2);
+		int required = (this.vertexCount + 1) * VERTEX_SIZE;
+		if (required > this.buffer.capacity()) {
+			int newCapacity = Math.max(required, this.buffer.capacity() * 2);
 			ByteBuffer newBuffer = ByteBuffer.allocateDirect(newCapacity)
 					.order(ByteOrder.nativeOrder());
-			buffer.flip();
-			newBuffer.put(buffer);
-			buffer = newBuffer;
+			this.buffer.flip();
+			newBuffer.put(this.buffer);
+			this.buffer = newBuffer;
 		}
 	}
 
 	public void put(float x, float y, float z, float u, float v) {
-		ensureCapacity();
-		buffer.putFloat(x);
-		buffer.putFloat(y);
-		buffer.putFloat(z);
-		buffer.putFloat(u);
-		buffer.putFloat(v);
-		vertexCount++;
+		this.ensureCapacity();
+		this.buffer.putFloat(x);
+		this.buffer.putFloat(y);
+		this.buffer.putFloat(z);
+		this.buffer.putFloat(u);
+		this.buffer.putFloat(v);
+		this.vertexCount++;
 	}
 
 	public void clear() {
-		buffer.clear();
-		vertexCount = 0;
+		this.buffer.clear();
+		this.vertexCount = 0;
 	}
 
 	public void forEachVertex(VertexIteratorConsumer consumer) {
-		for (int i = 0; i < vertexCount; i++) {
+		for (int i = 0; i < this.vertexCount; i++) {
 			int pos = i * VERTEX_SIZE;
-			float x = buffer.getFloat(pos);
-			float y = buffer.getFloat(pos + 4);
-			float z = buffer.getFloat(pos + 8);
-			float u = buffer.getFloat(pos + 12);
-			float v = buffer.getFloat(pos + 16);
+			float x = this.buffer.getFloat(pos);
+			float y = this.buffer.getFloat(pos + 4);
+			float z = this.buffer.getFloat(pos + 8);
+			float u = this.buffer.getFloat(pos + 12);
+			float v = this.buffer.getFloat(pos + 16);
 			consumer.accept(x, y, z, u, v);
 		}
 	}

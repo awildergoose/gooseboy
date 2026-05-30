@@ -7,10 +7,7 @@ import org.lwjgl.system.MemoryUtil;
 
 import java.nio.ByteBuffer;
 
-public final class TextureRef {
-	public final int id;
-	public UnnamedDynamicTexture texture;
-
+public record TextureRef(UnnamedDynamicTexture texture, int id) {
 	public TextureRef(@NotNull UnnamedDynamicTexture texture, int id) {
 		this.texture = texture;
 		this.id = id;
@@ -20,7 +17,7 @@ public final class TextureRef {
 		final byte[] src = memory.readBytes(ptr, len);
 
 		if (src == null || src.length == 0) {
-			Gooseboy.LOGGER.warn("failed to load texture, src is empty id={} ptr={} wanted={}", id, ptr, len);
+			Gooseboy.LOGGER.warn("failed to load texture, src is empty id={} ptr={} wanted={}", this.id, ptr, len);
 			return false;
 		}
 
@@ -32,7 +29,7 @@ public final class TextureRef {
 			} catch (Throwable t) {
 				Gooseboy.LOGGER.error(
 						"failed to allocate for texture for id={} len={} -> {}",
-						id, src.length, t);
+						this.id, src.length, t);
 				return false;
 			}
 
@@ -45,11 +42,11 @@ public final class TextureRef {
 			try {
 				MemoryUtil.memCopy(MemoryUtil.memAddress(tmp), dstPtr, src.length);
 			} catch (Throwable t) {
-				Gooseboy.LOGGER.error("failed to copy texture for id={} len={} -> {}", id, src.length, t);
+				Gooseboy.LOGGER.error("failed to copy texture for id={} len={} -> {}", this.id, src.length, t);
 				try {
 					MemoryUtil.memFree(tmp);
 				} catch (Throwable t2) {
-					Gooseboy.LOGGER.error("failed to free texture for id={} -> {}", id, t2);
+					Gooseboy.LOGGER.error("failed to free texture for id={} -> {}", this.id, t2);
 				}
 				return false;
 			}
@@ -59,7 +56,7 @@ public final class TextureRef {
 			try {
 				MemoryUtil.memFree(tmp);
 			} catch (Throwable t) {
-				Gooseboy.LOGGER.error("failed to free texture for id={} -> {}", id, t);
+				Gooseboy.LOGGER.error("failed to free texture for id={} -> {}", this.id, t);
 			}
 		}
 

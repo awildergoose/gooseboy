@@ -12,13 +12,13 @@ public class MeshRegistry {
 	private int lastMeshId = 0;
 
 	public MeshRef createMesh(PrimitiveType primitiveType) {
-		MeshRef ref = new MeshRef(new VertexStack(), primitiveType, lastMeshId++, null);
-		meshes.add(ref);
+		MeshRef ref = new MeshRef(new VertexStack(), primitiveType, this.lastMeshId++, null);
+		this.meshes.add(ref);
 		return ref;
 	}
 
 	public @Nullable MeshRef getMesh(int id) {
-		Optional<MeshRef> ref = meshes.stream()
+		Optional<MeshRef> ref = this.meshes.stream()
 				.filter(f -> f.id() == id)
 				.findFirst();
 		return ref.orElse(null);

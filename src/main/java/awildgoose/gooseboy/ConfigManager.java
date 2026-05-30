@@ -33,6 +33,9 @@ public final class ConfigManager {
 					})
 			.create();
 
+	private ConfigManager() {
+	}
+
 	public static class CrateSettings {
 		public List<GooseboyCrate.Permission> permissions = new ArrayList<>();
 		public int initial_memory = 6 * 1024; // 6 KB

@@ -57,9 +57,8 @@ public class GooseboyPainter implements AutoCloseable {
 	}
 
 	private static String sanitizePath(String s) {
-		s = s.toLowerCase();
-
-		return s.replaceAll("[^a-z0-9/._-]", "_");
+		return s.toLowerCase()
+				.replaceAll("[^a-z0-9/._-]", "_");
 	}
 
 	public void renderGpu() {
@@ -68,9 +67,9 @@ public class GooseboyPainter implements AutoCloseable {
 
 	public void initDrawing() {
 		this.texture = new DynamicTexture(
-				"Gooseboy crate framebuffer for '%s' (%s)".formatted(crate.name, UUID.randomUUID()),
-				crate.fbWidth,
-				crate.fbHeight,
+				"Gooseboy crate framebuffer for '%s' (%s)".formatted(this.crate.name, UUID.randomUUID()),
+				this.crate.fbWidth,
+				this.crate.fbHeight,
 				false);
 		Minecraft.getInstance()
 				.getTextureManager()
@@ -78,15 +77,15 @@ public class GooseboyPainter implements AutoCloseable {
 		this.tmpBuf = MemoryUtil.memAlloc(this.crate.fbSize);
 		// clear the framebuffer as in to not blit any previous unfreed memory
 		this.blitFramebuffer(System.nanoTime());
-		hasInitialized = true;
+		this.hasInitialized = true;
 	}
 
 	public void close() {
 		this.gpuRenderer.close();
 		//noinspection resource
-		GooseboyClient.rendererByInstance.remove(crate.instance);
+		GooseboyClient.rendererByInstance.remove(this.crate.instance);
 		//noinspection resource
-		GooseboyClient.miniviewsByInstance.remove(crate.instance);
+		GooseboyClient.miniviewsByInstance.remove(this.crate.instance);
 
 		if (this.tmpBuf != null) {
 			MemoryUtil.memFree(this.tmpBuf);
@@ -100,13 +99,13 @@ public class GooseboyPainter implements AutoCloseable {
 	}
 
 	public void render(GuiGraphics guiGraphics, int x, int y, int w, int h) {
-		if (!hasInitialized)
-			initDrawing();
+		if (!this.hasInitialized)
+			this.initDrawing();
 		long now = System.nanoTime();
-		updateTextureIfNeeded(now);
+		this.updateTextureIfNeeded(now);
 
 		this.gpuRenderer.blitToScreen(guiGraphics, x, y, w, h);
-		RenderSystem.setShaderTexture(0, texture.getTextureView());
+		RenderSystem.setShaderTexture(0, this.texture.getTextureView());
 		guiGraphics.blit(
 				RenderPipelines.GUI_TEXTURED,
 				this.framebufferTexture,
@@ -122,33 +121,33 @@ public class GooseboyPainter implements AutoCloseable {
 	public void blitFramebuffer(long now) {
 		byte[] fbBytes = this.crate.getFramebufferBytes();
 
-		if (tmpBuf != null) {
-			tmpBuf.clear();
-			tmpBuf.put(fbBytes)
+		if (this.tmpBuf != null) {
+			this.tmpBuf.clear();
+			this.tmpBuf.put(fbBytes)
 					.flip();
 
 			NativeImage pixels = this.texture.getPixels();
 			if (pixels != null) {
-				MemoryUtil.memCopy(MemoryUtil.memAddress(tmpBuf), pixels.getPointer(), this.crate.fbSize);
+				MemoryUtil.memCopy(MemoryUtil.memAddress(this.tmpBuf), pixels.getPointer(), this.crate.fbSize);
 			}
-			texture.upload();
+			this.texture.upload();
 		}
 
-		lastRenderNano = now;
+		this.lastRenderNano = now;
 	}
 
 	private void updateTextureIfNeeded(long now) {
-		boolean shouldUpdate = (now - lastRenderNano) >= this.frameIntervalNano;
+		boolean shouldUpdate = (now - this.lastRenderNano) >= this.frameIntervalNano;
 		if (!shouldUpdate) return;
 
 		if (this.crate.isOk) {
 			this.crate.update();
 			this.blitFramebuffer(now);
-		} else if (!failed) {
+		} else if (!this.failed) {
 			Gooseboy.ccb.doTranslatedErrorMessage(
 					"ui.gooseboy.crate_update_failed.title",
 					"ui.gooseboy.crate_update_failed.body");
-			failed = true;
+			this.failed = true;
 		}
 	}
 }

@@ -19,14 +19,14 @@ public final class MeshRef {
 	}
 
 	public VertexStack stack() {
-		return stack;
+		return this.stack;
 	}
 
 	public int id() {
-		return id;
+		return this.id;
 	}
 
 	public PrimitiveType primitiveType() {
-		return primitiveType;
+		return this.primitiveType;
 	}
 }

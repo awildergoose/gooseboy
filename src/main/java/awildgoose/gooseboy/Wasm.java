@@ -23,8 +23,11 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.stream.Stream;
 
-public class Wasm {
+public final class Wasm {
 	public static final int WASM_PAGE_SIZE_KB = 64;
+
+	private Wasm() {
+	}
 
 	public static boolean isValidGooseboyFilename(String f) {
 		return f.toLowerCase()

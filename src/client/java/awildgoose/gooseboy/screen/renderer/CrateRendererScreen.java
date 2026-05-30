@@ -47,7 +47,7 @@ public abstract class CrateRendererScreen<L extends CrateLayout> extends Screen 
 
 	@Override
 	public void renderBackground(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
-		if (shouldRenderBackground())
+		if (this.shouldRenderBackground())
 			super.renderBackground(guiGraphics, mouseX, mouseY, partialTicks);
 
 		L layout = this.getLayout();
@@ -77,7 +77,7 @@ public abstract class CrateRendererScreen<L extends CrateLayout> extends Screen 
 	}
 
 	public boolean shouldRenderBackground() {
-		return !allowsMovement;
+		return !this.allowsMovement;
 	}
 
 	@FunctionalInterface

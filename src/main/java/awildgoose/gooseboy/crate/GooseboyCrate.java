@@ -40,15 +40,15 @@ public class GooseboyCrate implements AutoCloseable {
 	private void init(CrateMeta meta) {
 		this.fbWidth = meta.framebufferWidth;
 		this.fbHeight = meta.framebufferHeight;
-		this.fbSize = fbWidth * fbHeight * 4;
-		this.storage = new CrateStorage(this.name, this.goosePath);
+		this.fbSize = this.fbWidth * this.fbHeight * 4;
+		this.storage = new CrateStorage(this.name, this.goosePath, meta);
 
 		// Free the binary, as we don't need it anymore
 		meta.binary = null;
 		Gooseboy.addCrate(this, meta);
 
 		try {
-			instance.export("main")
+			this.instance.export("main")
 					.apply();
 			this.fbPtr = (int) this.instance.export("get_framebuffer_ptr")
 					.apply()[0];

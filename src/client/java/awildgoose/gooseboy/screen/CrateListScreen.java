@@ -72,10 +72,11 @@ public class CrateListScreen extends Screen {
 															  .spacing(4));
 
 		header.addChild(
-				Button.builder(Component.translatable("ui.gooseboy.all_crates"), (b) -> list.rebuildEntries(true))
+				Button.builder(Component.translatable("ui.gooseboy.all_crates"), (b) -> this.list.rebuildEntries(true))
 						.build(), LayoutSettings::alignHorizontallyLeft);
 		header.addChild(
-				Button.builder(Component.translatable("ui.gooseboy.running_crates"), (b) -> list.rebuildEntries(false))
+				Button.builder(
+								Component.translatable("ui.gooseboy.running_crates"), (b) -> this.list.rebuildEntries(false))
 						.build(), LayoutSettings::alignHorizontallyRight);
 
 		LinearLayout footer = this.layout.addToFooter(LinearLayout.horizontal()
@@ -95,9 +96,9 @@ public class CrateListScreen extends Screen {
 						.alignVerticallyMiddle());
 		footer.addChild(
 				Button.builder(
-								Component.translatable("ui.gooseboy.sort." + list.sort.name()),
+								Component.translatable("ui.gooseboy.sort." + this.list.sort.name()),
 								(b) -> {
-									list.sort = list.sort == CrateSelectionList.Sort.FILENAME ?
+									this.list.sort = this.list.sort == CrateSelectionList.Sort.FILENAME ?
 											CrateSelectionList.Sort.LAST_MODIFIED : CrateSelectionList.Sort.FILENAME;
 									this.reloadList(true);
 								})

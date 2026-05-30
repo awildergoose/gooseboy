@@ -7,12 +7,16 @@ import java.nio.ByteOrder;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-public class RawAudioManager {
+public final class RawAudioManager {
 	private static final List<PlayingSound> active = new CopyOnWriteArrayList<>();
 	// TODO make these configurable per-crate
 	private static final int MAX_AUDIO_SIZE = 10 * 1024 * 1024; // 10 MB
 	private static final int MAX_CONCURRENT_SOUNDS = 32;
 	private static long AUDIO_ID;
+
+	private RawAudioManager() {
+	}
+
 
 	public static long play(byte[] pcm, int sampleRate, int format) {
 		if (pcm == null || pcm.length > MAX_AUDIO_SIZE) return -1;

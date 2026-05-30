@@ -44,10 +44,10 @@ public enum GpuCommand {
 	}
 
 	public int id() {
-		return id;
+		return this.id;
 	}
 
 	public int len() {
-		return len;
+		return this.len;
 	}
 }

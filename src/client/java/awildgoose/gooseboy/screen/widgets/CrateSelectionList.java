@@ -54,7 +54,7 @@ public class CrateSelectionList extends ObjectSelectionList<CrateSelectionList.E
 					.collect(Collectors.toList());
 		}
 
-		switch (sort) {
+		switch (this.sort) {
 			case FILENAME -> crates.sort(Comparator.comparing(PathOrCrate::getFileName));
 			case LAST_MODIFIED -> crates.sort(Comparator.comparingLong(p -> {
 						if (!((PathOrCrate) p).hasPath())
@@ -69,7 +69,7 @@ public class CrateSelectionList extends ObjectSelectionList<CrateSelectionList.E
 													  .reversed());
 		}
 
-		crates.forEach(f -> this.addEntry(new Entry(parent, minecraft, this, f)));
+		crates.forEach(f -> this.addEntry(new Entry(this.parent, this.minecraft, this, f)));
 	}
 
 	@Override
@@ -84,7 +84,7 @@ public class CrateSelectionList extends ObjectSelectionList<CrateSelectionList.E
 
 	public record PathOrCrate(Path goosePath, Path path, GooseboyCrate crate) {
 		public String getFileName() {
-			return this.hasCrate() ? crate.name : this.path.getFileName()
+			return this.hasCrate() ? this.crate.name : this.path.getFileName()
 												  .toString();
 		}
 
@@ -229,11 +229,11 @@ public class CrateSelectionList extends ObjectSelectionList<CrateSelectionList.E
 			this.text.render(guiGraphics, i, j, f);
 
 			// the lock icon
-			this.settingsOrStopButton.setPosition(getContentRight() - 16, centeredY);
+			this.settingsOrStopButton.setPosition(this.getContentRight() - 16, centeredY);
 			this.settingsOrStopButton.render(guiGraphics, i, j, f);
 
 			// the checkbox icon
-			this.runButton.setPosition(getContentRight() - 16 - 16 - 2, centeredY);
+			this.runButton.setPosition(this.getContentRight() - 16 - 16 - 2, centeredY);
 			this.runButton.render(guiGraphics, i, j, f);
 		}
 	}

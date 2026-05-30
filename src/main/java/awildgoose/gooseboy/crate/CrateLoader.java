@@ -21,7 +21,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 
-public class CrateLoader {
+public final class CrateLoader {
 	private static final Gson GSON = new GsonBuilder()
 			.setPrettyPrinting()
 			.setStrictness(Strictness.LENIENT)
@@ -36,6 +36,9 @@ public class CrateLoader {
 						}
 					})
 			.create();
+
+	private CrateLoader() {
+	}
 
 	public static byte[] readAllBytesPossiblyFromJar(Path path) throws IOException {
 		String raw = path.toString();

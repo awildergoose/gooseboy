@@ -17,21 +17,21 @@ public class Storage {
 	public int storage_read(Instance instance, int offset, int ptr, int len) {
 		if (CrateUtils.doesNotHavePermissionAndWarn(instance, GooseboyCrate.Permission.STORAGE_READ))
 			return 0;
-		return Gooseboy.getCrate(instance).storage.read(instance.memory(), offset, ptr, len);
+		return Gooseboy.getCrate(instance).storage.read(instance, offset, ptr, len);
 	}
 
 	@WasmExport
 	public int storage_write(Instance instance, int offset, int ptr, int len) {
 		if (CrateUtils.doesNotHavePermissionAndWarn(instance, GooseboyCrate.Permission.STORAGE_WRITE))
 			return 0;
-		return Gooseboy.getCrate(instance).storage.write(instance.memory(), offset, ptr, len);
+		return Gooseboy.getCrate(instance).storage.write(instance, offset, ptr, len);
 	}
 
 	@WasmExport
 	public int storage_size(Instance instance) {
 		if (CrateUtils.doesNotHavePermissionAndWarn(instance, GooseboyCrate.Permission.STORAGE_READ))
 			return 0;
-		return Gooseboy.getCrate(instance).storage.size();
+		return Gooseboy.getCrate(instance).storage.size(instance);
 	}
 
 	@WasmExport

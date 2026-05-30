@@ -4,7 +4,10 @@ import awildgoose.gooseboy.Gooseboy;
 import com.dylibso.chicory.runtime.HostFunction;
 import com.dylibso.chicory.runtime.ImportValues;
 
-public class Registrar {
+public final class Registrar {
+	private Registrar() {
+	}
+
 	public static ImportValues.Builder register(ImportValues.Builder builder) {
 		Console console = new Console();
 		Framebuffer fb = new Framebuffer();

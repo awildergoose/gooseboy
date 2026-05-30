@@ -39,9 +39,9 @@ public final class VertexStack {
 			return null;
 		}
 
-		if (gpuBuffer == null || gpuBuffer.size() < len) {
-			if (gpuBuffer != null) gpuBuffer.close();
-			gpuBuffer = RenderSystem.getDevice()
+		if (this.gpuBuffer == null || this.gpuBuffer.size() < len) {
+			if (this.gpuBuffer != null) this.gpuBuffer.close();
+			this.gpuBuffer = RenderSystem.getDevice()
 					.createBuffer(
 							null,
 							GpuBuffer.USAGE_VERTEX | GpuBuffer.USAGE_COPY_DST,
@@ -57,11 +57,11 @@ public final class VertexStack {
 				RenderSystem.getDevice()
 						.createCommandEncoder()
 						.writeToBuffer(
-								gpuBuffer.slice(), meshData.vertexBuffer());
+								this.gpuBuffer.slice(), meshData.vertexBuffer());
 			}
 		}
 
-		return gpuBuffer;
+		return this.gpuBuffer;
 	}
 
 	public record Vertex(float x, float y, float z, float u, float v) {

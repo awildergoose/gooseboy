@@ -12,19 +12,19 @@ public class MiniView implements AutoCloseable {
 	public final int fbWidth;
 	public final int fbHeight;
 	public LayoutType layoutType;
-	public GooseboyPainter painter;
+	public final GooseboyPainter painter;
 
 	public MiniView(GooseboyCrate crate) {
-		painter = new GooseboyPainter(crate);
-		fbWidth = crate.fbWidth;
-		fbHeight = crate.fbHeight;
-		layoutType = LayoutType.TOP_RIGHT;
+		this.painter = new GooseboyPainter(crate);
+		this.fbWidth = crate.fbWidth;
+		this.fbHeight = crate.fbHeight;
+		this.layoutType = LayoutType.TOP_RIGHT;
 	}
 
 	public void render(GuiGraphics guiGraphics) {
-		CrateLayout layout = layoutType.supplier.apply(
-				guiGraphics.guiWidth(), guiGraphics.guiHeight(), fbWidth,
-				fbHeight);
+		CrateLayout layout = this.layoutType.supplier.apply(
+				guiGraphics.guiWidth(), guiGraphics.guiHeight(), this.fbWidth,
+				this.fbHeight);
 		guiGraphics.blit(
 				RenderPipelines.GUI_TEXTURED, SCREEN_UI_LOCATION,
 				layout.bgX, layout.bgY,

@@ -12,9 +12,9 @@ public class RawImage {
 	public final int[] pixels; // ARGB
 
 	private RawImage(int w, int h, int[] p) {
-		width = w;
-		height = h;
-		pixels = p;
+		this.width = w;
+		this.height = h;
+		this.pixels = p;
 	}
 
 	public static RawImage load(ByteArrayInputStream bf) throws IOException {
