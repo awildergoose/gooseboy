@@ -25,7 +25,7 @@
   "ui.gooseboy.settings.initial_memory": "Initial memory in KBs",
   "ui.gooseboy.settings.maximum_memory": "Maximum memory in KBs",
   "ui.gooseboy.settings.storage_size": "Storage size in KBs",
-  "ui.gooseboy.settings.dump_storage": "Dump storage",
+  "ui.gooseboy.settings.dump_storage": "Export storage",
   "ui.gooseboy.settings.upload_storage": "Upload file",
   "ui.gooseboy.settings.storage_upload_offset": "Upload offset",
   "ui.gooseboy.settings.permission.AUDIO": "Play audio",

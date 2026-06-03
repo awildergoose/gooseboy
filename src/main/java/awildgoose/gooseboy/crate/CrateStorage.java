@@ -192,7 +192,7 @@ public class CrateStorage {
 	}
 
 	public void writeSerialized(DataOutputStream out) throws IOException {
-		CompressionType compression = CompressionType.NONE;
+		CompressionType compression = CompressionType.GZIP;
 		byte[] compressedData = this.getCompressedData(compression);
 
 		out.write(FF_MAGIC);
