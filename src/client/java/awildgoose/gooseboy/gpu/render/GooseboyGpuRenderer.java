@@ -64,6 +64,7 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 	public AbstractTexture boundTexture = null;
 	private int gpuMatrixDepth = 0;
 	private int frameStartGpuMatrixDepth = 0;
+	public boolean renderedThisFrame = false;
 
 	public GooseboyGpuRenderer(int fbWidth, int fbHeight) {
 		this.camera = new GooseboyGpuCamera(fbWidth, fbHeight);
@@ -168,11 +169,14 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 
 	@Override
 	public void close() {
+		this.textureRegistry.close();
+		this.meshRegistry.close();
 		this.renderTarget.destroyBuffers();
 		this.projectionMatrixBuffer.close();
 	}
 
 	public void render() {
+		if (this.renderedThisFrame) return;
 		ProfilerFiller profiler = Profiler.get();
 		profiler.push("gooseGPU");
 

@@ -91,6 +91,15 @@ public final class Gpu {
 	}
 
 	@WasmExport
+	public void defer_gpu(Instance instance) {
+		if (CrateUtils.doesNotHavePermissionAndWarn(instance, GooseboyCrate.Permission.GPU)) return;
+		GooseboyGpuRenderer gpu = GooseboyClient.rendererByInstance.get(instance);
+		if (gpu == null) return;
+		gpu.render();
+		gpu.renderedThisFrame = true;
+	}
+
+	@WasmExport
 	public int gpu_read(Instance instance, int offset, int ptr, int len) {
 		if (CrateUtils.doesNotHavePermissionAndWarn(instance, GooseboyCrate.Permission.GPU)) return 0;
 		Memory memory = instance.memory();

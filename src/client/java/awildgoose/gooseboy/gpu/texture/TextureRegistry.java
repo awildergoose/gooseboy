@@ -13,6 +13,13 @@ public class TextureRegistry {
 	private final ArrayList<TextureRef> textures = new ArrayList<>();
 	private int lastTextureId = 0;
 
+	public void close() {
+		for (TextureRef texture : this.textures)
+			texture.texture()
+					.close();
+		this.textures.clear();
+	}
+
 	public TextureRef createTexture(int width, int height) {
 		TextureRef ref = new TextureRef(new UnnamedDynamicTexture(width, height), this.lastTextureId++);
 		this.textures.add(ref);

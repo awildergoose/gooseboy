@@ -63,6 +63,7 @@ public class GooseboyPainter implements AutoCloseable {
 
 	public void renderGpu() {
 		this.gpuRenderer.render();
+		this.gpuRenderer.renderedThisFrame = false;
 	}
 
 	public void initDrawing() {

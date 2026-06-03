@@ -11,6 +11,13 @@ public class MeshRegistry {
 	private final ArrayList<MeshRef> meshes = new ArrayList<>();
 	private int lastMeshId = 0;
 
+	public void close() {
+		for (MeshRef mesh : this.meshes)
+			mesh.stack()
+					.clear();
+		this.meshes.clear();
+	}
+
 	public MeshRef createMesh(PrimitiveType primitiveType) {
 		MeshRef ref = new MeshRef(new VertexStack(), primitiveType, this.lastMeshId++, null);
 		this.meshes.add(ref);

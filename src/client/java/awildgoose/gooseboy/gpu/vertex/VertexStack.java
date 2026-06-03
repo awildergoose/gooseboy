@@ -12,6 +12,10 @@ public final class VertexStack {
 	public VertexStack() {
 	}
 
+	public void clear() {
+		this.vertices.clear();
+	}
+
 	public int size() {
 		return this.vertices.size();
 	}

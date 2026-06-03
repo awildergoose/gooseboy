@@ -1,6 +1,7 @@
 package awildgoose.gooseboy;
 
 import awildgoose.gooseboy.crate.GooseboyCrate;
+import awildgoose.gooseboy.gpu.render.GooseboyGpuRenderer;
 import awildgoose.gooseboy.lib.Gpu;
 import awildgoose.gooseboy.screen.renderer.CrateRendererScreen;
 import com.dylibso.chicory.runtime.ImportValues;
@@ -89,6 +90,11 @@ public class ClientCommonBridgeImpl implements ClientCommonBridge {
 	public void closeCrate(GooseboyCrate crate) {
 		RawAudioManager.stopAllSounds();
 		WasmInputManager.releaseMouse();
+
+		GooseboyGpuRenderer renderer = GooseboyClient.rendererByInstance.get(crate.instance);
+		if (renderer != null) {
+			renderer.close();
+		}
 	}
 
 	@Override
