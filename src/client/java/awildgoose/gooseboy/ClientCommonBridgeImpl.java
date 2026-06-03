@@ -12,6 +12,20 @@ import net.minecraft.network.chat.Component;
 
 public class ClientCommonBridgeImpl implements ClientCommonBridge {
 	@Override
+	public void doTranslatedMessage(String title, String body, Object... o) {
+		Component titleC = Component.translatable(title);
+		Component bodyC = Component.translatable(body, o);
+
+		SystemToast.add(
+				Minecraft.getInstance()
+						.getToastManager(),
+				SystemToast.SystemToastId.PERIODIC_NOTIFICATION,
+				titleC, bodyC
+		);
+		Gooseboy.LOGGER.info("{}: {}", titleC.getString(), bodyC.getString());
+	}
+
+	@Override
 	public void doErrorMessage(String title, String body) {
 		SystemToast.add(
 				Minecraft.getInstance()
@@ -29,7 +43,6 @@ public class ClientCommonBridgeImpl implements ClientCommonBridge {
 		SystemToast.add(
 				Minecraft.getInstance()
 						.getToastManager(), SystemToast.SystemToastId.CHUNK_LOAD_FAILURE, titleC, bodyC);
-
 		Gooseboy.LOGGER.error("{}: {}", titleC.getString(), bodyC.getString());
 	}
 

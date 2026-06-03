@@ -5,6 +5,8 @@ import com.dylibso.chicory.runtime.ImportValues;
 
 public interface ClientCommonBridge {
 	// misc
+	void doTranslatedMessage(String title, String body, Object... o);
+
 	void doErrorMessage(String title, String body);
 
 	void doTranslatedErrorMessage(String title, String body, Object... o);

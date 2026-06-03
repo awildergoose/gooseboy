@@ -26,9 +26,16 @@ public class CrateStorage {
 		this.load(name);
 	}
 
+	public CrateStorage(Path filePath) throws IOException {
+		int size = Math.toIntExact(Files.size(filePath));
+		this.data = ByteBuffer.allocate(size);
+		this.filePath = filePath;
+		this.load(size);
+	}
+
 	public static Path resolveFilePath(Path goosePath, String name) {
 		return goosePath.resolve("storage")
-				.resolve(name + ".bin");
+				.resolve(name + ".gsb");
 	}
 
 	public static long getSizeOf(String name, Path goosePath) {
@@ -72,6 +79,7 @@ public class CrateStorage {
 		this.dirty = true;
 	}
 
+	// Slop
 	public int size(Instance instance) {
 		return this.size(Gooseboy.getCrate(instance));
 	}
@@ -114,10 +122,8 @@ public class CrateStorage {
 		}
 	}
 
-	public void load(String name) {
+	public void load(int size) {
 		try {
-			Files.createDirectories(this.filePath.getParent());
-
 			if (!Files.exists(this.filePath)) {
 				return;
 			}
@@ -167,11 +173,34 @@ public class CrateStorage {
 					return;
 				}
 
-				System.arraycopy(decompressed, 0, this.data.array(), 0, Math.min(decompressed.length, this.size(name)));
+				System.arraycopy(decompressed, 0, this.data.array(), 0, Math.min(decompressed.length, size));
 			}
 		} catch (IOException e) {
 			Gooseboy.LOGGER.error("Failed to load WASM storage crate:", e);
 		}
+	}
+
+	public void load(String name) {
+		this.load(this.size(name));
+	}
+
+	public byte[] getCompressedData(CompressionType compression) {
+		return switch (compression) {
+			case NONE -> this.data.array();
+			case GZIP -> this.gzipCompressData();
+		};
+	}
+
+	public void writeSerialized(DataOutputStream out) throws IOException {
+		CompressionType compression = CompressionType.NONE;
+		byte[] compressedData = this.getCompressedData(compression);
+
+		out.write(FF_MAGIC);
+		out.writeInt(FF_VERSION);
+		out.writeByte(compression.code);
+		out.writeInt(compressedData.length);
+		out.writeInt(this.data.array().length);
+		out.write(compressedData);
 	}
 
 	public void save() {
@@ -181,19 +210,11 @@ public class CrateStorage {
 		try {
 			Files.createDirectories(this.filePath.getParent());
 
-			byte[] compressedData = this.gzipCompressData();
-			CompressionType compression = CompressionType.GZIP;
-
 			Path temp = this.filePath.resolveSibling(this.filePath.getFileName()
 														.toString() + ".tmp");
 			try (DataOutputStream out = new DataOutputStream(
 					Files.newOutputStream(temp, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING))) {
-				out.write(FF_MAGIC);
-				out.writeInt(FF_VERSION);
-				out.writeByte(compression.code);
-				out.writeInt(compressedData.length);
-				out.writeInt(this.data.array().length);
-				out.write(compressedData);
+				this.writeSerialized(out);
 			}
 
 			try {
@@ -206,7 +227,21 @@ public class CrateStorage {
 		}
 	}
 
-	enum CompressionType {
+	public ByteBuffer readAll() {
+		return this.data.duplicate();
+	}
+
+	public boolean writeDirect(int offset, ByteBuffer data) {
+		int len = data.remaining();
+		if (offset < 0 || len > this.data.capacity() - offset) return false;
+		this.data.position(offset);
+		this.data.put(data);
+		this.data.position(offset + len);
+		this.dirty = true;
+		return true;
+	}
+
+	public enum CompressionType {
 		NONE((byte) 0),
 		GZIP((byte) 1);
 
