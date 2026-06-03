@@ -36,10 +36,14 @@ public final class ConfigManager {
 	private ConfigManager() {
 	}
 
-	public static class CrateSettings {
-		public List<GooseboyCrate.Permission> permissions = new ArrayList<>();
-		public int initial_memory = 6 * 1024; // 6 KB
-		public int max_memory = 8 * 1024; // 8 KB
+	public static synchronized int getStorageSize(String crateName) {
+		RootConfig cfg = getConfig();
+		CrateSettings specific = cfg.crate_settings.get(crateName);
+		if (specific != null) {
+			return specific.storage_size;
+		}
+
+		return cfg.default_crate_settings.storage_size;
 	}
 
 	public static class RootConfig {
@@ -140,6 +144,12 @@ public final class ConfigManager {
 		return Pair.of(cfg.default_crate_settings.initial_memory, cfg.default_crate_settings.max_memory);
 	}
 
+	public static synchronized void setCrateStorageSize(String crateName, int storageSize) {
+		CrateSettings s = getOrCreateSettings(crateName);
+		s.storage_size = storageSize;
+		save();
+	}
+
 	private static CrateSettings getOrCreateSettings(String crateName) {
 		return getConfig().crate_settings.computeIfAbsent(crateName, k -> new CrateSettings());
 	}
@@ -155,5 +165,12 @@ public final class ConfigManager {
 		s.initial_memory = memoryLimits.getLeft();
 		s.max_memory = memoryLimits.getRight();
 		save();
+	}
+
+	public static class CrateSettings {
+		public List<GooseboyCrate.Permission> permissions = new ArrayList<>();
+		public int initial_memory = 6 * 1024; // 6 KB
+		public int max_memory = 8 * 1024; // 8 KB
+		public int storage_size = 512 * 1024; // 512 KB
 	}
 }

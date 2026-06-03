@@ -32,7 +32,7 @@ public class Gooseboy implements ModInitializer {
 			Files.createDirectories(base.resolve("storage"));
 			Files.createDirectories(base.resolve("cache"));
 		} catch (IOException e) {
-			e.printStackTrace();
+			Gooseboy.LOGGER.error("Failed to create home directories: {0}", e);
 		}
 	}
 

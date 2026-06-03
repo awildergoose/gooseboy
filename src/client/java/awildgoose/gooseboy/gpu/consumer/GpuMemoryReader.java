@@ -4,16 +4,13 @@ import awildgoose.gooseboy.Gooseboy;
 
 public class GpuMemoryReader implements MemoryReadConsumer {
 	private final byte[] bytes;
-	private final boolean canLog;
 
-	public GpuMemoryReader(byte[] bytes, boolean canLog) {
+	public GpuMemoryReader(byte[] bytes) {
 		this.bytes = bytes;
-		this.canLog = canLog;
 	}
 
 	private void warn(String format, Object... arguments) {
-		if (this.canLog)
-			Gooseboy.LOGGER.warn(format, arguments);
+		Gooseboy.LOGGER.warn(format, arguments);
 	}
 
 	@Override

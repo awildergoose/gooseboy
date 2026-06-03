@@ -174,7 +174,7 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 
 	public void render() {
 		ProfilerFiller profiler = Profiler.get();
-		profiler.push("GooseGPU");
+		profiler.push("gooseGPU");
 
 		this.frameStartGpuMatrixDepth = this.gpuMatrixDepth;
 
@@ -238,18 +238,44 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 			// Emit
 			case EmitVertex -> {
 				MeshRef recording = !this.recordings.isEmpty() ? this.recordings.getLast() : null;
-				float x = read.readFloat(0);
-				float y = read.readFloat(4);
-				float z = read.readFloat(8);
-				float u = read.readFloat(12);
-				float v = read.readFloat(16);
 
 				if (recording != null) {
-					// recommended instanced mode
+					// instanced mode
+					float x = read.readFloat(0);
+					float y = read.readFloat(4);
+					float z = read.readFloat(8);
+					float u = read.readFloat(12);
+					float v = read.readFloat(16);
+
 					recording.stack()
 							.push(new VertexStack.Vertex(
 									x, y, z, u, v
 							));
+				} else {
+					// immediate-mode is not supported
+					this.setStatus(write, GpuConstants.GB_STATUS_NOT_RECORDING);
+				}
+			}
+			case EmitVertices -> {
+				MeshRef recording = !this.recordings.isEmpty() ? this.recordings.getLast() : null;
+
+				if (recording != null) {
+					// instanced mode
+					int count = read.readInt(0);
+
+					for (int i = 0; i < count; i++) {
+						int base = 4 + (i * 20);
+						float x = read.readFloat(base);
+						float y = read.readFloat(base + 4);
+						float z = read.readFloat(base + 8);
+						float u = read.readFloat(base + 12);
+						float v = read.readFloat(base + 16);
+
+						recording.stack()
+								.push(new VertexStack.Vertex(
+										x, y, z, u, v
+								));
+					}
 				} else {
 					// immediate-mode is not supported
 					this.setStatus(write, GpuConstants.GB_STATUS_NOT_RECORDING);

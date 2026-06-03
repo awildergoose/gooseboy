@@ -20,6 +20,7 @@
   "ui.gooseboy.settings.allocated": "Spațiul alocat: %s",
   "ui.gooseboy.settings.initial_memory": "Memoria inițială (KB)",
   "ui.gooseboy.settings.maximum_memory": "Memoria maximă (KB)",
+  "ui.gooseboy.settings.storage_size": "Dimensiune stocare (KB)",
   "ui.gooseboy.settings.permission.AUDIO": "Audio",
   "ui.gooseboy.settings.permission.CONSOLE": "Consolă",
   "ui.gooseboy.settings.permission.INPUT_GRAB_MOUSE": "Obține mouseul",

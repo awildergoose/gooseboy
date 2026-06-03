@@ -21,7 +21,5 @@ public class CrateMeta {
 
 	public int framebufferWidth = 320;
 	public int framebufferHeight = 200;
-	public boolean allowsMovement = false;
-
-	public int storageSize = 512 * 1024; // 512 KB
+	public boolean isMiniview = false;
 }

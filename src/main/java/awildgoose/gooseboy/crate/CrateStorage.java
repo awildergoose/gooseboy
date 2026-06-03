@@ -1,5 +1,6 @@
 package awildgoose.gooseboy.crate;
 
+import awildgoose.gooseboy.ConfigManager;
 import awildgoose.gooseboy.Gooseboy;
 import com.dylibso.chicory.runtime.Instance;
 
@@ -19,10 +20,10 @@ public class CrateStorage {
 	private static final byte[] FF_MAGIC = new byte[]{'g', 's', 'b', 'c', 'r', 'a', 't', 'e'};
 	private static final int FF_VERSION = 1;
 
-	public CrateStorage(String name, Path goosePath, CrateMeta meta) {
-		this.data = ByteBuffer.allocate(this.size(meta));
+	public CrateStorage(String name, Path goosePath) {
+		this.data = ByteBuffer.allocate(this.size(name));
 		this.filePath = resolveFilePath(goosePath, name);
-		this.load(meta);
+		this.load(name);
 	}
 
 	public static Path resolveFilePath(Path goosePath, String name) {
@@ -72,11 +73,15 @@ public class CrateStorage {
 	}
 
 	public int size(Instance instance) {
-		return this.size(Gooseboy.getCrateMeta(instance));
+		return this.size(Gooseboy.getCrate(instance));
 	}
 
-	public int size(CrateMeta meta) {
-		return meta.storageSize;
+	public int size(GooseboyCrate crate) {
+		return this.size(crate.name);
+	}
+
+	public int size(String name) {
+		return ConfigManager.getStorageSize(name);
 	}
 
 	public byte[] gzipCompressData() {
@@ -109,7 +114,7 @@ public class CrateStorage {
 		}
 	}
 
-	public void load(CrateMeta meta) {
+	public void load(String name) {
 		try {
 			Files.createDirectories(this.filePath.getParent());
 
@@ -162,7 +167,7 @@ public class CrateStorage {
 					return;
 				}
 
-				System.arraycopy(decompressed, 0, this.data.array(), 0, Math.min(decompressed.length, this.size(meta)));
+				System.arraycopy(decompressed, 0, this.data.array(), 0, Math.min(decompressed.length, this.size(name)));
 			}
 		} catch (IOException e) {
 			Gooseboy.LOGGER.error("Failed to load WASM storage crate:", e);

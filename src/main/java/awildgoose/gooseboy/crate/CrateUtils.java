@@ -11,10 +11,6 @@ public final class CrateUtils {
 	private CrateUtils() {
 	}
 
-	public static boolean canLog(Instance instance) {
-		return Gooseboy.getCrate(instance).permissions.contains(GooseboyCrate.Permission.CONSOLE);
-	}
-
 	public static boolean doesNotHavePermissionAndWarn(Instance instance, GooseboyCrate.Permission permission) {
 		if (Gooseboy.getCrate(instance).permissions.contains(permission)) {
 			return false;

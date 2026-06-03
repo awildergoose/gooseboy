@@ -71,5 +71,6 @@ public class CrateSettingsScreen extends Screen {
 		}
 
 		ConfigManager.setCrateMemoryLimits(this.crateName, memoryLimits);
+		ConfigManager.setCrateStorageSize(this.crateName, this.list.storageSize);
 	}
 }

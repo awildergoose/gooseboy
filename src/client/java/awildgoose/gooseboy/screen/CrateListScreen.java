@@ -43,11 +43,11 @@ public class CrateListScreen extends Screen {
 						path, Gooseboy.getGooseboyCratesDirectory()
 								.resolve(path.getFileName()));
 			} catch (Exception e) {
-				e.printStackTrace();
 				Gooseboy.ccb.doTranslatedErrorMessage(
 						"ui.gooseboy.upload_failed.title", "ui.gooseboy.upload_failed" +
 								".body", path.getFileName()
 								.toString());
+				Gooseboy.LOGGER.error("Failed to copy crate: {0}", e);
 			}
 		});
 

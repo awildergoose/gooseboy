@@ -18,14 +18,14 @@ public abstract class CrateRendererScreen<L extends CrateLayout> extends Screen 
 	public final GooseboyPainter painter;
 	public final int fbWidth;
 	public final int fbHeight;
-	public final boolean allowsMovement;
+	public final boolean isMiniview;
 
 	public CrateRendererScreen(GooseboyCrate crate, Component component) {
 		super(component);
 		this.painter = new GooseboyPainter(crate);
 		this.fbWidth = crate.fbWidth;
 		this.fbHeight = crate.fbHeight;
-		this.allowsMovement = Gooseboy.getCrateMeta(crate.instance).allowsMovement;
+		this.isMiniview = Gooseboy.getCrateMeta(crate.instance).isMiniview;
 	}
 
 	@Override
@@ -77,7 +77,7 @@ public abstract class CrateRendererScreen<L extends CrateLayout> extends Screen 
 	}
 
 	public boolean shouldRenderBackground() {
-		return !this.allowsMovement;
+		return !this.isMiniview;
 	}
 
 	@FunctionalInterface

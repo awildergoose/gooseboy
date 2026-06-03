@@ -20,6 +20,7 @@
   "ui.gooseboy.settings.allocated": "Tilldelad lagring: %s",
   "ui.gooseboy.settings.initial_memory": "Startminne (KB)",
   "ui.gooseboy.settings.maximum_memory": "Maxminne (KB)",
+  "ui.gooseboy.settings.storage_size": "Lagringsstorlek (KB)",
   "ui.gooseboy.settings.permission.AUDIO": "Ljud",
   "ui.gooseboy.settings.permission.CONSOLE": "Konsol",
   "ui.gooseboy.settings.permission.INPUT_GRAB_MOUSE": "Ta kontroll över musen",

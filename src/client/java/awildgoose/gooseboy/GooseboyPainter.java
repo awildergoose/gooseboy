@@ -21,13 +21,13 @@ import static awildgoose.gooseboy.Gooseboy.withLocation;
 public class GooseboyPainter implements AutoCloseable {
 	private final GooseboyCrate crate;
 	private final ResourceLocation framebufferTexture;
-	private final long frameIntervalNano;
 	private final GooseboyGpuRenderer gpuRenderer;
 	private DynamicTexture texture;
 	private ByteBuffer tmpBuf;
 	private boolean failed = false;
 	private boolean hasInitialized = false;
-	private long lastRenderNano = 0L;
+	@SuppressWarnings({"unused", "FieldCanBeLocal"}) private final long frameIntervalNano;
+	@SuppressWarnings({"unused", "FieldCanBeLocal"}) private long lastRenderNano = 0L;
 
 	public GooseboyPainter(GooseboyCrate crate) {
 		this.crate = crate;
@@ -52,7 +52,7 @@ public class GooseboyPainter implements AutoCloseable {
 
 			crate.close();
 			crate.isOk = false;
-			ie.printStackTrace();
+			Gooseboy.LOGGER.warn("Failed to get gpu_main function: {0}", ie);
 		}
 	}
 
@@ -76,6 +76,10 @@ public class GooseboyPainter implements AutoCloseable {
 				.register(this.framebufferTexture, this.texture);
 		this.tmpBuf = MemoryUtil.memAlloc(this.crate.fbSize);
 		// clear the framebuffer as in to not blit any previous unfreed memory
+		// yes, I have to reset the crate framebuffer memory, why? Don't ask questions.
+		// Nevermind, doesnt fix it. AAAAAUUUUUUGGGGGHHHHHHHHHHHHHHHHHH
+		this.crate.instance.memory()
+				.fill((byte) 0, this.crate.fbPtr, this.crate.fbPtr + this.crate.fbSize);
 		this.blitFramebuffer(System.nanoTime());
 		this.hasInitialized = true;
 	}

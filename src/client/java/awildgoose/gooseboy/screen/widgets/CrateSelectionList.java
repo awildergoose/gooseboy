@@ -147,8 +147,6 @@ public class CrateSelectionList extends ObjectSelectionList<CrateSelectionList.E
 						throw new RuntimeException("Crate aborted upon startup");
 					}
 				} catch (Exception e) {
-					e.printStackTrace();
-
 					if (e instanceof UninstantiableException) {
 						Gooseboy.ccb.doTranslatedErrorMessage(
 								"ui.gooseboy.not_enough_memory.title",
@@ -160,13 +158,17 @@ public class CrateSelectionList extends ObjectSelectionList<CrateSelectionList.E
 								"ui.gooseboy.crate_run_failed.title",
 								"ui.gooseboy.crate_run_failed.body");
 					}
+
+					Gooseboy.LOGGER.error("Failed to run crate: {0}", e);
 				}
 			});
 
 			this.settingsOrStopButton = new ImageButton(
 					0, 0, 15, 15, new WidgetSprites(
 					Gooseboy.withLocation("widget/settings_button"),
-					Gooseboy.withLocation("widget/settings_button_highlighted")
+					Gooseboy.withLocation("widget/settings_button_disabled"),
+					Gooseboy.withLocation("widget/settings_button_highlighted"),
+					Gooseboy.withLocation("widget/settings_button_disabled")
 			), (b) -> {
 				if (poc.hasCrate()) {
 					// change layout
@@ -188,6 +190,13 @@ public class CrateSelectionList extends ObjectSelectionList<CrateSelectionList.E
 						.getParent()
 				));
 			});
+
+			if (!poc.hasCrate() && Gooseboy.getCrates()
+					.values()
+					.stream()
+					.anyMatch(m -> m.getLeft().name.equals(text))) {
+				this.settingsOrStopButton.active = false;
+			}
 		}
 
 		@Override

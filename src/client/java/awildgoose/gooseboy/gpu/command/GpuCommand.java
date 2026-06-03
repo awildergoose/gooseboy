@@ -12,6 +12,7 @@ public enum GpuCommand {
 	EmitVertex(0x05, 20), // f32 xyzuv[5]
 	BindTexture(0x06, 4), // u32 id
 	RegisterTexture(0x07, 8), // u32 w, u32 h, byte[] rgba
+	EmitVertices(0x0F, 4), // u32 count, Vertex[] vertices
 
 	Translate(0x08, 12),
 	RotateAxis(0x09, 16),

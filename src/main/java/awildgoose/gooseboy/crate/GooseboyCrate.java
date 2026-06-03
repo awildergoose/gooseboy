@@ -16,14 +16,15 @@ import java.util.Optional;
 
 public class GooseboyCrate implements AutoCloseable {
 	public final Instance instance;
-	private int fbPtr;
-	public int fbSize;
 	private ExportFunction updateFunction;
 	public CrateStorage storage;
+	// this is the filename!
 	public final String name;
 	public final List<Permission> permissions;
 	public boolean isOk = true;
 	public boolean isMiniView;
+	public int fbPtr;
+	public int fbSize;
 	public int fbWidth;
 	public int fbHeight;
 	public final Path goosePath;
@@ -32,7 +33,7 @@ public class GooseboyCrate implements AutoCloseable {
 		this.instance = instance;
 		this.name = name;
 		this.permissions = this.loadPermissions();
-		this.isMiniView = meta.allowsMovement;
+		this.isMiniView = meta.isMiniview;
 		this.goosePath = goosePath;
 		this.init(meta);
 	}
@@ -41,7 +42,7 @@ public class GooseboyCrate implements AutoCloseable {
 		this.fbWidth = meta.framebufferWidth;
 		this.fbHeight = meta.framebufferHeight;
 		this.fbSize = this.fbWidth * this.fbHeight * 4;
-		this.storage = new CrateStorage(this.name, this.goosePath, meta);
+		this.storage = new CrateStorage(this.name, this.goosePath);
 
 		// Free the binary, as we don't need it anymore
 		meta.binary = null;
@@ -57,7 +58,7 @@ public class GooseboyCrate implements AutoCloseable {
 			this.close();
 			if (ie instanceof TrapException) {
 				this.isOk = false;
-				ie.printStackTrace();
+				Gooseboy.LOGGER.error("Crate runtime was trapped, error: {0}", ie);
 			} else
 				throw ie;
 		}
@@ -80,12 +81,12 @@ public class GooseboyCrate implements AutoCloseable {
 		if (this.updateFunction != null) {
 			ProfilerFiller profilerFiller = Profiler.get();
 			long now = System.nanoTime();
-			profilerFiller.push("Gooseboy");
+			profilerFiller.push("gooseboy");
 			try {
 				this.updateFunction.apply(now);
-			} catch (TrapException e) {
+			} catch (TrapException ie) {
 				this.isOk = false;
-				e.printStackTrace();
+				Gooseboy.LOGGER.error("Crate runtime was trapped, error: {0}", ie);
 			}
 			profilerFiller.pop();
 		}

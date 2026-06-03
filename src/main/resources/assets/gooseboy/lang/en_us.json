@@ -20,6 +20,7 @@
   "ui.gooseboy.settings.allocated": "Used storage: %s",
   "ui.gooseboy.settings.initial_memory": "Initial memory in KBs",
   "ui.gooseboy.settings.maximum_memory": "Maximum memory in KBs",
+  "ui.gooseboy.settings.storage_size": "Storage size in KBs",
   "ui.gooseboy.settings.permission.AUDIO": "Play audio",
   "ui.gooseboy.settings.permission.CONSOLE": "Write to console",
   "ui.gooseboy.settings.permission.INPUT_GRAB_MOUSE": "Lock the mouse",

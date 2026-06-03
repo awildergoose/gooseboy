@@ -2,9 +2,11 @@ package awildgoose.gooseboy;
 
 import awildgoose.gooseboy.crate.GooseboyCrate;
 import awildgoose.gooseboy.lib.Gpu;
+import awildgoose.gooseboy.screen.renderer.CrateRendererScreen;
 import com.dylibso.chicory.runtime.ImportValues;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.toasts.SystemToast;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 
 public class ClientCommonBridgeImpl implements ClientCommonBridge {
@@ -57,6 +59,9 @@ public class ClientCommonBridgeImpl implements ClientCommonBridge {
 
 	@Override
 	public void grabMouse() {
+		Screen screen = Minecraft.getInstance().screen;
+		if (screen != null && !(screen instanceof CrateRendererScreen<?>))
+			return;
 		WasmInputManager.grabMouse();
 	}
 

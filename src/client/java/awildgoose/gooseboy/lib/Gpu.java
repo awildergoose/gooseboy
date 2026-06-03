@@ -55,7 +55,6 @@ public final class Gpu {
 		GooseboyGpuRenderer gpu = GooseboyClient.rendererByInstance.get(instance);
 		if (gpu == null) return 0;
 
-		boolean canLog = CrateUtils.canLog(instance);
 		int offset = ptr;
 		int end = ptr + count;
 
@@ -72,12 +71,17 @@ public final class Gpu {
 				int height = memory.readInt(offset + 1 + 4);
 
 				payloadLength += width * height * 4;
+			} else if (cmd.id() == GpuCommand.EmitVertices.id()) {
+				// count * 20
+				int vCount = memory.readInt(offset + 1);
+
+				payloadLength += vCount * 20;
 			}
 
 			byte[] payload = memory.readBytes(offset + 1, payloadLength);
 
 			gpu.queuedCommands.add(
-					new QueuedCommand(cmd, payload, canLog)
+					new QueuedCommand(cmd, payload)
 			);
 
 			offset += 1 + payloadLength;

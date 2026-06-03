@@ -25,11 +25,13 @@ import java.util.function.Consumer;
 public class CrateSettingsList extends ObjectSelectionList<CrateSettingsList.Entry> {
 	public final List<GooseboyCrate.Permission> permissions;
 	public Pair<Integer, Integer> memoryLimits;
+	public int storageSize;
 
 	public CrateSettingsList(Minecraft minecraft, int i, int j, int k, int l, String crateName, Path goosePath) {
 		super(minecraft, i, j, k, l);
 		this.permissions = new ArrayList<>(ConfigManager.getEffectivePermissions(crateName));
 		this.memoryLimits = ConfigManager.getMemoryLimits(crateName);
+		this.storageSize = ConfigManager.getStorageSize(crateName);
 		this.addEntry(new TextEntry(
 				minecraft, this, true,
 				"ui.gooseboy.settings.allocated",
@@ -54,6 +56,14 @@ public class CrateSettingsList extends ObjectSelectionList<CrateSettingsList.Ent
 			int n = Integer.parseInt(s);
 			this.memoryLimits = Pair.of(this.memoryLimits.getLeft(), n);
 		}));
+		this.addEntry(new TextEntry(minecraft, this, true, "ui.gooseboy.settings.storage_size"));
+		this.addEntry(new NumberEditEntry(
+				minecraft, this, "ui.gooseboy.settings.storage_size",
+				Integer.toString(this.storageSize / 1024), s -> {
+			if (s.chars()
+					.noneMatch(Character::isDigit)) return;
+			this.storageSize = Integer.parseInt(s) * 1024;
+		}));
 		this.addEntry(new TextEntry(minecraft, this, true, "ui.gooseboy.settings.permissions"));
 
 		for (GooseboyCrate.Permission permission : GooseboyCrate.Permission.values()) {
@@ -71,7 +81,7 @@ public class CrateSettingsList extends ObjectSelectionList<CrateSettingsList.Ent
 	}
 
 	public static String formatBytes(long bytes) {
-		final String[] units = {"bytes", "kilobytes", "megabytes"};
+		final String[] units = {"bytes", "kilobytes", "megabytes", "gigabytes"};
 		int unitIndex = 0;
 		double value = bytes;
 
