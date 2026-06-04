@@ -54,6 +54,7 @@ public class GooseboyCrate implements AutoCloseable {
 			this.fbPtr = (int) this.instance.export("get_framebuffer_ptr")
 					.apply()[0];
 			this.updateFunction = this.instance.export("update");
+			this.clearSurface(this.fbPtr, this.fbSize, 0);
 		} catch (Throwable ie) {
 			this.close();
 			if (ie instanceof TrapException) {
