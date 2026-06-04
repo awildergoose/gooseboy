@@ -51,4 +51,6 @@ public interface ClientCommonBridge {
 
 	// GPU
 	ImportValues.Builder addGPUFunctions(ImportValues.Builder builder);
+
+	void preCrateUpdate(GooseboyCrate crate);
 }

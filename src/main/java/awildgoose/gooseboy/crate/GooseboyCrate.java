@@ -80,6 +80,8 @@ public class GooseboyCrate implements AutoCloseable {
 
 	public void update() {
 		if (this.updateFunction != null) {
+			Gooseboy.ccb.preCrateUpdate(this);
+
 			ProfilerFiller profilerFiller = Profiler.get();
 			long now = System.nanoTime();
 			profilerFiller.push("gooseboy");

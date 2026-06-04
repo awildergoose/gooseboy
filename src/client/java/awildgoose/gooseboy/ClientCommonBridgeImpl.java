@@ -126,6 +126,14 @@ public class ClientCommonBridgeImpl implements ClientCommonBridge {
 	}
 
 	@Override
+	public void preCrateUpdate(GooseboyCrate crate) {
+		GooseboyGpuRenderer renderer = GooseboyClient.rendererByInstance.get(crate.instance);
+		if (renderer != null) {
+			renderer.clearRenderQueues();
+		}
+	}
+
+	@Override
 	public long playRawAudio(byte[] pcm, int sampleRate, int format) {
 		return RawAudioManager.play(pcm, sampleRate, format);
 	}

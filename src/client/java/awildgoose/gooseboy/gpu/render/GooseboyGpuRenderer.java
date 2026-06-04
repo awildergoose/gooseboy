@@ -34,16 +34,13 @@ import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
-import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix3x2f;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fStack;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.ArrayList;
-import java.util.OptionalDouble;
-import java.util.OptionalInt;
+import java.util.*;
 
 @Environment(EnvType.CLIENT)
 public class GooseboyGpuRenderer implements AutoCloseable {
@@ -65,6 +62,8 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 	private int gpuMatrixDepth = 0;
 	private int frameStartGpuMatrixDepth = 0;
 	public boolean renderedThisFrame = false;
+	private final ArrayList<RenderQueueItem> triRenderQueue = new ArrayList<>();
+	private final ArrayList<RenderQueueItem> quadRenderQueue = new ArrayList<>();
 
 	public GooseboyGpuRenderer(int fbWidth, int fbHeight) {
 		this.camera = new GooseboyGpuCamera(fbWidth, fbHeight);
@@ -80,74 +79,87 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 		);
 	}
 
-	public void renderVertexStack(VertexStack vertexStack, @Nullable TextureRef overrideTexture, PrimitiveType primitiveType) {
-		GpuBuffer buffer = vertexStack.intoGpuBuffer();
-		RenderSystem.AutoStorageIndexBuffer indices = switch (primitiveType) {
-			case TRIANGLES -> this.triangleIndices;
-			case QUADS -> this.quadIndices;
-		};
-		RenderPipeline pipeline = switch (primitiveType) {
-			case TRIANGLES -> GooseboyClient.TRIANGLES_PIPELINE;
-			case QUADS -> GooseboyClient.QUADS_PIPELINE;
-		};
-		int numIndices = switch (primitiveType) {
-			case TRIANGLES -> vertexStack.size();
-			case QUADS -> vertexStack.size() / 4;
-		};
-		int numIndicesToDraw = switch (primitiveType) {
-			case TRIANGLES -> numIndices;
-			case QUADS -> numIndices * 6;
-		};
+	public void clearRenderQueues() {
+		this.triRenderQueue.clear();
+		this.quadRenderQueue.clear();
+	}
 
-		if (buffer != null) {
-			RenderSystem.backupProjectionMatrix();
-			RenderSystem.setProjectionMatrix(
-					this.projectionMatrixBuffer.getBuffer(
-							this.renderTarget.width,
-							this.renderTarget.height,
-							this.camera.fovDegrees
-					), ProjectionType.PERSPECTIVE);
+	public void renderVertexStackInPass(RenderPass renderPass, RenderQueueItem rqi) {
+		renderPass.setUniform("DynamicTransforms", rqi.matrix);
+		renderPass.bindSampler("Sampler0", rqi.texture.getTextureView());
+		renderPass.setIndexBuffer(rqi.indices.getBuffer(rqi.numIndicesToDraw), rqi.indices.type());
+		renderPass.setVertexBuffer(0, rqi.buffer);
+		renderPass.drawIndexed(0, 0, rqi.numIndicesToDraw, 1);
+	}
 
-			GpuTextureView colorView = this.renderTarget.getColorTextureView();
-			GpuTextureView depthView = this.renderTarget.getDepthTextureView();
+	public void renderQueues(Map<? extends RenderPipeline, ? extends List<RenderQueueItem>> queues) {
+		RenderSystem.backupProjectionMatrix();
+		RenderSystem.setProjectionMatrix(
+				this.projectionMatrixBuffer.getBuffer(
+						this.renderTarget.width,
+						this.renderTarget.height,
+						this.camera.fovDegrees
+				), ProjectionType.PERSPECTIVE);
 
-			AbstractTexture texture = overrideTexture == null ? this.boundTexture : overrideTexture.texture();
+		GpuTextureView colorView = this.renderTarget.getColorTextureView();
+		GpuTextureView depthView = this.renderTarget.getDepthTextureView();
 
-			if (this.boundTexture == null) {
-				TextureManager textureManager = Minecraft.getInstance()
-						.getTextureManager();
-				texture = textureManager.getTexture(MissingTextureAtlasSprite.getLocation());
-				this.boundTexture = texture;
-			}
-
-			GpuBuffer indexBuffer = indices.getBuffer(numIndices);
-			GpuBufferSlice transformSlice =
-					this.camera.createTransformSlice(new Matrix4f(this.gpuModelStack), this.camera.getProjection());
-
-			try (RenderPass renderPass = RenderSystem.getDevice()
-					.createCommandEncoder()
-					.createRenderPass(
-							() -> "Gooseboy GooseGPU",
-							colorView,
-							OptionalInt.of(0),
-							depthView,
-							OptionalDouble.of(1.0)
-					)) {
+		try (RenderPass renderPass = RenderSystem.getDevice()
+				.createCommandEncoder()
+				.createRenderPass(
+						() -> "Gooseboy GooseGPU",
+						colorView,
+						OptionalInt.of(0),
+						depthView,
+						OptionalDouble.of(1.0)
+				)) {
+			for (RenderPipeline pipeline : queues.keySet()) {
+				List<RenderQueueItem> queue = queues.get(pipeline);
 				renderPass.setPipeline(pipeline);
 				RenderSystem.bindDefaultUniforms(renderPass);
-				renderPass.setUniform("DynamicTransforms", transformSlice);
-				renderPass.bindSampler("Sampler0", texture.getTextureView());
-				renderPass.setIndexBuffer(indexBuffer, indices.type());
-				renderPass.setVertexBuffer(0, buffer);
-				renderPass.drawIndexed(0, 0, numIndicesToDraw, 1);
-			}
 
-			RenderSystem.restoreProjectionMatrix();
+				for (RenderQueueItem renderQueueItem : queue) {
+					this.renderVertexStackInPass(renderPass, renderQueueItem);
+				}
+			}
 		}
+
+		RenderSystem.restoreProjectionMatrix();
 	}
 
 	public void renderMesh(MeshRef mesh) {
-		this.renderVertexStack(mesh.stack(), mesh.texture, mesh.primitiveType());
+		AbstractTexture texture = mesh.texture == null ? this.boundTexture : mesh.texture.texture();
+		if (this.boundTexture == null) {
+			TextureManager textureManager = Minecraft.getInstance()
+					.getTextureManager();
+			texture = textureManager.getTexture(MissingTextureAtlasSprite.getLocation());
+			this.boundTexture = texture;
+		}
+
+		GpuBuffer buffer = mesh.stack()
+				.intoGpuBuffer();
+		RenderSystem.AutoStorageIndexBuffer indices = switch (mesh.primitiveType()) {
+			case TRIANGLES -> this.triangleIndices;
+			case QUADS -> this.quadIndices;
+		};
+		int numIndices = switch (mesh.primitiveType()) {
+			case TRIANGLES -> mesh.stack()
+					.size();
+			case QUADS -> mesh.stack()
+					.size() / 4;
+		};
+		int numIndicesToDraw = switch (mesh.primitiveType()) {
+			case TRIANGLES -> numIndices;
+			case QUADS -> numIndices * 6;
+		};
+		ArrayList<RenderQueueItem> queue = switch (mesh.primitiveType()) {
+			case TRIANGLES -> this.triRenderQueue;
+			case QUADS -> this.quadRenderQueue;
+		};
+		Matrix4f matrix = new Matrix4f(this.gpuModelStack);
+		GpuBufferSlice matrixSlice = this.camera.createTransformSlice(matrix, this.camera.getProjection());
+
+		queue.addLast(new RenderQueueItem(texture, indices, buffer, numIndicesToDraw, matrixSlice));
 	}
 
 	public void blitToScreen(GuiGraphics guiGraphics, int x, int y, int width, int height) {
@@ -188,6 +200,7 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 		GpuRenderConsumer renderConsumer = new GpuRenderConsumer(this);
 		GpuMemoryWriter gpuMemoryWriter = new GpuMemoryWriter(this.gpuMemory);
 
+		profiler.push("run");
 		for (QueuedCommand queued : this.queuedCommands) {
 			this.runCommand(
 					queued.command(),
@@ -198,6 +211,12 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 		}
 
 		this.queuedCommands.clear();
+
+		profiler.popPush("render");
+		this.renderQueues(Map.of(
+				GooseboyClient.TRIANGLES_PIPELINE, this.triRenderQueue,
+				GooseboyClient.QUADS_PIPELINE, this.quadRenderQueue));
+		profiler.pop();
 
 		if (this.gpuMatrixDepth != this.frameStartGpuMatrixDepth) {
 			Gooseboy.LOGGER.warn(
@@ -371,5 +390,9 @@ public class GooseboyGpuRenderer implements AutoCloseable {
 			}
 			case Identity -> this.gpuModelStack.identity();
 		}
+	}
+
+	public record RenderQueueItem(AbstractTexture texture, RenderSystem.AutoStorageIndexBuffer indices,
+	                              GpuBuffer buffer, int numIndicesToDraw, GpuBufferSlice matrix) {
 	}
 }
