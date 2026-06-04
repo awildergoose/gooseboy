@@ -159,7 +159,7 @@ public class CrateSelectionList extends ObjectSelectionList<CrateSelectionList.E
 								"ui.gooseboy.crate_run_failed.body");
 					}
 
-					Gooseboy.LOGGER.error("Failed to run crate: {0}", e);
+					Gooseboy.LOGGER.error("Failed to run crate", e);
 				}
 			});
 

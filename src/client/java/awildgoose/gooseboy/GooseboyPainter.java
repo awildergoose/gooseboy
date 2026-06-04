@@ -52,7 +52,7 @@ public class GooseboyPainter implements AutoCloseable {
 
 			crate.close();
 			crate.isOk = false;
-			Gooseboy.LOGGER.warn("Failed to get gpu_main function: {0}", ie);
+			Gooseboy.LOGGER.error("Failed to run gpu_main function", ie);
 		}
 	}
 

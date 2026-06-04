@@ -59,7 +59,7 @@ public class GooseboyCrate implements AutoCloseable {
 			this.close();
 			if (ie instanceof TrapException) {
 				this.isOk = false;
-				Gooseboy.LOGGER.error("Crate runtime was trapped, error: {0}", ie);
+				Gooseboy.LOGGER.error("Crate runtime was trapped", ie);
 			} else
 				throw ie;
 		}
@@ -87,7 +87,7 @@ public class GooseboyCrate implements AutoCloseable {
 				this.updateFunction.apply(now);
 			} catch (TrapException ie) {
 				this.isOk = false;
-				Gooseboy.LOGGER.error("Crate runtime was trapped, error: {0}", ie);
+				Gooseboy.LOGGER.error("Crate runtime was trapped", ie);
 			}
 			profilerFiller.pop();
 		}
