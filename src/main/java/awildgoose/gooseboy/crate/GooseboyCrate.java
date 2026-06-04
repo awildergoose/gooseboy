@@ -59,7 +59,7 @@ public class GooseboyCrate implements AutoCloseable {
 			this.close();
 			if (ie instanceof TrapException) {
 				this.isOk = false;
-				Gooseboy.LOGGER.error("Crate runtime was trapped", ie);
+				Gooseboy.LOGGER.error("Crate runtime was trapped, consider increasing memory", ie);
 			} else
 				throw ie;
 		}

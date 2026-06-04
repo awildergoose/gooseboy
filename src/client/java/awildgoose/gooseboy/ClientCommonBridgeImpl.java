@@ -22,7 +22,6 @@ public class ClientCommonBridgeImpl implements ClientCommonBridge {
 				SystemToast.SystemToastId.PERIODIC_NOTIFICATION,
 				titleC, bodyC
 		);
-		Gooseboy.LOGGER.info("{}: {}", titleC.getString(), bodyC.getString());
 	}
 
 	@Override
@@ -32,7 +31,6 @@ public class ClientCommonBridgeImpl implements ClientCommonBridge {
 						.getToastManager(), SystemToast.SystemToastId.CHUNK_LOAD_FAILURE,
 				Component.literal(title), Component.literal(body)
 		);
-		Gooseboy.LOGGER.error("{}: {}", title, body);
 	}
 
 	@Override
@@ -43,7 +41,6 @@ public class ClientCommonBridgeImpl implements ClientCommonBridge {
 		SystemToast.add(
 				Minecraft.getInstance()
 						.getToastManager(), SystemToast.SystemToastId.CHUNK_LOAD_FAILURE, titleC, bodyC);
-		Gooseboy.LOGGER.error("{}: {}", titleC.getString(), bodyC.getString());
 	}
 
 	@Override
